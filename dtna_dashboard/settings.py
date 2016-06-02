@@ -26,6 +26,10 @@ SECRET_KEY = "dw-5nq*$#_#co=ahvb9s6_eb=!8bunuxwb!v5p2p889bu@azhg"
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
+USE_TZ = False
+
+USE_L10N = True
+
 # Application definition
 
 INSTALLED_APPS = (
@@ -76,7 +80,8 @@ WSGI_APPLICATION = 'dtna_dashboard.wsgi.application'
 # https://docs.djangoproject.com/en/1.9/ref/settings/#databases
 
 DATABASES = {
-    'default': {}
+    'default': {
+    }
 }
 
 AUTH_PASSWORD_VALIDATORS = (
@@ -104,7 +109,8 @@ USE_L10N = True
 USE_TZ = True
 
 # Update database configuration with $DATABASE_URL.
-db_from_env = dj_database_url.config(conn_max_age=500)
+my_db = 'postgres:///dtna_dashboard'
+db_from_env = dj_database_url.config(default=my_db, conn_max_age=500)
 DATABASES['default'].update(db_from_env)
 
 # Honor the 'X-Forwarded-Proto' header for request.is_secure()
