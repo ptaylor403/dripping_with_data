@@ -2,6 +2,7 @@ from django.shortcuts import render
 from django.views.generic.base import TemplateView
 from .attendance_sim import *
 from .models import Attendance
+import datetime
 
 
 class Load(TemplateView):
@@ -42,22 +43,26 @@ class HPV(TemplateView):
     # print('PCH{}'.format(Attendance.objects.filter(department='PCH')))
 
     def get(self, request):
-        info = list(Attendance.objects.filter(clock_out_time=None))
-        if info:
-            PCH = 0
-            FCH = 0
-            CIW = 0
-            FCB = 0
-            for person in info:
-                if person.department == 'PCH':
-                    PCH += 1
-                elif person.department == 'FCH':
-                    FCH += 1
-                elif person.department == 'CIW':
-                    CIW += 1
-                elif person.department == 'FCB':
-                    FCB += 1
-            plant = PCH + FCH + CIW + FCB
-
+        # info = list(Attendance.objects.filter(clock_out_time=None))
+        # if info:
+        #     PCH = 0
+        #     FCH = 0
+        #     CIW = 0
+        #     FCB = 0
+        #     for person in info:
+        #         if person.department == 'PCH':
+        #             PCH += 1
+        #         elif person.department == 'FCH':
+        #             FCH += 1
+        #         elif person.department == 'CIW':
+        #             CIW += 1
+        #         elif person.department == 'FCB':
+        #             FCB += 1
+        #     plant = PCH + FCH + CIW + FCB
+        PCH = Attendance.get_active_at(active_time=datetime.datetime.utcnow(), department='PCH')
+        FCH = Attendance.get_active_at(department='FCH')
+        CIW = Attendance.get_active_at(department='CIW')
+        FCB = Attendance.get_active_at(department='FCB')
+        plant = Attendance.get_active_at()
         context = {'PCH': PCH, 'FCH': FCH, 'CIW': CIW, 'FCB': FCB, 'plant': plant}
         return render(request, self.template_name, context)
