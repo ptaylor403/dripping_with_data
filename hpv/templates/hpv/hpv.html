@@ -21,7 +21,7 @@
           </tr>
           <tr>
             <td id=dept>PCH</td>
-            <td></td>
+            <td>{{ PCH1 }}</td>
             <td></td>
             <td></td>
             <td></td>
@@ -32,7 +32,7 @@
           </tr>
           <tr>
             <td id=dept>FCH</td>
-            <td></td>
+            <td>{{ FCH1 }}</td>
             <td></td>
             <td></td>
             <td></td>
@@ -43,7 +43,7 @@
           </tr>
           <tr>
             <td id=dept>CIW</td>
-            <td></td>
+            <td>{{ CIW1 }}</td>
             <td></td>
             <td></td>
             <td></td>
@@ -54,7 +54,18 @@
           </tr>
           <tr>
             <td id=dept>FCB</td>
+            <td>{{ FCB1 }}</td>
             <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+          </tr>
+          <tr>
+            <td id=dept>PNT</td>
+            <td>{{ PNT1 }}</td>
             <td></td>
             <td></td>
             <td></td>
@@ -65,7 +76,7 @@
           </tr>
           <tr>
             <td id=dept>PLANT</td>
-            <td></td>
+            <td>{{ plant1 }}</td>
             <td></td>
             <td></td>
             <td></td>
@@ -133,6 +144,17 @@
           <td></td>
         </tr>
         <tr>
+          <td id=dept>PNT</td>
+          <td>{{ PNT2 }}</td>
+          <td></td>
+          <td></td>
+          <td></td>
+          <td></td>
+          <td></td>
+          <td></td>
+          <td></td>
+        </tr>
+        <tr>
           <td id=dept>PLANT</td>
           <td>{{ plant2 }}</td>
           <td></td>
@@ -145,13 +167,20 @@
         </tr>
         </table>
 
-        <table id=claim_totals>
+        <table id=claim_day>
           <tr id=head>
             <td id=head><b>Day</b></td>
-            <td id=head><b>Current</b></td>
           </tr>
           <tr>
             <td id=total>total{{ day_total }}</td>
+          </tr>
+        </table>
+
+        <table id=claim_hour>
+          <tr id=head>
+            <td id=head><b>Current</b></td>
+          </tr>
+          <tr>
             <td id=total>total{{ hour_total }}</td>
           </tr>
         </table>
