@@ -29,7 +29,8 @@ DEBUG = True
 # Application definition
 
 INSTALLED_APPS = (
-    'cry.apps.CrysConfig',
+    'crys.apps.CrysConfig',
+    'get_data.apps.GetDataConfig',
     'hpv.apps.HpvConfig',
     'django.contrib.admin',
     'django.contrib.auth',
