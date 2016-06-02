@@ -1,7 +1,8 @@
 from django.shortcuts import render
 from django.views.generic.base import TemplateView
-from .attendance_sim import *
-from .models import Attendance
+from .data_sim import *
+from .models import Attendance, Complete
+import random
 
 
 class Load(TemplateView):
@@ -9,7 +10,7 @@ class Load(TemplateView):
 
     def get(self, request):
         context = {}
-        if request.GET.get('grabData'):
+        if request.GET.get('grabAttendance'):
             shift_starts = [6, 14]
             for day in range(1, 6):
                 for hour in shift_starts:
@@ -33,7 +34,18 @@ class Load(TemplateView):
                                                   clock_out_time=time_out,
                                                   shift=shift)
 
-            text = "5 days worth of data added to the database."
+            text = "5 days worth of clockin data added to the database."
             context['text'] = text
+
+        if request.GET.get('grabComplete'):
+            for day in range(1, 6):
+                for hour in range(7, 23):
+                    for _ in range(1, random.randint(6, 10)):
+                        serial_number = get_truck_serial()
+                        completed = get_completed(day, hour)
+
+                        Complete.objects.create(serial_number=serial_number, completed=completed)
+            text2 = "5 days worth of data added to the database."
+            context['text2'] = text2
 
         return render(request, self.template_name, context)

@@ -26,9 +26,7 @@ SECRET_KEY = "dw-5nq*$#_#co=ahvb9s6_eb=!8bunuxwb!v5p2p889bu@azhg"
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-USE_TZ = False
-
-USE_L10N = True
+USE_TZ = True
 
 # Application definition
 

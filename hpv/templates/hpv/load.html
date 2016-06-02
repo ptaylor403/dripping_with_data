@@ -7,11 +7,21 @@
     <body>
         <form class="" action="" method="get">
             <label>Click to generate 5 days worth of data for 2 shifts and 500 employees per shift:</label>
-            <input type="submit" name="grabData" value="Get Data">
+            <input type="submit" name="grabAttendance" value="Get Data">
         </form>
-        <br>
+
         {% if text %}
             {{ text }}
         {% endif %}
+        <br>
+        <form class="" action="" method="get">
+            <label>Click to generate 5 days worth of data for complete trucks:</label>
+            <input type="submit" name="grabComplete" value="Get Data">
+        </form>
+
+        {% if text2 %}
+            {{ text2 }}
+        {% endif %}
+
     </body>
 </html>
