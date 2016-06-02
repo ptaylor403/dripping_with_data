@@ -8,7 +8,6 @@ class Attendance(models.Model):
     clock_out_time = models.DateTimeField(null=True, blank=True)
     shift = models.CharField(max_length=16)
 
-
     # @staticmethod
     # def get_clocked_in():
     #     clocked_in = Employees.objects.order_by('clock_in_time')
@@ -21,14 +20,18 @@ class Attendance(models.Model):
     #     return "I'm Employee # {}".format(self.employee_num)
 
     @staticmethod
-    def get_active_at(active_time=None, department='all'):
+    def get_active_at(active_time=None, department='all', shift='all'):
         if active_time is None:
             active_time = datetime.datetime.now()
             print("was none")
-        if department == 'all':
-            in_department = Attendance.objects.all()
+        if shift = 'all':
+            this_shift = Attendance.objects.all()
         else:
-            in_department = Attendance.objects.filter(department=department)
+            this_shift = Attendance.objects.filter(shift=shift)
+        if department == 'all':
+            in_department = this_shift
+        else:
+            in_department = this_shift.filter(department=department)
         print(active_time)
         print("in dept: ", in_department.count())
         have_clocked_in = in_department.filter(clock_in_time__lt=active_time)
@@ -52,3 +55,7 @@ class Attendance(models.Model):
                 return True
             else:
                 return False
+
+class Complete(models.Model):
+    serial_number = models.CharField(max_length=10)
+    completed = models.DateTimeField()
