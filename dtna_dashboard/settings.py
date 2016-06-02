@@ -29,7 +29,7 @@ DEBUG = True
 # Application definition
 
 INSTALLED_APPS = (
-    'cry.apps.CrysConfig',
+    'crys.apps.CrysConfig',
     'hpv.apps.HpvConfig',
     'django.contrib.admin',
     'django.contrib.auth',
@@ -76,7 +76,14 @@ WSGI_APPLICATION = 'dtna_dashboard.wsgi.application'
 # https://docs.djangoproject.com/en/1.9/ref/settings/#databases
 
 DATABASES = {
-    'default': {}
+    'default': {
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': 'dtna_dashboard',
+        'USER': 'trishataylor',
+        'PASSWORD': '',
+        'HOST': '127.0.0.1',
+        'PORT': '5432',
+    }
 }
 
 AUTH_PASSWORD_VALIDATORS = (
