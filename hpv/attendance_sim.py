@@ -18,18 +18,4 @@ def clock_out(day, hour):
 
 
 def get_dept():
-    return random.choice(['CIW', 'FCB', 'PCH', 'FCH'])
-
-
-def gen_data():
-    shift_starts = [6, 2]
-    for day in range(1, 6):
-        for hour in shift_starts:
-            emp = get_employee()
-            dept = get_dept()
-            time_in = clock_in(day, hour)
-
-            if day != 5:
-                time_out = clock_out(day, hour)
-            else:
-                time_out = None
+    return random.choice(['CIW', 'FCB', 'PCH', 'FCH', 'PNT'])

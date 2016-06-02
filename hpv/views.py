@@ -8,7 +8,7 @@ class Load(TemplateView):
     template_name = "hpv/load.html"
 
     def get(self, request):
-        shift_starts = [6, 2]
+        shift_starts = [6, 14]
         for day in range(1, 6):
             for hour in shift_starts:
                 for _ in range(1, 501):
@@ -20,7 +20,7 @@ class Load(TemplateView):
                     else:
                         shift = "second"
 
-                    if day == 5 and hour == 2:
+                    if day == 5 and hour == 14:
                         time_out = None
                     else:
                         time_out = clock_out(day, hour)
