@@ -36,6 +36,7 @@ LOGIN_REDIRECT_URL = "/"
 
 INSTALLED_APPS = (
     'crys.apps.CrysConfig',
+    'get_data.apps.GetDataConfig',
     'hpv.apps.HpvConfig',
     'django.contrib.admin',
     'django.contrib.auth',
