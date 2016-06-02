@@ -1,3 +1,30 @@
-table{
+#attendance{
+  /*background-color: pink;*/
+}
+
+#claim_totals{
+  /*background-color: lightgrey;*/
+  position: absolute;
+  top: 10px;
+  left: 250px;
+}
+
+table, tr, td{
+  border-collapse: collapse;
+  border: 1px solid black;
+  text-align: center;
+}
+
+#head{
+  height: 50px;
   background-color: pink;
+}
+
+#total{
+  height: 50px;
+  width: 50px;
+}
+
+#dept{
+  text: bold underline;
 }

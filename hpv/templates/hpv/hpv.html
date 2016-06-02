@@ -6,27 +6,42 @@
         <title>HPV Data</title>
     </head>
     <body>
-        <table border='1'>
-        <tr>
-          <td><b>Department</b></td>
-          <td><b>Clocked In</b></td>
+        <table id=attendance>
+        <tr id=head>
+          <td id=head><b>Department</b></td>
+          <td id=head><b>Clocked In</b></td>
         </tr>
         <tr>
-          <td>PCH</td>
+          <td id=dept>PCH</td>
           <td>{{ PCH }}</td>
         </tr>
         <tr>
-          <td>FCH</td>
+          <td id=dept>FCH</td>
           <td>{{ FCH }}</td>
         </tr>
         <tr>
-          <td>CIW</td>
+          <td id=dept>CIW</td>
           <td>{{ CIW }}</td>
         </tr>
         <tr>
-          <td>FCB</td>
+          <td id=dept>FCB</td>
           <td>{{ FCB }}</td>
         </tr>
+        <tr>
+          <td id=dept>PLANT</td>
+          <td>{{ plant }}</td>
+        </tr>
+        </table>
+
+        <table id=claim_totals>
+          <tr id=head>
+            <td id=head><b>Day</b></td>
+            <td id=head><b>Current</b></td>
+          </tr>
+          <tr>
+            <td id=total>total{{ day_total }}</td>
+            <td id=total>total{{ hour_total }}</td>
+          </tr>
         </table>
     </body>
 </html>

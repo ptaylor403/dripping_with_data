@@ -57,6 +57,7 @@ class HPV(TemplateView):
                     CIW += 1
                 elif person.department == 'FCB':
                     FCB += 1
+            plant = PCH + FCH + CIW + FCB
 
-        context = {'PCH': PCH, 'FCH': FCH, 'CIW': CIW, 'FCB': FCB}
+        context = {'PCH': PCH, 'FCH': FCH, 'CIW': CIW, 'FCB': FCB, 'plant': plant}
         return render(request, self.template_name, context)
