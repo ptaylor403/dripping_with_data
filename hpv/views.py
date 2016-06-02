@@ -42,22 +42,43 @@ class HPV(TemplateView):
     # print('PCH{}'.format(Attendance.objects.filter(department='PCH')))
 
     def get(self, request):
-        info = list(Attendance.objects.filter(clock_out_time=None))
-        if info:
-            PCH = 0
-            FCH = 0
-            CIW = 0
-            FCB = 0
-            for person in info:
+        first_info = list(Attendance.objects.filter(clock_out_time=None, shift='first'))
+        PCH1 = 0
+        FCH1 = 0
+        CIW1 = 0
+        FCB1 = 0
+        plant1 = 0
+        if first_info:
+            for person in first_info:
                 if person.department == 'PCH':
-                    PCH += 1
+                    PCH1 += 1
                 elif person.department == 'FCH':
-                    FCH += 1
+                    FCH1 += 1
                 elif person.department == 'CIW':
-                    CIW += 1
+                    CIW1 += 1
                 elif person.department == 'FCB':
-                    FCB += 1
-            plant = PCH + FCH + CIW + FCB
+                    FCB1 += 1
+            plant1 = PCH1 + FCH1 + CIW1 + FCB1
 
-        context = {'PCH': PCH, 'FCH': FCH, 'CIW': CIW, 'FCB': FCB, 'plant': plant}
+        second_info = list(Attendance.objects.filter(clock_out_time=None, shift='second'))
+        PCH2 = 0
+        FCH2 = 0
+        CIW2 = 0
+        FCB2 = 0
+        plant2 = 2
+        if second_info:
+            for person in second_info:
+                if person.department == 'PCH':
+                    PCH2 += 1
+                elif person.department == 'FCH':
+                    FCH2 += 1
+                elif person.department == 'CIW':
+                    CIW2 += 1
+                elif person.department == 'FCB':
+                    FCB2 += 1
+            plant2 = PCH2 + FCH2 + CIW2 + FCB2
+
+        context = {'PCH1': PCH1, 'PCH2': PCH2, 'FCH1': FCH1, 'FCH2': FCH2,
+                   'CIW1': CIW1, 'CIW2': CIW2, 'FCB1': FCB1, 'FCB2': FCB2,
+                   'plant1': plant1, 'plant2': plant2}
         return render(request, self.template_name, context)
