@@ -70,3 +70,5 @@ staticfiles
 .env
 .direnv
 .envrc
+
+.idea/
