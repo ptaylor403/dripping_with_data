@@ -5,6 +5,13 @@
         <title>Load Data</title>
     </head>
     <body>
-        {{ text }}
+        <form class="" action="" method="get">
+            <label>Click to generate 5 days worth of data for 2 shifts and 500 employees per shift:</label>
+            <input type="submit" name="grabData" value="Get Data">
+        </form>
+        <br>
+        {% if text %}
+            {{ text }}
+        {% endif %}
     </body>
 </html>
