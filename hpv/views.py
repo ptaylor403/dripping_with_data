@@ -35,3 +35,28 @@ class Load(TemplateView):
         context = {'text': text}
 
         return render(request, self.template_name, context)
+
+class HPV(TemplateView):
+    template_name = "hpv/hpv.html"
+    # print('object{}'.format(Attendance.objects.filter(clock_out_time=None)))
+    # print('PCH{}'.format(Attendance.objects.filter(department='PCH')))
+
+    def get(self, request):
+        info = list(Attendance.objects.filter(clock_out_time=None))
+        if info:
+            PCH = 0
+            FCH = 0
+            CIW = 0
+            FCB = 0
+            for person in info:
+                if person.department == 'PCH':
+                    PCH += 1
+                elif person.department == 'FCH':
+                    FCH += 1
+                elif person.department == 'CIW':
+                    CIW += 1
+                elif person.department == 'FCB':
+                    FCB += 1
+
+        context = {'PCH': PCH, 'FCH': FCH, 'CIW': CIW, 'FCB': FCB}
+        return render(request, self.template_name, context)
