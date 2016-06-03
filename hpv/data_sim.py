@@ -26,7 +26,6 @@ def get_truck_serial():
     return serial
 
 
-def get_completed(day, hour):
-    minute = random.randint(0, 59)
+def get_completed(day, hour, minute):
     clock = datetime(2016, 6, day, hour, minute)
     return clock

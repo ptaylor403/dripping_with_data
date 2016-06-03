@@ -26,7 +26,9 @@ PROJECT_ROOT = os.path.dirname(os.path.abspath(__file__))
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-USE_TZ = True
+USE_TZ = False
+
+USE_L10N = True
 
 # Application definition
 

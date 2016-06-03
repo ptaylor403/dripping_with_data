@@ -23,7 +23,7 @@ td{
   width: 50px;
 }
 
-#head{
+.head{
   height: 50px;
   background-color: #4CAF50;
   text-align: center;
@@ -36,11 +36,11 @@ td{
     1px 1px 0 #000;
 }
 
-#total{
+.total{
   height: 50px;
   width: 50px;
 }
 
-#dept{
+.dept{
   font-weight: bold;
 }
