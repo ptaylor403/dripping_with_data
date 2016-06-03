@@ -4,7 +4,9 @@ __pycache__/
 *$py.class
 .envrc
 .direnv/
+<<<<<<< HEAD
 secrets.py
+.env
 
 # C extensions
 *.so
