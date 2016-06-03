@@ -65,22 +65,24 @@ class Drip(TemplateView):
     template_name = "hpv/drip.html"
 
     def get(self, request):
-
         context = {}
-
-        if request.GET.get('startDrip:'):
-
+        if request.GET.get('startDrip'):
             serial_number = get_truck_serial()
             last_truck = Complete.objects.latest('completed')
             prev_time = last_truck.completed
+            print("prev_time.day: ", prev_time.day)
+            print("prev_time.hour: ", prev_time.hour)
+            print("prev_time.minute: ", prev_time.minute)
+
             day = prev_time.day
             hour = prev_time.hour
-            minute = prev_time.minute + random.randint(5, 10)
-            if prev_time.hour == 18 and prev_time.minute > 49:
+            minute = prev_time.minute + random.randint(7, 12)
+
+            if prev_time.hour >= 22 and prev_time.minute >= 48:
                 day += 1
                 hour = 7
                 minute = random.randint(0, 6)
-            elif minute > 50:
+            elif minute >= 48:
                 hour = prev_time.hour + 1
                 minute = random.randint(0, 6)
 
