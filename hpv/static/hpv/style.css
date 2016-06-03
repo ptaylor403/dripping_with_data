@@ -44,3 +44,9 @@ td{
 .dept{
   font-weight: bold;
 }
+
+#claim_title{
+  position: absolute;
+  top: 25px;
+  right: 243px;
+}
