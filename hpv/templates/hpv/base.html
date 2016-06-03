@@ -10,12 +10,13 @@
 
   <body>
     {% if not user.is_authenticated %}
+    Please log in..</br>
     <form action="{% url 'login' %}" method="post">
       {% csrf_token %}
       {{ form.as_p }}
       <button type="submit" value="Login">Login</button>
     </form>
-      You are logged in as {{request.user.username}}</br>
+
     {% endif %}
 
     {% block content %}
