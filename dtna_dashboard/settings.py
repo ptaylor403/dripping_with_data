@@ -8,7 +8,7 @@ https://docs.djangoproject.com/en/1.9/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/1.9/ref/settings/
 """
-
+from .secrets import *
 import os
 import dj_database_url
 from .secrets import *
@@ -23,6 +23,9 @@ PROJECT_ROOT = os.path.dirname(os.path.abspath(__file__))
 
 # SECURITY WARNING: keep the secret key used in production secret!
 
+# SECRET_KEY = "dw-5nq*$#_#co=ahvb9s6_eb=!8bunuxwb!v5p2p889bu@azhg"
+
+
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
@@ -34,6 +37,7 @@ USE_L10N = True
 
 INSTALLED_APPS = (
     'crys.apps.CrysConfig',
+    'get_data.apps.GetDataConfig',
     'hpv.apps.HpvConfig',
     'django.contrib.admin',
     'django.contrib.auth',
@@ -79,7 +83,20 @@ WSGI_APPLICATION = 'dtna_dashboard.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/1.9/ref/settings/#databases
 
+<<<<<<< HEAD
 
+=======
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.postgresql',
+#         'NAME': 'dtna_dashboard',
+#         'USER': 'SomeOne',
+#         'PASSWORD': '',
+#         'HOST': '127.0.0.1',
+#         'PORT': '5432',
+#     }
+# }
+>>>>>>> division_csv
 
 AUTH_PASSWORD_VALIDATORS = (
     {
