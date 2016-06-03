@@ -39,22 +39,12 @@ class Load(TemplateView):
             context['text'] = text
 
         if request.GET.get('grabComplete'):
-            serial_number = get_truck_serial()
-            completed = get_completed(1, 7, 0)
-            Complete.objects.create(serial_number=serial_number, completed=completed)
             for day in range(1, 6):
                 for hour in range(7, 23):
-                    while True:
-                        last_truck = Complete.objects.latest('completed')
-                        prev_time = last_truck.completed
-                        if prev_time.hour == hour and prev_time.minute >= 48:
-                            break
+                    for _ in range(1, random.randint(6, 10)):
                         serial_number = get_truck_serial()
-                        if prev_time.hour != hour:
-                            minute = random.randint(2, 8)
-                        else:
-                            minute = prev_time.minute + random.randint(7, 12)
-                        completed = get_completed(day, hour, minute)
+                        completed = get_completed(day, hour)
+
                         Complete.objects.create(serial_number=serial_number, completed=completed)
             text2 = "5 days worth of data added to the database."
             context['text2'] = text2
@@ -71,39 +61,9 @@ class HPV(TemplateView):
         FCH = Attendance.get_active_at(department='FCH')
         CIW = Attendance.get_active_at(department='CIW')
         FCB = Attendance.get_active_at(department='FCB')
+        PNT = Attendance.get_active_at(department='PNT')
         plant = Attendance.get_active_at()
         context = {'PCH1': PCH, 'PCH2': PCH, 'FCH1': FCH, 'FCH2': FCH,
                    'CIW1': CIW, 'CIW2': CIW, 'FCB1': FCB, 'FCB2': FCB,
                    'PNT1': PNT, 'PNT2': PNT, 'plant1': plant, 'plant2': plant}
-
-class Drip(TemplateView):
-    template_name = "hpv/drip.html"
-
-    def get(self, request):
-        context = {}
-        if request.GET.get('dripRate'):
-            serial_number = get_truck_serial()
-            last_truck = Complete.objects.latest('completed')
-            prev_time = last_truck.completed
-            print("prev_time.day: ", prev_time.day)
-            print("prev_time.hour: ", prev_time.hour)
-            print("prev_time.minute: ", prev_time.minute)
-
-            day = prev_time.day
-            hour = prev_time.hour
-            minute = prev_time.minute + random.randint(7, 12)
-
-            if prev_time.hour >= 22 and prev_time.minute >= 48:
-                day += 1
-                hour = 7
-                minute = random.randint(0, 6)
-            elif prev_time.minute >= 48:
-                hour = prev_time.hour + 1
-                minute = random.randint(0, 6)
-
-            completed = get_completed(day, hour, minute)
-
-            Complete.objects.create(serial_number=serial_number, completed=completed)
-
-            context['lastTruck'] = "The last truck completed and added to the database was {} at {}".format(serial_number, completed)
         return render(request, self.template_name, context)
