@@ -70,9 +70,6 @@ class Drip(TemplateView):
             serial_number = get_truck_serial()
             last_truck = Complete.objects.latest('completed')
             prev_time = last_truck.completed
-            print("prev_time.day: ", prev_time.day)
-            print("prev_time.hour: ", prev_time.hour)
-            print("prev_time.minute: ", prev_time.minute)
 
             day = prev_time.day
             hour = prev_time.hour

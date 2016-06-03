@@ -27,7 +27,7 @@ $startDrip.click(function() {
 
     dripInterval = setInterval(function () {
         $.get('', data);
-        console.log('DRIP!');
+        console.log('Drip!');
         // uncomment the next line to prevent multiple text instances
         // $('#dripText').remove();
         $('<span class="dripText">').text('Drip... ').appendTo($('body'))
