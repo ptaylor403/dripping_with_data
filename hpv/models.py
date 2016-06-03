@@ -24,7 +24,7 @@ class Attendance(models.Model):
         if active_time is None:
             active_time = datetime.datetime.now()
             print("was none")
-        if shift = 'all':
+        if shift == 'all':
             this_shift = Attendance.objects.all()
         else:
             this_shift = Attendance.objects.filter(shift=shift)

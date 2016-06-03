@@ -57,7 +57,7 @@ class HPV(TemplateView):
     # print('PCH{}'.format(Attendance.objects.filter(department='PCH')))
 
     def get(self, request):
-        PCH = Attendance.get_active_at(active_time=datetime.datetime.utcnow(), department='PCH')
+        PCH = Attendance.get_active_at(active_time=datetime.utcnow(), department='PCH')
         FCH = Attendance.get_active_at(department='FCH')
         CIW = Attendance.get_active_at(department='CIW')
         FCB = Attendance.get_active_at(department='FCB')
