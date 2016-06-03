@@ -7,6 +7,7 @@ __pycache__/
 .env
 # C extensions
 *.so
+secrets.py
 
 # Distribution / packaging
 .Python
