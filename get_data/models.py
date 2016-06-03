@@ -20,5 +20,4 @@ class OrgUnits(models.Model):
     dept_name = models.CharField(max_length=255)
     dept_abrv = models.CharField(max_length=5)
     dept_id = models.CharField(max_length=100)
-
-
+    shift_id = models.CharField(max_length=10)
