@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <title>Drip Data</title>
+    </head>
+    <body>
+        <form class="" action="" method="get">
+            <label>Click to start generating completed:</label>
+            <input type="submit" name="startDrip" value="Get Data">
+        </form>
+
+        {% if lastTruck %}
+            {{ lastTruck }}
+        {% endif %}
+
+
+    </body>
+</html>

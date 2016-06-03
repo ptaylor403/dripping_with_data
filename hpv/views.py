@@ -38,14 +38,56 @@ class Load(TemplateView):
             context['text'] = text
 
         if request.GET.get('grabComplete'):
+            serial_number = get_truck_serial()
+            completed = get_completed(1, 7, 0)
+            Complete.objects.create(serial_number=serial_number, completed=completed)
             for day in range(1, 6):
                 for hour in range(7, 23):
-                    for _ in range(1, random.randint(6, 10)):
+                    while True:
+                        last_truck = Complete.objects.latest('completed')
+                        prev_time = last_truck.completed
+                        if prev_time.hour == hour and prev_time.minute >= 48:
+                            break
                         serial_number = get_truck_serial()
-                        completed = get_completed(day, hour)
-
+                        if prev_time.hour != hour:
+                            minute = random.randint(2, 8)
+                        else:
+                            minute = prev_time.minute + random.randint(7, 12)
+                        completed = get_completed(day, hour, minute)
                         Complete.objects.create(serial_number=serial_number, completed=completed)
             text2 = "5 days worth of data added to the database."
             context['text2'] = text2
+
+        return render(request, self.template_name, context)
+
+
+class Drip(TemplateView):
+    template_name = "hpv/drip.html"
+
+    def get(self, request):
+
+        context = {}
+
+        if request.GET.get('startDrip:'):
+
+            serial_number = get_truck_serial()
+            last_truck = Complete.objects.latest('completed')
+            prev_time = last_truck.completed
+            day = prev_time.day
+            hour = prev_time.hour
+            minute = prev_time.minute + random.randint(5, 10)
+            if prev_time.hour == 18 and prev_time.minute > 49:
+                day += 1
+                hour = 7
+                minute = random.randint(0, 6)
+            elif minute > 50:
+                hour = prev_time.hour + 1
+                minute = random.randint(0, 6)
+
+            completed = get_completed(day, hour, minute)
+
+            Complete.objects.create(serial_number=serial_number, completed=completed)
+
+            context['lastTruck'] = "The last truck completed and added to the database was {} at {}".format(serial_number, completed)
 
         return render(request, self.template_name, context)
