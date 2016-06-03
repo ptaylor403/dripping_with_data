@@ -3,7 +3,7 @@ var $startDrip = $('#startDrip');
 var $stopDrip = $('#stopDrip');
 var $hook = $('#truckHook');
 var $div = $('<div id="lastTruck">');
-var dripInterval = setInterval(console.log('You gonna start this puppy?'), 100000000)
+var dripInterval = setInterval(console.log("Let's make some trucks!"), 100000000)
 
 function getDripRate() {
     if ($dripRate.val() < 5){
@@ -17,10 +17,20 @@ function getDripRate() {
 
 $startDrip.click(function() {
     data = {'dripRate': getDripRate()};
+    $('.dripText').remove();
+    $('.dripRateText').remove();
+    $('<p class="dripRateText">').text("Dripping every " + (data['dripRate'] / 1000) + " seconds.").appendTo($('body'));
+
+    $.get('', data);
+    console.log('DRIP!');
+    $('<span class="dripText">').text('Drip... ').appendTo($('body'))
 
     dripInterval = setInterval(function () {
         $.get('', data);
         console.log('DRIP!');
+        // uncomment the next line to prevent multiple text instances
+        // $('#dripText').remove();
+        $('<span class="dripText">').text('Drip... ').appendTo($('body'))
     }, getDripRate());
 
     return false;

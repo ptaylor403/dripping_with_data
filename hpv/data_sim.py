@@ -3,7 +3,7 @@ from datetime import datetime
 
 
 def get_employee():
-    return random.randint(64000, 64999)
+    return random.randint(60000, 89999)
 
 
 def clock_in(day, hour):
