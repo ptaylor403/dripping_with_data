@@ -11,7 +11,6 @@ https://docs.djangoproject.com/en/1.9/ref/settings/
 from .secrets import *
 import os
 import dj_database_url
-from .secrets import *
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -86,20 +85,6 @@ WSGI_APPLICATION = 'dtna_dashboard.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/1.9/ref/settings/#databases
 
-<<<<<<< HEAD
-
-=======
-# DATABASES = {
-#     'default': {
-#         'ENGINE': 'django.db.backends.postgresql',
-#         'NAME': 'dtna_dashboard',
-#         'USER': 'SomeOne',
-#         'PASSWORD': '',
-#         'HOST': '127.0.0.1',
-#         'PORT': '5432',
-#     }
-# }
->>>>>>> division_csv
 
 AUTH_PASSWORD_VALIDATORS = (
     {
