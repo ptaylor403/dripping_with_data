@@ -4,6 +4,7 @@ import datetime as dt
 from .data_sim import *
 from .models import Attendance, Complete
 import random
+import pytz
 
 NOW = datetime.now() + dt.timedelta(hours=0)
 
@@ -65,6 +66,42 @@ class Load(TemplateView):
 class HPV(TemplateView):
     template_name = "hpv/hpv2.html"
 
+    def _get_shift_history(departments, shift_start_time, today):
+        shift = []
+        for department in departments:
+            dpt_data = [department]
+            for i in range(1,9):
+                this_dt = datetime.combine(today, dt.time(shift_start_time + i))
+                if this_dt <= NOW:  # datetime.now():
+                    dpt_data.append(Attendance.get_active_at(active_time=this_dt,
+                                                             department=department)
+                                    )
+                else:
+                    dpt_data.append("")
+
+            shift.append(dpt_data)
+        return shift
+
+    def _get_shift_manhour_history(departments, shift_start_time, today):
+        shift = []
+        for department in departments:
+            dpt_data = [department]
+            for i in range(1,9):
+                this_dt = datetime.combine(today, dt.time(shift_start_time + i))
+                start_dt = datetime.combine(today, dt.time(shift_start_time))
+                this_dt = pytz.utc.localize(this_dt)
+                start_dt = pytz.utc.localize(start_dt)
+                if this_dt <= pytz.utc.localize(NOW):  # datetime.now():
+                    dpt_data.append(Attendance.get_manhours_during(start=start_dt,
+                                                                   stop=this_dt,
+                                                                   department=department)
+                                    )
+                else:
+                    dpt_data.append("")
+
+            shift.append(dpt_data)
+        return shift
+
     def get_context_data(self, **kwargs):
         # When during the hour should we do the headcount?
         context = super().get_context_data(**kwargs)
@@ -72,37 +109,16 @@ class HPV(TemplateView):
         today = datetime.today().date()
         START_TIME1 = 6
         START_TIME2 = 14
-        shift_1 = []
-        for department in departments:
-            dpt_data = [department]
-            for i in range(1,9):
-                this_dt = datetime.combine(today, dt.time(START_TIME1 + i))
-                if this_dt <= NOW:  # datetime.now():
-                    dpt_data.append(Attendance.get_active_at(active_time=this_dt,
-                                                             department=department)
-                                    )
-                else:
-                    dpt_data.append("")
-
-            shift_1.append(dpt_data)
-        shift_2 = []
-        for department in departments:
-            dpt_data = [department]
-            for i in range(1,9):
-                this_dt = datetime.combine(today, dt.time(START_TIME2 + i))
-                if this_dt <= NOW:  # datetime.now():
-                    dpt_data.append(Attendance.get_active_at(active_time=this_dt,
-                                                             department=department)
-                                    )
-                else:
-                    dpt_data.append("")
-            shift_2.append(dpt_data)
-
+        shift_1 = HPV._get_shift_history(departments, START_TIME1, today)
+        shift_2 = HPV._get_shift_history(departments, START_TIME2, today)
+        shift1_manhours = HPV._get_shift_manhour_history(departments, START_TIME1, today)
+        shift2_manhours = HPV._get_shift_manhour_history(departments, START_TIME2, today)
         day_total = Complete.claims_by_time(NOW)  # datetime.now())
         hour_delta = dt.timedelta(hours=1)
         hour_ago = NOW - hour_delta  # datetime.now() - hour_delta
         hour_total = day_total - Complete.claims_by_time(hour_ago)
         context.update({'shift_1': shift_1, 'shift_2': shift_2,
+                        "manhours_1": shift1_manhours, "manhours_2": shift2_manhours,
                         'hour_total': hour_total, 'day_total': day_total, 'time': NOW})
         return context
 

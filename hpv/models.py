@@ -20,12 +20,32 @@ class Attendance(models.Model):
     #     return "I'm Employee # {}".format(self.employee_num)
 
     @staticmethod
-    def get_manhours_during(start, stop):
-        # 1 find everyone clocked in at start
-        # 2 find everyone who clocks in between start and stop
-        # 3 find everyone who clocks out between start and stop
+    def get_manhours_during(start, stop=None, department='all', shift='all'):
+        if stop is None:
+            stop = datetime.datetime.now()
+        if shift == 'all':
+            this_shift = Attendance.objects.all()
+        else:
+            this_shift = Attendance.objects.filter(shift=shift)
+        if department == 'all' or department == 'plant':
+            in_department = this_shift
+        else:
+            in_department = this_shift.filter(department=department)
+        were_clocked_in = in_department.filter(clock_in_time__lt=start).exclude(clock_out_time__lt=start)
+        clocked_in_after_start = in_department.filter(clock_in_time__gte=start)
+        clocked_in_during = clocked_in_after_start.filter(clock_in_time__lt=stop)
+        clocked_out_after_start = in_department.filter(clock_out_time__gte=start)
+        clocked_out_during = clocked_out_after_start.filter(clock_out_time__lt=stop)
+        all_relevent = were_clocked_in | clocked_in_during | clocked_out_during
+        print('-'*50)
+        print(all_relevent.count())
+        manhours = 0
+        for employee in all_relevent:
+            begin = max(employee.clock_in_time, start)
+            end = min(employee.clock_out_time, stop)
+            manhours += ((end - begin).total_seconds())/3600
+        return manhours
 
-        pass
 
     @staticmethod
     def get_active_at(active_time=None, department='all', shift='all'):
