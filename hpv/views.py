@@ -103,8 +103,7 @@ class HPV(TemplateView):
         hour_ago = NOW - hour_delta  # datetime.now() - hour_delta
         hour_total = day_total - Complete.claims_by_time(hour_ago)
         context.update({'shift_1': shift_1, 'shift_2': shift_2,
-                        'hour_total': hour_total, 'day_total': day_total})
-
+                        'hour_total': hour_total, 'day_total': day_total, 'time': NOW})
         return context
 
 class Drip(TemplateView):

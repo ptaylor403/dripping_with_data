@@ -20,6 +20,14 @@ class Attendance(models.Model):
     #     return "I'm Employee # {}".format(self.employee_num)
 
     @staticmethod
+    def get_manhours_during(start, stop):
+        # 1 find everyone clocked in at start
+        # 2 find everyone who clocks in between start and stop
+        # 3 find everyone who clocks out between start and stop
+
+        pass
+
+    @staticmethod
     def get_active_at(active_time=None, department='all', shift='all'):
         if active_time is None:
             active_time = datetime.datetime.now()
