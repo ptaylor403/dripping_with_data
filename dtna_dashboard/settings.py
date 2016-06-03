@@ -30,10 +30,13 @@ USE_TZ = True
 
 USE_L10N = True
 
+LOGIN_REDIRECT_URL = "/"
+
 # Application definition
 
 INSTALLED_APPS = (
     'crys.apps.CrysConfig',
+    'get_data.apps.GetDataConfig',
     'hpv.apps.HpvConfig',
     'django.contrib.admin',
     'django.contrib.auth',
@@ -63,6 +66,7 @@ TEMPLATES = (
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
+                'hpv.context_processors.default',
                 'django.template.context_processors.debug',
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',

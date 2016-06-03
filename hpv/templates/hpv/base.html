@@ -1,0 +1,28 @@
+{% load staticfiles %}
+
+<!DOCTYPE html>
+<html>
+  <head>
+    <link rel="stylesheet" type="text/css" href="../static/css/style.css"/>
+    <meta charset="utf-8">
+    <title>DTNA</title>
+  </head>
+
+  <body>
+    {% if not user.is_authenticated %}
+    Please log in..</br>
+    <form action="{% url 'login' %}" method="post">
+      {% csrf_token %}
+      {{ form.as_p }}
+      <button type="submit" value="Login">Login</button>
+    </form>
+
+    {% endif %}
+
+    {% block content %}
+      {{ content }}
+    {% endblock %}
+
+  </body>
+
+</html>

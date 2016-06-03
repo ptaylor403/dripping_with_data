@@ -155,3 +155,18 @@ class Drip(TemplateView):
 
             context['lastTruck'] = "The last truck completed and added to the database was {} at {}".format(serial_number, completed)
         return render(request, self.template_name, context)
+
+
+class Login(TemplateView):
+    template_name = "hpv/index.html"
+
+    def login(self, request):
+        if request.method == 'POST':
+            return HttpResponseRedirect('/')
+
+class Logout(TemplateView):
+    template_name = "hpv/index.html"
+
+    def logout_view(self, request):
+        logout(request)
+        return HttpResponseRedirectredirect('/')
