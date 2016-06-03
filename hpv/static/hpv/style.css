@@ -2,14 +2,14 @@
   position: absolute;
   top: 80px;
   right: 250px;
-  width: 60px;
+  width: 100px;
 }
 
 #claim_hour{
   position: absolute;
-  top: 230px;
+  top: 270px;
   right: 250px;
-  width: 60px;
+  width: 100px;
 }
 
 table, tr, td{
@@ -48,5 +48,5 @@ td{
 #claim_title{
   position: absolute;
   top: 25px;
-  right: 243px;
+  right: 267px;
 }
