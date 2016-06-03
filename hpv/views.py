@@ -117,9 +117,14 @@ class HPV(TemplateView):
         hour_delta = dt.timedelta(hours=1)
         hour_ago = NOW - hour_delta  # datetime.now() - hour_delta
         hour_total = day_total - Complete.claims_by_time(hour_ago)
+        day_start = datetime.combine(today, dt.time(START_TIME1))
+        day_start = pytz.utc.localize(day_start)
+        day_man_hours = Attendance.get_manhours_during(start=day_start, stop=pytz.utc.localize(NOW))
+        day_HPV = day_man_hours / day_total
         context.update({'shift_1': shift_1, 'shift_2': shift_2,
                         "manhours_1": shift1_manhours, "manhours_2": shift2_manhours,
-                        'hour_total': hour_total, 'day_total': day_total, 'time': NOW})
+                        'hour_total': hour_total, 'day_total': day_total, 'time': NOW,
+                        "day_HPV": day_HPV})
         return context
 
 class Drip(TemplateView):
