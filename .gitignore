@@ -10,6 +10,7 @@ secrets.py
 
 # C extensions
 *.so
+secrets.py
 
 # Distribution / packaging
 .Python
