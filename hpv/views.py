@@ -66,7 +66,7 @@ class Drip(TemplateView):
 
     def get(self, request):
         context = {}
-        if request.GET.get('startDrip'):
+        if request.GET.get('dripRate'):
             serial_number = get_truck_serial()
             last_truck = Complete.objects.latest('completed')
             prev_time = last_truck.completed
@@ -82,7 +82,7 @@ class Drip(TemplateView):
                 day += 1
                 hour = 7
                 minute = random.randint(0, 6)
-            elif minute >= 48:
+            elif prev_time.minute >= 48:
                 hour = prev_time.hour + 1
                 minute = random.randint(0, 6)
 
