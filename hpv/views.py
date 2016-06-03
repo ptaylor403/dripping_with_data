@@ -5,7 +5,7 @@ from .data_sim import *
 from .models import Attendance, Complete
 import random
 
-NOW = datetime.now() + dt.timedelta(hours=12)
+NOW = datetime.now() + dt.timedelta(hours=0)
 
 class Load(TemplateView):
     template_name = "hpv/load.html"
@@ -75,7 +75,7 @@ class HPV(TemplateView):
         shift_1 = []
         for department in departments:
             dpt_data = [department]
-            for i in range(8):
+            for i in range(1,9):
                 this_dt = datetime.combine(today, dt.time(START_TIME1 + i))
                 if this_dt <= NOW:  # datetime.now():
                     dpt_data.append(Attendance.get_active_at(active_time=this_dt,
@@ -88,7 +88,7 @@ class HPV(TemplateView):
         shift_2 = []
         for department in departments:
             dpt_data = [department]
-            for i in range(8):
+            for i in range(1,9):
                 this_dt = datetime.combine(today, dt.time(START_TIME2 + i))
                 if this_dt <= NOW:  # datetime.now():
                     dpt_data.append(Attendance.get_active_at(active_time=this_dt,
@@ -103,8 +103,7 @@ class HPV(TemplateView):
         hour_ago = NOW - hour_delta  # datetime.now() - hour_delta
         hour_total = day_total - Complete.claims_by_time(hour_ago)
         context.update({'shift_1': shift_1, 'shift_2': shift_2,
-                        'hour_total': hour_total, 'day_total': day_total})
-
+                        'hour_total': hour_total, 'day_total': day_total, 'time': NOW})
         return context
 
 class Drip(TemplateView):
