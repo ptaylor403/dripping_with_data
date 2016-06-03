@@ -1,10 +1,11 @@
 from django.shortcuts import render
 from django.views.generic.base import TemplateView
-import datetime
+import datetime as dt
 from .data_sim import *
 from .models import Attendance, Complete
 import random
 
+NOW = datetime.now() + dt.timedelta(hours=12)
 
 class Load(TemplateView):
     template_name = "hpv/load.html"
@@ -62,19 +63,49 @@ class Load(TemplateView):
         return render(request, self.template_name, context)
 
 class HPV(TemplateView):
-    template_name = "hpv/hpv.html"
-    # print('object{}'.format(Attendance.objects.filter(clock_out_time=None)))
-    # print('PCH{}'.format(Attendance.objects.filter(department='PCH')))
+    template_name = "hpv/hpv2.html"
 
-    def get(self, request):
-        PCH = Attendance.get_active_at(active_time=datetime.utcnow(), department='PCH')
-        FCH = Attendance.get_active_at(department='FCH')
-        CIW = Attendance.get_active_at(department='CIW')
-        FCB = Attendance.get_active_at(department='FCB')
-        plant = Attendance.get_active_at()
-        context = {'PCH1': PCH, 'PCH2': PCH, 'FCH1': FCH, 'FCH2': FCH,
-                   'CIW1': CIW, 'CIW2': CIW, 'FCB1': FCB, 'FCB2': FCB,
-                   'PNT1': PNT, 'PNT2': PNT, 'plant1': plant, 'plant2': plant}
+    def get_context_data(self, **kwargs):
+        # When during the hour should we do the headcount?
+        context = super().get_context_data(**kwargs)
+        departments = ['FCH', 'CIW', 'FCB', 'PNT', 'PCH', 'plant']
+        today = datetime.today().date()
+        START_TIME1 = 6
+        START_TIME2 = 14
+        shift_1 = []
+        for department in departments:
+            dpt_data = [department]
+            for i in range(8):
+                this_dt = datetime.combine(today, dt.time(START_TIME1 + i))
+                if this_dt <= NOW:  # datetime.now():
+                    dpt_data.append(Attendance.get_active_at(active_time=this_dt,
+                                                             department=department)
+                                    )
+                else:
+                    dpt_data.append("")
+
+            shift_1.append(dpt_data)
+        shift_2 = []
+        for department in departments:
+            dpt_data = [department]
+            for i in range(8):
+                this_dt = datetime.combine(today, dt.time(START_TIME2 + i))
+                if this_dt <= NOW:  # datetime.now():
+                    dpt_data.append(Attendance.get_active_at(active_time=this_dt,
+                                                             department=department)
+                                    )
+                else:
+                    dpt_data.append("")
+            shift_2.append(dpt_data)
+
+        day_total = Complete.claims_by_time(NOW)  # datetime.now())
+        hour_delta = dt.timedelta(hours=1)
+        hour_ago = NOW - hour_delta  # datetime.now() - hour_delta
+        hour_total = day_total - Complete.claims_by_time(hour_ago)
+        context.update({'shift_1': shift_1, 'shift_2': shift_2,
+                        'hour_total': hour_total, 'day_total': day_total})
+
+        return context
 
 class Drip(TemplateView):
     template_name = "hpv/drip.html"

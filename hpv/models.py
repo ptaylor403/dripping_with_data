@@ -23,21 +23,16 @@ class Attendance(models.Model):
     def get_active_at(active_time=None, department='all', shift='all'):
         if active_time is None:
             active_time = datetime.datetime.now()
-            print("was none")
         if shift == 'all':
             this_shift = Attendance.objects.all()
         else:
             this_shift = Attendance.objects.filter(shift=shift)
-        if department == 'all':
+        if department == 'all' or department == 'plant':
             in_department = this_shift
         else:
             in_department = this_shift.filter(department=department)
-        print(active_time)
-        print("in dept: ", in_department.count())
         have_clocked_in = in_department.filter(clock_in_time__lt=active_time)
-        print("clocked in: ", have_clocked_in.count())
         not_clocked_out_yet = have_clocked_in.filter(clock_out_time__gt=active_time)
-        print("not clocked out: ", not_clocked_out_yet.count())
         never_clocked_out = have_clocked_in.filter(clock_out_time=None)
         not_clocked_out = not_clocked_out_yet | never_clocked_out
         return not_clocked_out.count()
@@ -59,3 +54,9 @@ class Attendance(models.Model):
 class Complete(models.Model):
     serial_number = models.CharField(max_length=10)
     completed = models.DateTimeField()
+
+    @staticmethod
+    def claims_by_time(time_in_question):
+        day = time_in_question.date()
+        return Complete.objects.filter(completed__gt=datetime.datetime.combine(day,
+                datetime.time(0))).filter(completed__lt=time_in_question).count()
