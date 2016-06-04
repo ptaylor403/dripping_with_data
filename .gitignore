@@ -4,9 +4,9 @@ __pycache__/
 *$py.class
 .envrc
 .direnv/
-<<<<<<< HEAD
 secrets.py
 .env
+**/migrations/
 
 # C extensions
 *.so
