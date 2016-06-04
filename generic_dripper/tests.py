@@ -5,7 +5,7 @@ import datetime as dt
 import pytz
 
 
-class test_dripper_load(TestCase):
+class test_dripper_load_one(TestCase):
     time1 = dt.datetime.now(pytz.utc)
 
     def setUp(self):
@@ -18,6 +18,27 @@ class test_dripper_load(TestCase):
             assert(entry.serial_number == "1")
             assert(entry.completed == self.time1)
             assert(entry.create_at == self.time1)
+
+
+class test_dripper_load_many(TestCase):
+    time1 = dt.datetime.now(pytz.utc)
+    times = []
+    for i in range(10):
+        times.append(time1 + dt.timedelta(hours=i))
+    serial_numbers = [str(x) for x in range(1, 11)]
+
+    def setUp(self):
+        for time, serial_number in zip(self.times, self.serial_numbers):
+            Complete.objects.create(serial_number=serial_number,
+                                    completed=time)
+
+    def test_load(self):
+        CompleteDripper.load_from_Complete()
+        assert(CompleteDripper.objects.count() == len(self.times))
+        for i, entry in enumerate(CompleteDripper.objects.all()):
+            assert(entry.serial_number == self.serial_numbers[i])
+            assert(entry.completed == self.times[i])
+            assert(entry.create_at == self.times[i])
 
 
 class test_dripper_one_drip(TestCase):
@@ -54,7 +75,9 @@ class test_dripper_drips(TestCase):
         for i, t in enumerate(self.times):
             CompleteDripper.create_on_Complete(last_time, t)
             assert(Complete.objects.count() == i+1)
-            for entry, time, serial_number in zip(Complete.objects.all(), self.times[:i], self.serial_numbers[:i]):
+            for entry, time, serial_number in zip(Complete.objects.all(),
+                                                  self.times[:i],
+                                                  self.serial_numbers[:i]):
                 assert(entry.serial_number == serial_number)
                 assert(entry.completed == time)
             last_time = t
@@ -66,7 +89,9 @@ class test_dripper_drips(TestCase):
                 continue
             CompleteDripper.create_on_Complete(last_time, t)
             assert(Complete.objects.count() == i+1)
-            for entry, time, serial_number in zip(Complete.objects.all(), self.times[:i], self.serial_numbers[:i]):
+            for entry, time, serial_number in zip(Complete.objects.all(),
+                                                  self.times[:i],
+                                                  self.serial_numbers[:i]):
                 assert(entry.serial_number == serial_number)
                 assert(entry.completed == time)
             last_time = t
@@ -82,7 +107,9 @@ class test_dripper_drips(TestCase):
                     small_t = t
                 CompleteDripper.create_on_Complete(last_time, small_t)
                 assert(Complete.objects.count() == k)
-                for entry, time, serial_number in zip(Complete.objects.all(), self.times[:k], self.serial_numbers[:k]):
+                for entry, time, serial_number in zip(Complete.objects.all(),
+                                                      self.times[:k],
+                                                      self.serial_numbers[:k]):
                     assert(entry.serial_number == serial_number)
                     assert(entry.completed == time)
                 last_time = small_t
