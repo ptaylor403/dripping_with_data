@@ -6,13 +6,14 @@ from .models import Attendance, Complete
 import random
 import pytz
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib.auth import logout
 
 
 NOW = datetime.now() + dt.timedelta(hours=0)
 
 class Load(LoginRequiredMixin, TemplateView):
     template_name = "hpv/load.html"
-    login_url = '/hpv/load'
+    login_url = '/login/'
 
     def get(self, request):
         context = {}
@@ -68,7 +69,7 @@ class Load(LoginRequiredMixin, TemplateView):
 
 class HPV(LoginRequiredMixin, TemplateView):
     template_name = "hpv/hpv2.html"
-    login_url = '/hpv/'
+    login_url = '/login/'
 
     def _get_shift_history(departments, shift_start_time, today):
         shift = []
@@ -131,8 +132,10 @@ class HPV(LoginRequiredMixin, TemplateView):
                         "day_HPV": day_HPV})
         return context
 
-class Drip(TemplateView):
+class Drip(LoginRequiredMixin, TemplateView):
     template_name = "hpv/drip.html"
+    login_url = '/login/'
+    redirect_field_name = '/drip/'
 
     def get(self, request):
         context = {}
@@ -161,16 +164,6 @@ class Drip(TemplateView):
         return render(request, self.template_name, context)
 
 
-class Login(TemplateView):
-    template_name = "hpv/hpv2.html"
-
-    def login(self, request):
-        if request.method == 'POST':
-            return HttpResponseRedirect('/')
-
-
-class Logout(TemplateView):
-    template_name = "hpv/logout.html"
-    def logout(self, request):
-        logout(request)
-        return HttpResponseRedirect('/hpv/')
+def logout(request):
+    logout(request)
+    return HttpResponseRedirect('/')

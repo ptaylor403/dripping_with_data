@@ -32,7 +32,7 @@ USE_TZ = True
 
 USE_L10N = True
 
-LOGIN_REDIRECT_URL = "/hpv"
+LOGIN_REDIRECT_URL = "/hpv/"
 
 # Application definition
 

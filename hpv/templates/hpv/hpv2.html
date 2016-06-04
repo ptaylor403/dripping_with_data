@@ -10,7 +10,6 @@
     </head>
     <body>
       {% block content %}
-      {% if user.is_authenticated %}
       <p>
         {{time}}
       </p>
@@ -130,7 +129,6 @@
           </tr>
         {% endfor %}
       </table>
-      {% endif %}
       {% endblock %}
     </body>
 </html>
