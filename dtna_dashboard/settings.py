@@ -86,9 +86,7 @@ WSGI_APPLICATION = 'dtna_dashboard.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/1.9/ref/settings/#databases
 
-<<<<<<< HEAD
 
-=======
 # DATABASES = {
 #     'default': {
 #         'ENGINE': 'django.db.backends.postgresql',
@@ -99,7 +97,7 @@ WSGI_APPLICATION = 'dtna_dashboard.wsgi.application'
 #         'PORT': '5432',
 #     }
 # }
->>>>>>> division_csv
+
 
 AUTH_PASSWORD_VALIDATORS = (
     {
