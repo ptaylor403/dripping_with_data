@@ -40,6 +40,7 @@ INSTALLED_APPS = (
     'crys.apps.CrysConfig',
     'get_data.apps.GetDataConfig',
     'hpv.apps.HpvConfig',
+    'plantsettings.apps.PlantsettingsConfig',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
