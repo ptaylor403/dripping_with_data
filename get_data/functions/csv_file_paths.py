@@ -1,0 +1,6 @@
+clock_in_out_csv = '/Users/Nic/TIY/customer-dtna/data/emp+item+punch.csv'
+direct_run_csv = '/Users/Nic/TIY/customer-dtna/data/Direct_Run.csv'
+item_shortages_csv = '/Users/Nic/TIY/customer-dtna/data/ITMSHORT(shortages).csv'
+crys_csv = '/Users/Nic/TIY/customer-dtna/data/QAVHITDS(crys).csv'
+shopcalls_csv = '/Users/Nic/TIY/customer-dtna/data/Shopcalls.csv'
+plant_activty_csv = '/Users/Nic/TIY/customer-dtna/data/SV_PLANT_ACTY_DTL(Claims).csv'
