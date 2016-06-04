@@ -37,6 +37,7 @@ LOGIN_REDIRECT_URL = "/"
 # Application definition
 
 INSTALLED_APPS = (
+    'generic_dripper.apps.GenericDripperConfig',
     'crys.apps.CrysConfig',
     'get_data.apps.GetDataConfig',
     'hpv.apps.HpvConfig',
