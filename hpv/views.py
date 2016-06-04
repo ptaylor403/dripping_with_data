@@ -7,7 +7,7 @@ import random
 import pytz
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth import logout
-
+from django.http import HttpResponseRedirect
 
 NOW = datetime.now() + dt.timedelta(hours=0)
 
@@ -135,7 +135,6 @@ class HPV(LoginRequiredMixin, TemplateView):
 class Drip(LoginRequiredMixin, TemplateView):
     template_name = "hpv/drip.html"
     login_url = '/login/'
-    redirect_field_name = '/drip/'
 
     def get(self, request):
         context = {}
@@ -164,6 +163,6 @@ class Drip(LoginRequiredMixin, TemplateView):
         return render(request, self.template_name, context)
 
 
-def logout(request):
+def logout_view(request):
     logout(request)
-    return HttpResponseRedirect('/')
+    return render(request, 'registration/logout.html')

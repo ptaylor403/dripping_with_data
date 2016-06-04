@@ -1,6 +1,7 @@
 {% load staticfiles %}
 
 {%block content%}
+Please sign in for access
 <form action="{% url 'login' %}" method="post" id="login-form">{% csrf_token %}
   <div class="form-row">
     {{ form.username.errors }}
