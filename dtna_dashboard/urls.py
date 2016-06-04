@@ -3,7 +3,7 @@ from django.contrib import admin
 
 urlpatterns = [
     url(r'^admin/', include(admin.site.urls)),
-    url(r'^hpv/', include('hpv.urls')),
-    url(r'^getdata/', include('get_data.urls')),
+    url(r'^', include('hpv.urls')),
     url(r'^', include('django.contrib.auth.urls')),
+    url(r'^getdata/', include('get_data.urls')),
 ]
