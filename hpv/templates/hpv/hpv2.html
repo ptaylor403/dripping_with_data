@@ -1,3 +1,6 @@
+{% extends 'hpv/base.html' %}
+{% load staticfiles %}
+
 <!DOCTYPE html>
 <html>
     <head>
@@ -6,6 +9,8 @@
         <title>HPV Data</title>
     </head>
     <body>
+      {% block content %}
+      {% if user.is_authenticated %}
       <p>
         {{time}}
       </p>
@@ -125,5 +130,7 @@
           </tr>
         {% endfor %}
       </table>
+      {% endif %}
+      {% endblock %}
     </body>
 </html>
