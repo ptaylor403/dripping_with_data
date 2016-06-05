@@ -153,7 +153,12 @@ class HPV(LoginRequiredMixin, TemplateView):
         start_time2 = datetime.combine(today, dt.time(START_TIME2))
         hpv_data = HPV._get_department_hpv(departments, start_time1, start_time2, NOW)
 
-        last_hpv = HPVATM.objects.latest('timestamp')
+        last_hpv = 0
+        try:
+            last_hpv = HPVATM.objects.latest('timestamp')
+        except:
+            HPVATM.objects.create(hpv_plant=day_HPV)
+
         if (pytz.utc.localize(dt.datetime.now()) - last_hpv.timestamp) > dt.timedelta(minutes=5):
             HPVATM.objects.create(hpv_plant=day_HPV)
 
