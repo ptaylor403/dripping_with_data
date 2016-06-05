@@ -8,6 +8,7 @@ This model is intended to hold
 all model data for the raw CSV dumps.
 """
 
+
 class RawClockData(models.Model):
     PRSN_NBR_TXT = models.CharField(max_length=100)
     full_nam = models.TextField()

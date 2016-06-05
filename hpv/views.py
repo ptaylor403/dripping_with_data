@@ -68,6 +68,7 @@ class Load(LoginRequiredMixin, TemplateView):
 
         return render(request, self.template_name, context)
 
+
 class HPV(LoginRequiredMixin, TemplateView):
     template_name = "hpv/hpv2.html"
     login_url = '/login/'
@@ -79,9 +80,7 @@ class HPV(LoginRequiredMixin, TemplateView):
             for i in range(1,9):
                 this_dt = datetime.combine(today, dt.time(shift_start_time + i))
                 if this_dt <= NOW:  # datetime.now():
-                    dpt_data.append(Attendance.get_active_at(active_time=this_dt,
-                                                             department=department)
-                                    )
+                    dpt_data.append(Attendance.get_active_at(active_time=this_dt,department=department))
                 else:
                     dpt_data.append("")
 
@@ -98,10 +97,7 @@ class HPV(LoginRequiredMixin, TemplateView):
                 this_dt = pytz.utc.localize(this_dt)
                 start_dt = pytz.utc.localize(start_dt)
                 if this_dt <= pytz.utc.localize(NOW):  # datetime.now():
-                    dpt_data.append(Attendance.get_manhours_during(start=start_dt,
-                                                                   stop=this_dt,
-                                                                   department=department)
-                                    )
+                    dpt_data.append(Attendance.get_manhours_during(start=start_dt, stop=this_dt, department=department))
                 else:
                     dpt_data.append("")
 
@@ -126,9 +122,7 @@ class HPV(LoginRequiredMixin, TemplateView):
                 this_dt = pytz.utc.localize(this_dt)
                 start_dt = pytz.utc.localize(start_dt)
                 if this_dt <= pytz.utc.localize(end_time):  # datetime.now():
-                    dept_manhours = Attendance.get_manhours_during(start=start_dt,
-                                                                   stop=this_dt,
-                                                                   department=department)
+                    dept_manhours = Attendance.get_manhours_during(start=start_dt, stop=this_dt, department=department)
                     department_hpv.append(dept_manhours / truck_total)
                 else:
                     department_hpv.append('')
@@ -164,6 +158,7 @@ class HPV(LoginRequiredMixin, TemplateView):
                         'hour_total': hour_total, 'day_total': day_total, 'time': NOW,
                         "day_HPV": day_HPV, 'hpv_data': hpv_data})
         return context
+
 
 class Drip(LoginRequiredMixin, TemplateView):
     template_name = "hpv/drip.html"
