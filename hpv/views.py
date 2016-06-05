@@ -5,11 +5,15 @@ from .data_sim import *
 from .models import Attendance, Complete
 import random
 import pytz
+from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib.auth import logout
+from django.http import HttpResponseRedirect
 
 NOW = datetime.now() + dt.timedelta(hours=0)
 
-class Load(TemplateView):
+class Load(LoginRequiredMixin, TemplateView):
     template_name = "hpv/load.html"
+    login_url = '/login/'
 
     def get(self, request):
         context = {}
@@ -63,8 +67,9 @@ class Load(TemplateView):
 
         return render(request, self.template_name, context)
 
-class HPV(TemplateView):
+class HPV(LoginRequiredMixin, TemplateView):
     template_name = "hpv/hpv2.html"
+    login_url = '/login/'
 
     def _get_shift_history(departments, shift_start_time, today):
         shift = []
@@ -159,8 +164,9 @@ class HPV(TemplateView):
                         "day_HPV": day_HPV, 'hpv_data': hpv_data})
         return context
 
-class Drip(TemplateView):
+class Drip(LoginRequiredMixin, TemplateView):
     template_name = "hpv/drip.html"
+    login_url = '/login/'
 
     def get(self, request):
         context = {}
@@ -187,3 +193,8 @@ class Drip(TemplateView):
 
             context['lastTruck'] = "The last truck completed and added to the database was {} at {}".format(serial_number, completed)
         return render(request, self.template_name, context)
+
+
+def logout_view(request):
+    logout(request)
+    return render(request, 'registration/logout.html')

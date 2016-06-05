@@ -1,0 +1,9 @@
+{% extends 'hpv/base.html' %}
+<!-- {% load staticfiles %} -->
+{% block content %}
+
+  {% if request.user.is_authenticated %}
+    ~!~!~~!~you're logged in as {{request.user.username}} <a href="/logout" title="Log out">logout</a>
+  {% endif %}
+
+{% endblock %}
