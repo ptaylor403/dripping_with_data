@@ -90,3 +90,27 @@ class CompleteDripper(models.Model):
         else:
             stop = args[0]
         cls.last_drip = stop
+
+
+class CombinedDripper:
+    drippers = []
+
+    def __init__(self, start_time, time_step=dt.timedelta(minutes=5)):
+        self.simulated_time = start_time
+        self.time_step = time_step
+
+    def add_dripper(self, dripper):
+        if dripper not in self.drippers:
+            self.drippers.append(dripper)
+
+    def update_to(self, new_time):
+        for dripper in self.drippers:
+            dripper.update_target(new_time)
+        self.simulated_time = new_time
+
+    def update_by(self, time_step):
+        new_time = self.simulated_time + time_step
+        self.update_to(new_time)
+
+    def update(self):
+        self.update_by(self.time_step)
