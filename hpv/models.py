@@ -27,7 +27,7 @@ class Attendance(models.Model):
             this_shift = Attendance.objects.all()
         else:
             this_shift = Attendance.objects.filter(shift=shift)
-        if department == 'all' or department == 'plant':
+        if department == 'all' or department == 'Plant':
             in_department = this_shift
         else:
             in_department = this_shift.filter(department=department)
@@ -42,7 +42,10 @@ class Attendance(models.Model):
         manhours = 0
         for employee in all_relevent:
             begin = max(employee.clock_in_time, start)
-            end = min(employee.clock_out_time, stop)
+            if employee.clock_out_time == None:
+                end = stop
+            else:
+                end = min(employee.clock_out_time, stop)
             manhours += ((end - begin).total_seconds())/3600
         return manhours
 
@@ -55,7 +58,7 @@ class Attendance(models.Model):
             this_shift = Attendance.objects.all()
         else:
             this_shift = Attendance.objects.filter(shift=shift)
-        if department == 'all' or department == 'plant':
+        if department == 'all' or department == 'Plant':
             in_department = this_shift
         else:
             in_department = this_shift.filter(department=department)

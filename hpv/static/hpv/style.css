@@ -1,3 +1,10 @@
+/*Container/Body*/
+.container{
+  margin-top: 60px;
+}
+
+/*Table*/
+
 #claim_day{
   position: absolute;
   top: 80px;
