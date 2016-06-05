@@ -72,6 +72,7 @@ class RawClockData(models.Model):
         return man_hours
 
     def currently_clocked_in(self):
+        pass
 
 class RawDirectRunData(models.Model):
     VEH_SER_NO = models.CharField(max_length=6)

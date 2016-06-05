@@ -3,6 +3,7 @@ from django.views.generic.base import TemplateView
 import datetime as dt
 from .data_sim import *
 from .models import Attendance, Complete
+from api.models import HPVATM
 import random
 import pytz
 from django.contrib.auth.mixins import LoginRequiredMixin
@@ -152,6 +153,9 @@ class HPV(LoginRequiredMixin, TemplateView):
         start_time2 = datetime.combine(today, dt.time(START_TIME2))
         hpv_data = HPV._get_department_hpv(departments, start_time1, start_time2, NOW)
 
+        last_hpv = HPVATM.objects.latest('timestamp')
+        if (last_hpv.timestamp - pytz.utc.localize(dt.datetime.now())) > dt.timedelta(minutes=5):
+            HPVATM.objects.create(hpv_plant=day_HPV)
 
         context.update({'shift_1': shift_1, 'shift_2': shift_2,
                         "manhours_1": shift1_manhours, "manhours_2": shift2_manhours,
