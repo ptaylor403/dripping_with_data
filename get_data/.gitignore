@@ -1,4 +1,4 @@
 /migrations/*
 
 #hide csv paths
-#functions/csv_file_paths.py
+functions/csv_file_paths.py

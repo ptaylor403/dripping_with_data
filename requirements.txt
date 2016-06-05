@@ -4,3 +4,6 @@ gunicorn==19.4.5
 psycopg2==2.6.1
 whitenoise==2.0.6
 pytz==2016.4
+djangorestframework==3.3.3
+Markdown==2.6.6
+django-filter==0.13.0
