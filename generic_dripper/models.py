@@ -1,6 +1,8 @@
 from django.db import models
 from hpv.models import Attendance, Complete
-# from crys.models import
+import datetime as dt
+import pytz
+from get_data.models import *
 
 
 class AttendanceDripper(models.Model):
@@ -12,6 +14,7 @@ class AttendanceDripper(models.Model):
     create_at = models.DateTimeField()
     edit_1_at = models.DateTimeField(null=True)
     target = Attendance
+    last_drip = dt.datetime(1, 1, 1, 0, 0, tzinfo=pytz.utc)
 
 # Model._meta.get_all_field_names()
 
@@ -27,8 +30,8 @@ class AttendanceDripper(models.Model):
                                              edit_1_at=entry.clock_out_time)
 
     @classmethod
-    def create_on_target(cls, start, stop):
-        relevant = cls.objects.filter(create_at__gt=start)
+    def _create_on_target(cls, stop):
+        relevant = cls.objects.filter(create_at__gt=cls.last_drip)
         relevant = relevant.filter(create_at__lte=stop)
         for entry in relevant.order_by('pk'):
             cls.target.objects.create(employee_number=entry.employee_number,
@@ -38,8 +41,8 @@ class AttendanceDripper(models.Model):
                                       shift=entry.shift,)
 
     @classmethod
-    def edit_1_on_target(cls, start, stop):
-        relevant = cls.objects.filter(edit_1_at__gt=start)
+    def _edit_1_on_target(cls, stop):
+        relevant = cls.objects.filter(edit_1_at__gt=cls.last_drip)
         relevant = relevant.filter(edit_1_at__lte=stop)
         for entry in relevant.order_by('pk'):
             cls.target.objects.filter(employee_number=entry.employee_number,
@@ -48,8 +51,13 @@ class AttendanceDripper(models.Model):
 
     @classmethod
     def update_target(cls, *args, **kwargs):
-        cls.create_on_target(*args, **kwargs)
-        cls.edit_1_on_target(*args, **kwargs)
+        cls._create_on_target(*args, **kwargs)
+        cls._edit_1_on_target(*args, **kwargs)
+        if "stop" in kwargs:
+            stop = kwargs['stop']
+        else:
+            stop = args[0]
+        cls.last_drip = stop
 
 
 class CompleteDripper(models.Model):
@@ -57,6 +65,7 @@ class CompleteDripper(models.Model):
     completed = models.DateTimeField()
     create_at = models.DateTimeField()
     target = Complete
+    last_drip = dt.datetime(1, 1, 1, 0, 0, tzinfo=pytz.utc)
 
     @classmethod
     def load_from_target(cls):
@@ -66,9 +75,18 @@ class CompleteDripper(models.Model):
                                create_at=entry.completed)
 
     @classmethod
-    def create_on_target(cls, start, stop):
-        relevant = cls.objects.filter(create_at__gt=start)
+    def _create_on_target(cls, stop):
+        relevant = cls.objects.filter(create_at__gt=cls.last_drip)
         relevant = relevant.filter(create_at__lte=stop)
         for entry in relevant.order_by('pk'):
             cls.target.objects.create(serial_number=entry.serial_number,
                                       completed=entry.completed)
+
+    @classmethod
+    def update_target(cls, *args, **kwargs):
+        cls._create_on_target(*args, **kwargs)
+        if "stop" in kwargs:
+            stop = kwargs['stop']
+        else:
+            stop = args[0]
+        cls.last_drip = stop

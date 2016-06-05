@@ -47,12 +47,12 @@ class test_dripper_one_drip(TestCase):
     def setUp(self):
         CompleteDripper.objects.create(serial_number="1", completed=self.time1,
                                        create_at=self.time1)
+        CompleteDripper.last_drip = dt.datetime(1, 1, 1, 0, 0, tzinfo=pytz.utc)
 
     def test_one_drip(self):
         one_hour = dt.timedelta(hours=1)
-        CompleteDripper.create_on_target(self.time1 - one_hour,
-                                         self.time1 + one_hour)
-        assert(Complete.objects.count() == 1)
+        CompleteDripper.update_target(self.time1 + one_hour)
+        self.assertEqual(Complete.objects.count(), 1)
         for entry in Complete.objects.all():
             assert(entry.serial_number == "1")
             assert(entry.completed == self.time1)
@@ -69,32 +69,29 @@ class test_dripper_drips(TestCase):
         for time, serial_number in zip(self.times, self.serial_numbers):
             CompleteDripper.objects.create(serial_number=serial_number,
                                            completed=time, create_at=time)
+        CompleteDripper.last_drip = dt.datetime(1, 1, 1, 0, 0, tzinfo=pytz.utc)
 
     def test_small_drips(self):
-        last_time = self.time1 - dt.timedelta(hours=1)
         for i, t in enumerate(self.times):
-            CompleteDripper.create_on_target(last_time, t)
+            CompleteDripper.update_target(t)
             assert(Complete.objects.count() == i+1)
             for entry, time, serial_number in zip(Complete.objects.all(),
                                                   self.times[:i],
                                                   self.serial_numbers[:i]):
                 assert(entry.serial_number == serial_number)
                 assert(entry.completed == time)
-            last_time = t
 
     def test_big_drips(self):
-        last_time = self.time1 - dt.timedelta(hours=1)
         for i, t in enumerate(self.times):
             if i != len(self.times)-1 and i % 2 == 0:
                 continue
-            CompleteDripper.create_on_target(last_time, t)
+            CompleteDripper.update_target(t)
             assert(Complete.objects.count() == i+1)
             for entry, time, serial_number in zip(Complete.objects.all(),
                                                   self.times[:i],
                                                   self.serial_numbers[:i]):
                 assert(entry.serial_number == serial_number)
                 assert(entry.completed == time)
-            last_time = t
 
     def test_very_small_drips(self):
         last_time = self.time1 - dt.timedelta(hours=1)
@@ -105,7 +102,7 @@ class test_dripper_drips(TestCase):
                     small_t = last_time + ((t - last_time) / 2)
                 else:
                     small_t = t
-                CompleteDripper.create_on_target(last_time, small_t)
+                CompleteDripper.update_target(small_t)
                 assert(Complete.objects.count() == k)
                 for entry, time, serial_number in zip(Complete.objects.all(),
                                                       self.times[:k],
@@ -145,9 +142,8 @@ class test_editing_dripper(TestCase):
         # print("out:   ", ['none' if x is None else '{}:{}'.format(x.hour, x.minute) for x in self.out_times])
 
     def test_drips(self):
-        last_time = self.tick_times[0] - dt.timedelta(hours=1)
         for i, t in enumerate(self.tick_times):
-            AttendanceDripper.update_target(last_time, t)
+            AttendanceDripper.update_target(t)
             self.assertEqual(Attendance.objects.count(), AttendanceDripper.objects.filter(create_at__lte=t).count())
             for entry, in_time, out_time, employee_number in zip(Attendance.objects.order_by('pk'),
                                                                  self.in_times,
@@ -159,4 +155,3 @@ class test_editing_dripper(TestCase):
                     self.assertIsNone(entry.clock_out_time)
                 else:
                     self.assertEqual(entry.clock_out_time, out_time)
-            last_time = t
