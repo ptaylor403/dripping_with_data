@@ -2,6 +2,8 @@ from django.db import models
 from .functions.process_raw_csv_data import *
 from .functions.csv_file_paths import *
 
+from datetime import datetime
+
 
 """
 This model is intended to hold
@@ -12,9 +14,9 @@ class RawClockData(models.Model):
     PRSN_NBR_TXT = models.CharField(max_length=100)
     full_nam = models.TextField()
     HM_LBRACCT_FULL_NAM = models.TextField()
-    start_rsn_txt = models.CharField(max_length=100)
+    start_rsn_txt = models.CharField(max_length=100, blank=True)
     PNCHEVNT_IN = models.DateTimeField(null=True, blank=True)
-    end_rsn_txt = models.CharField(max_length=100)
+    end_rsn_txt = models.CharField(max_length=100, blank=True)
     PNCHEVNT_OUT = models.DateTimeField(null=True, blank=True)
 
     @staticmethod
@@ -34,6 +36,41 @@ class RawClockData(models.Model):
             created_row.save()
         print("LOADED Raw Clock Data Row")
 
+    @staticmethod
+    def get_plant_manhours_atm(start, stop=None):
+        """
+
+        :param start: a filter based on when you want to start analyzing manhours
+        :param stop:  a filter based on when you want to stop analyzing manhours
+        :return: Man_hours based on employees in and out during the given time
+            frame
+        """
+        if stop is None:
+            stop = datetime.now()
+        # Filters employees who are clocked in, but not out
+        currently_clocked_in = RawClockData.objects.filter(PNCEVENT_IN__lte=datetime.date(start)).exclude(PNCHEVNT_OUT__lt=start)
+        # Filtering employees who came in after the start of this shift
+        clocked_in_after_start = RawClockData.objects.filter(PNCEVENT_IN__gt=datetime.date(start))
+        # Filtering employees who clocked out after the start
+        clocked_out_after_start = currently_clocked_in.objects.filter(PNCHEVNT_OUT__gt=start)
+        # Filtering employees who didn't clock out after timeframe
+        clocked_out_during_time_period = clocked_out_after_start.filter(PNCHEVNT_OUT__lt=stop)
+        # creates a query set of the filters objects
+        all_relevent = currently_clocked_in | clocked_in_after_start | clocked_out_during_time_period
+        print('-' * 50)
+        print(all_relevent.count())
+
+        #Performing actual calculations on man_hours
+        man_hours = 0
+        for employee in all_relevent:
+            begin = max(employee.PNCHEVNT_IN, start)
+            end = min(employee.PNCHEVNT_OUT, stop)
+            man_hours += ((end - begin).total_seconds()) / 3600
+            print('-' * 50)
+            print('MANHOURS =', man_hours)
+        return man_hours
+
+    def currently_clocked_in(self):
 
 class RawDirectRunData(models.Model):
     VEH_SER_NO = models.CharField(max_length=6)
