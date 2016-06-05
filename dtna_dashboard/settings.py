@@ -87,16 +87,16 @@ WSGI_APPLICATION = 'dtna_dashboard.wsgi.application'
 # https://docs.djangoproject.com/en/1.9/ref/settings/#databases
 
 
-# DATABASES = {
-#     'default': {
+DATABASES = {
+    'default': {
 #         'ENGINE': 'django.db.backends.postgresql',
 #         'NAME': 'dtna_dashboard',
 #         'USER': 'SomeOne',
 #         'PASSWORD': '',
 #         'HOST': '127.0.0.1',
 #         'PORT': '5432',
-#     }
-# }
+    }
+}
 
 
 AUTH_PASSWORD_VALIDATORS = (

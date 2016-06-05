@@ -1,6 +1,7 @@
 from django.db import models
 import datetime
 
+
 class Attendance(models.Model):
     employee_number = models.IntegerField()
     department = models.CharField(max_length=16)
@@ -78,6 +79,7 @@ class Attendance(models.Model):
                 return True
             else:
                 return False
+
 
 class Complete(models.Model):
     serial_number = models.CharField(max_length=10)

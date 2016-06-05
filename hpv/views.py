@@ -11,6 +11,7 @@ from django.http import HttpResponseRedirect
 
 NOW = datetime.now() + dt.timedelta(hours=0)
 
+
 class Load(LoginRequiredMixin, TemplateView):
     template_name = "hpv/load.html"
     login_url = '/login/'
