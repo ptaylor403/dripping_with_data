@@ -1,6 +1,6 @@
 from django.test import TestCase
-from .models import CompleteDripper
-from hpv.models import Complete
+from .models import CompleteDripper, AttendanceDripper
+from hpv.models import Complete, Attendance
 import datetime as dt
 import pytz
 
@@ -12,7 +12,7 @@ class test_dripper_load_one(TestCase):
         Complete.objects.create(serial_number="1", completed=self.time1)
 
     def test_load(self):
-        CompleteDripper.load_from_Complete()
+        CompleteDripper.load_from_target()
         assert(CompleteDripper.objects.count() == 1)
         for entry in CompleteDripper.objects.all():
             assert(entry.serial_number == "1")
@@ -33,7 +33,7 @@ class test_dripper_load_many(TestCase):
                                     completed=time)
 
     def test_load(self):
-        CompleteDripper.load_from_Complete()
+        CompleteDripper.load_from_target()
         assert(CompleteDripper.objects.count() == len(self.times))
         for i, entry in enumerate(CompleteDripper.objects.all()):
             assert(entry.serial_number == self.serial_numbers[i])
@@ -50,8 +50,8 @@ class test_dripper_one_drip(TestCase):
 
     def test_one_drip(self):
         one_hour = dt.timedelta(hours=1)
-        CompleteDripper.create_on_Complete(self.time1 - one_hour,
-                                           self.time1 + one_hour)
+        CompleteDripper.create_on_target(self.time1 - one_hour,
+                                         self.time1 + one_hour)
         assert(Complete.objects.count() == 1)
         for entry in Complete.objects.all():
             assert(entry.serial_number == "1")
@@ -73,7 +73,7 @@ class test_dripper_drips(TestCase):
     def test_small_drips(self):
         last_time = self.time1 - dt.timedelta(hours=1)
         for i, t in enumerate(self.times):
-            CompleteDripper.create_on_Complete(last_time, t)
+            CompleteDripper.create_on_target(last_time, t)
             assert(Complete.objects.count() == i+1)
             for entry, time, serial_number in zip(Complete.objects.all(),
                                                   self.times[:i],
@@ -87,7 +87,7 @@ class test_dripper_drips(TestCase):
         for i, t in enumerate(self.times):
             if i != len(self.times)-1 and i % 2 == 0:
                 continue
-            CompleteDripper.create_on_Complete(last_time, t)
+            CompleteDripper.create_on_target(last_time, t)
             assert(Complete.objects.count() == i+1)
             for entry, time, serial_number in zip(Complete.objects.all(),
                                                   self.times[:i],
@@ -105,7 +105,7 @@ class test_dripper_drips(TestCase):
                     small_t = last_time + ((t - last_time) / 2)
                 else:
                     small_t = t
-                CompleteDripper.create_on_Complete(last_time, small_t)
+                CompleteDripper.create_on_target(last_time, small_t)
                 assert(Complete.objects.count() == k)
                 for entry, time, serial_number in zip(Complete.objects.all(),
                                                       self.times[:k],
@@ -113,3 +113,50 @@ class test_dripper_drips(TestCase):
                     assert(entry.serial_number == serial_number)
                     assert(entry.completed == time)
                 last_time = small_t
+
+
+class test_editing_dripper(TestCase):
+    time1 = dt.datetime.now(pytz.utc)
+    tick_times = []
+    for i in range(10):
+        tick_times.append(time1 + dt.timedelta(hours=i))
+    in_times = []
+    for i in range(5):
+        in_times.append(time1 + dt.timedelta(minutes=i, hours=i))
+        in_times.append(time1 + dt.timedelta(hours=i, minutes=i+30))
+    in_times.sort()
+    out_times = []
+    for i in range(5):
+        out_times.append(in_times[i]+dt.timedelta(hours=i))
+        out_times.append(None)
+    employee_numbers = range(1, 11)
+
+    def setUp(self):
+        for in_time, out_time, employee_number in zip(self.in_times,
+                                                      self.out_times,
+                                                      self.employee_numbers):
+            AttendanceDripper.objects.create(employee_number=employee_number,
+                                             clock_in_time=in_time,
+                                             clock_out_time=out_time,
+                                             create_at=in_time,
+                                             edit_1_at=out_time)
+        # print("ticks: ", ['none' if x is None else '{}:{}'.format(x.hour, x.minute) for x in self.tick_times])
+        # print("in:    ", ['none' if x is None else '{}:{}'.format(x.hour, x.minute) for x in self.in_times])
+        # print("out:   ", ['none' if x is None else '{}:{}'.format(x.hour, x.minute) for x in self.out_times])
+
+    def test_drips(self):
+        last_time = self.tick_times[0] - dt.timedelta(hours=1)
+        for i, t in enumerate(self.tick_times):
+            AttendanceDripper.update_target(last_time, t)
+            self.assertEqual(Attendance.objects.count(), AttendanceDripper.objects.filter(create_at__lte=t).count())
+            for entry, in_time, out_time, employee_number in zip(Attendance.objects.order_by('pk'),
+                                                                 self.in_times,
+                                                                 self.out_times,
+                                                                 self.employee_numbers):
+                self.assertEqual(entry.employee_number, employee_number)
+                self.assertEqual(entry.clock_in_time, in_time)
+                if out_time is None or out_time > t:
+                    self.assertIsNone(entry.clock_out_time)
+                else:
+                    self.assertEqual(entry.clock_out_time, out_time)
+            last_time = t
