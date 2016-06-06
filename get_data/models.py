@@ -40,9 +40,10 @@ class RawClockData(models.Model):
         print("LOADED Raw Clock Data Row")
 
     @staticmethod
-    def get_plant_man_hours_atm(start, stop=None):
+    def get_plant_man_hours_atm(start, stop=None, by_department=False):
         """
-
+        Static method that calls RawClockedData.get_clocked_in to determine how
+        many people are clocked in at the specified time slice.
         :param start: a filter based on when you want to start analyzing manhours
         :param stop:  a filter based on when you want to stop analyzing manhours
         :return: num of employees clocked as int and manhours as a float
@@ -52,17 +53,22 @@ class RawClockData(models.Model):
 
         currently_clocked_in = RawClockData.get_clocked_in(start)
 
-        # Performing actual calculations on man_hours
-        #write in case for max employee clock in and clockout = none
-        man_hours = timedelta(hours=0)
-        num_employees = currently_clocked_in.count()
-        for employee in currently_clocked_in:
-            begin = start
-            end = stop
-            man_hours += end-begin
-            man_seconds = man_hours.total_seconds()
-            total_man_hours =man_seconds/3600
-        return total_man_hours, num_employees
+        if by_department:
+            for employee in currently_clocked_in:
+                pass
+
+        else:
+            # Performing calculations on man_hours for the entire plant
+            #write in case for max employee clock in and clockout = none
+            man_hours = timedelta(hours=0)
+            num_employees = currently_clocked_in.count()
+            for employee in currently_clocked_in:
+                begin = start
+                end = stop
+                man_hours += end-begin
+                man_seconds = man_hours.total_seconds()
+                total_man_hours =man_seconds/3600
+            return total_man_hours, num_employees
 
     @staticmethod
     def get_clocked_in(start):
@@ -210,7 +216,13 @@ class RawPlantActivity(models.Model):
 
         return plant_hpv_at_slice, num_claims_at_slice, total_hours_at_slice, current_num_employees
 
+    @staticmethod
+    def get_department_manhours(employees_obj_from_slice):
+        """
 
+        :param employees_obj_from_slice:
+        :return:
+        """
 
 # Based on the Mount Holly Org Updates 2015 Excel File
 class OrgUnits(models.Model):
