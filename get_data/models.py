@@ -4,6 +4,9 @@ from .functions.csv_file_paths import *
 import datetime
 
 from datetime import datetime
+from datetime import timedelta
+
+
 
 """
 This model is intended to hold
@@ -45,67 +48,41 @@ class RawClockData(models.Model):
 
         :param start: a filter based on when you want to start analyzing manhours
         :param stop:  a filter based on when you want to stop analyzing manhours
-        :return: Man_hours based on employees in and out during the given time
-            frame
+        :return: num of employees clocked as int and manhours as a float
         """
         if stop is None:
             stop = datetime.now()
 
-        currently_clocked_in = RawClockData.get_clocked_in_before_stop(stop)
-        clocked_in_after_start = RawClockData.get_clocked_in_after_start(start)
-        clocked_out_after_start = RawClockData.get_clocked_out_after_start(start)
-
-        # Filtering employees who didn't clock out after timeframe
-        clocked_out_during_time_period = clocked_out_after_start.filter(PNCHEVNT_OUT__lt=stop)
-        # creates a query set of the filters objects
-        all_relevent = currently_clocked_in | clocked_in_after_start | clocked_out_during_time_period
-        print('-' * 50)
-        print(all_relevent.count())
+        currently_clocked_in = RawClockData.get_clocked_in(start)
 
         # Performing actual calculations on man_hours
-        man_hours = 0
-        for employee in all_relevent:
-            begin = max(employee.PNCHEVNT_IN, start)
-            end = min(employee.PNCHEVNT_OUT, stop)
-            man_hours += ((end - begin).total_seconds()) / 3600
-            print('-' * 50)
-            print('MANHOURS =', man_hours)
-        return man_hours
+        #write in case for max employee clock in and clockout = none
+        man_hours = timedelta(hours=0)
+        num_employees = currently_clocked_in.count()
+        for employee in currently_clocked_in:
+            begin = start
+            end = stop
+            man_hours += end-begin
+            man_seconds = man_hours.total_seconds()
+            total_man_hours = man_seconds/3600
+        return total_man_hours, num_employees
 
 
     @staticmethod
-    def get_clocked_in_before_stop(stop):
+    def get_clocked_in(start):
         """
-        Filters employees who clocked in before shift time, exluding those who
-        have clocked out
-        :param stop: the start of time that you want to look at
+        Filters employees who clocked in before shift time, excluding those who have clocked out from previous shifts
+        :param start: the start of time that you want to look at
         :return: filtered objects before the start value
         """
-        return RawClockData.objects.filter(PNCHEVNT_IN__lt=stop).exclude(PNCHEVNT_OUT__lt=start)
+        employees = RawClockData.objects.filter(
+            PNCHEVNT_IN__year=start.year,
+            PNCHEVNT_IN__month=start.month,
+            PNCHEVNT_IN__day=start.day,
+            PNCHEVNT_OUT__exact=None,
+        ).exclude(end_rsn_txt__exact='&out')
 
-
-    @staticmethod
-    def get_clocked_in_after_start(start):
-        """
-        Filtering employees who came in after the start of this shift
-        :param start: the start of time that you want to look at
-        :return: filtered objects after the start value
-        """
-        return RawClockData.objects.filter(PNCHEVNT_IN__gte=datetime.date(start)).exclude(PNCHEVNT_IN__lt=start)
-
-
-    @staticmethod
-    def get_clocked_out_after_start(start):
-        """
-        Filtering employees who clocked out after the start
-        :param start: the start of time that you want to look at
-        :return: filtered objects after the start value
-        """
-        return RawClockData.objects.filter(PNCHEVNT_OUT__gt=start)
-
-
-    def currently_clocked_in(self):
-        pass
+        return employees
 
 
     @staticmethod
@@ -278,7 +255,61 @@ class RawPlantActivity(models.Model):
                 DATE_WORK=process_date(row['DATE_WORK']),
             )
             created_row.save()
-        print("LOADED crys Row")
+        print("LOADED plant Row")
+
+
+
+    @staticmethod
+    def get_claims_date_range(start, stop=None):
+        """
+
+        :param start: Datetime object that points to the start of the query
+        :param stop: Datetime object or None to slice the view or just get from start to current time
+        :return: int of number of trucks produced from start to stop
+        """
+
+        if stop == None:
+            stop = datetime.now()
+        num_trucks = RawPlantActivity.get_claimed_objects_in_range(start, stop)
+
+        # for truck in num_trucks:
+        #     print(truck.VEH_SER_NO)
+
+        return num_trucks.count()
+
+    @staticmethod
+    def get_claimed_objects_in_range(start, stop):
+        """
+        returns filtered objects within a range of start, stop
+        :param start: Datetime object that points to the start of the query
+        :param stop: Datetime object to slice the view
+        :return: RawPlantActivity, 'claim', objects
+
+        """
+        claimed_objects = RawPlantActivity.objects.filter(
+            TS_LOAD__gte=start,
+            TS_LOAD__lte=stop,
+        )
+        return claimed_objects
+
+    @staticmethod
+    def get_hpv_at_slice(start, stop):
+        """
+        Calculates the plants HPV at current slice of time
+        :param start: Datetime object that points to the start of the query
+        :param stop: Datetime object to slice the view
+        :returns: 4 variables in order of HPV, number of claims, current total hours, and current number of employees
+        """
+
+        #calls the two methods to get the needed data
+        num_claims_at_slice = RawPlantActivity.get_claims_date_range(start, stop)
+        total_hours_at_slice, current_num_employees = RawClockData.get_plant_man_hours_atm(start, stop)
+
+        #calculating the HPV
+        plant_hpv_at_slice = total_hours_at_slice/num_claims_at_slice
+
+        return plant_hpv_at_slice, num_claims_at_slice, total_hours_at_slice, current_num_employees
+
 
 
 # Based on the Mount Holly Org Updates 2015 Excel File
