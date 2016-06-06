@@ -29,7 +29,7 @@ jQuery(function($) {
     var chart = nv.models.lineChart()
       .useInteractiveGuideline(true)
       .x(function(d) { return d[0] })
-      .y(function(d) { return d[1] }) //adjusting, 100% is 1.00, not 100 as it is in the data
+      .y(function(d) { return d[1] })
       ;
     // nv.addGraph(function() {
     //   var chart = nv.models.cumulativeLineChart()
@@ -45,8 +45,9 @@ jQuery(function($) {
               return d3.time.format('%H:%M')(new Date(d))
             });
       //
-      // chart.yAxis
-      //     .tickFormat(d3.format(',f'));
+      chart.yAxis
+          .axisLabel('Time')
+          // .tickFormat(d3.format(',f'));
 
       d3.select('#chart svg')
           .datum(graphData)
@@ -58,4 +59,10 @@ jQuery(function($) {
       return chart;
     });
   });
+
+  // setInterval(function () {
+  //     $.get('');
+  //   }, 120
+  //
+  //    )
 });

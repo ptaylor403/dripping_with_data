@@ -7,11 +7,13 @@
 
 {% block content %}
 <div class=container>
-  <p>
-    {{time}}
-  </p>
+  <form class="" action="" method="get">
+    <input type="hidden" name="" value="English">
+  </form>
+
+  <!-- <div class=".col-xs-6">
   <h3>HPV</h3>
-  <table class="table table-bordered" id=hpv>
+  <table class="table table-bordered " id=hpv>
     <thead>
       <tr>
         <th></th>
@@ -21,7 +23,8 @@
         <th>Shift 2</th>
       </tr>
     </thead>
-    <tbody>
+  </div> -->
+    <!-- <tbody>
       {% for department in hpv_data %}
       <tr>
         {% for entry in department %}
@@ -33,59 +36,115 @@
       </tr>
       {% endfor %}
     </tbody>
-  </table>
+  </table> -->
+  <div class="col-xs-5">
+    <h3>HPV</h3>
+    <table id=hpv>
+      <tr class=head>
+        <td class=head><b>Department</b></td>
+        <td class=head><b>Day</b></td>
+        <td class=head><b>Shift 1</b></td>
+        <td class=head><b>Shift 2</b></td>
+      </tr>
+    {% for department in hpv_data %}
+    <tr>
+      {% for entry in department %}
+      <td {% if forloop.first %} class="dept">{{entry}}{% else %}>
+        {{entry|floatformat}}
+        {% endif %}
+      </td>
+      {% endfor %}
+    </tr>
+    {% endfor %}
+    </table>
+  </div>
 
-  <!-- <table id=hpv>
+  <div class="col-xs-7">
+    <div id='chart'>
+      <svg style='height:300px',> </svg>
+    </div><script src='{% static "hpv/graph.js" %}' type='text/javascript'> </script>
+
+    <script type='text/javascript'>
+      d3.text("{% static "hpv/graph.js" %}","text/plain",function(err,text) {
+          d3.select("pre.prettyprint").text(text);
+          prettyPrint();
+      });
+    </script>
+  </div>
+
+  <!-- <div class="col-xs-12">
+    <h3 id=claim_title>Finished</h3>
+    <table id=claim_day>
+      <tr class=head>
+        <td class=head><b>Day</b></td>
+      </tr>
+      <tr>
+        <td class=total>Total: {{ day_total }}</td>
+      </tr>
+      <tr>
+        <td class=total>HPV: {{day_HPV|floatformat}}</td>
+      </tr>
+    </table>
+
+    <table id=claim_hour>
+      <tr class=head>
+        <td class=head><b>Current</b></td>
+      </tr>
+      <tr>
+        <td class=total>Total: {{ hour_total }}</td>
+      </tr>
+    </table>
+  </div> -->
+  <div class="col-xs-6">
+    <h3 id=shift1_title>Shift 1</h3>
+    <table id=shift1_attendance>
+      <tr class=head>
+        <td class=head><b>Department</b></td>
+        <td class=head><b>Hour 1</b></td>
+        <td class=head><b>Hour 2</b></td>
+        <td class=head><b>Hour 3</b></td>
+        <td class=head><b>Hour 4</b></td>
+        <td class=head><b>Hour 5</b></td>
+        <td class=head><b>Hour 6</b></td>
+        <td class=head><b>Hour 7</b></td>
+        <td class=head><b>Hour 8</b></td>
+      </tr>
+      {% for department in shift_1 %}
+        <tr>
+          {% for entry in department %}
+            <td{% if forloop.first %} class="dept"{% endif %}>
+              {{entry}}
+            </td>
+          {% endfor %}
+        </tr>
+      {% endfor %}
+    </table>
+  </div>
+  <div class="col-xs-6">
+    <h3 id=shift2_title>Shift 2</h3>
+    <table id=shift2_attendance>
     <tr class=head>
       <td class=head><b>Department</b></td>
-      <td class=head><b>Day</b></td>
-      <td class=head><b>Shift 1</b></td>
-      <td class=head><b>Shift 2</b></td>
+      <td class=head><b>Hour 1</b></td>
+      <td class=head><b>Hour 2</b></td>
+      <td class=head><b>Hour 3</b></td>
+      <td class=head><b>Hour 4</b></td>
+      <td class=head><b>Hour 5</b></td>
+      <td class=head><b>Hour 6</b></td>
+      <td class=head><b>Hour 7</b></td>
+      <td class=head><b>Hour 8</b></td>
     </tr>
-  {% for department in hpv_data %}
-  <tr>
-    {% for entry in department %}
-    <td {% if forloop.first %} class="dept">{{entry}}{% else %}>
-      {{entry|floatformat}}
-      {% endif %}
-    </td>
+    {% for department in shift_2 %}
+      <tr>
+        {% for entry in department %}
+          <td{% if forloop.first %} class="dept"{% endif %}>
+            {{entry}}
+          </td>
+        {% endfor %}
+      </tr>
     {% endfor %}
-  </tr>
-  {% endfor %}
-  </table> -->
-
-  <h3 id=claim_title>Finished</h3>
-  <table id=claim_day>
-    <tr class=head>
-      <td class=head><b>Day</b></td>
-    </tr>
-    <tr>
-      <td class=total>Total: {{ day_total }}</td>
-    </tr>
-    <tr>
-      <td class=total>HPV: {{day_HPV|floatformat}}</td>
-    </tr>
-  </table>
-
-  <table id=claim_hour>
-    <tr class=head>
-      <td class=head><b>Current</b></td>
-    </tr>
-    <tr>
-      <td class=total>Total: {{ hour_total }}</td>
-    </tr>
-  </table>
-
-  <div id='chart'>
-    <svg style='height:400px'> </svg>
-  </div><script src='{% static "hpv/graph.js" %}' type='text/javascript'> </script>
-
-  <script type='text/javascript'>
-    d3.text("{% static "hpv/graph.js" %}","text/plain",function(err,text) {
-        d3.select("pre.prettyprint").text(text);
-        prettyPrint();
-    });
-  </script>
+    </table>
+  </div>
 
 </div>
 {% endblock %}

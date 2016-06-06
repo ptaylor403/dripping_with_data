@@ -13,9 +13,14 @@
 
   <body>
     {% if user.is_authenticated %}
+    <p>
       Signed in as {{user.username}}
-      <a href="{% url 'logout' %}">Logout</a></a></p>
+      <a href="{% url 'logout' %}">Logout</a> {{time}}
+    </p>
     {% endif %}
+
+
+
 
     {% block content %}
       {{ content }}
