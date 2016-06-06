@@ -1,3 +1,17 @@
+/*Nav bar*/
+.bg-faded {
+    background-color: #f7f7f9;
+}
+
+.navbar-toggler {
+    padding: .5rem .75rem;
+    font-size: 3.25rem;
+    line-height: 1;
+    background: 0 0;
+    border: 1px solid transparent;
+    border-radius: .25rem;
+}
+
 /*Container/Body*/
 .container{
   margin-top: 30px;
@@ -21,14 +35,14 @@
 
 table, tr, td{
   border-collapse: collapse;
-  border: 1px solid black;
+  border: 1px solid #eceeef;
   text-align: center;
   vertical-align: center;
 }
 
 td{
   width: 120px;
-  font-size: 18px;
+  font-size: 15px;
 }
 
 .head{

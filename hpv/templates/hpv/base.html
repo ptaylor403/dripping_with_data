@@ -13,11 +13,26 @@
 
   <body>
     {% if user.is_authenticated %}
-    <p>
-      Signed in as {{user.username}}
-      <a href="{% url 'logout' %}">Logout</a> {{time}}
-    </p>
+    <div class="collapse" id="exCollapsingNavbar">
+      <div class="bg-inverse p-a-1">
+
+        <h5>Signed in as {{user.username}}</h5>
+        <span class="text-muted">
+          <p>
+            <a href="{% url 'logout' %}">Logout</a> {{time}}
+          </p>
+        </span>
+
+      </div>
+    </div>
+    <nav class="navbar navbar-light bg-faded">
+      <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#exCollapsingNavbar">
+        &#9776;
+      </button>
+    </nav>
     {% endif %}
+
+
 
 
 

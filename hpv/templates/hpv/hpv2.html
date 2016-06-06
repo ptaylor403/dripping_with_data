@@ -11,32 +11,6 @@
     <input type="hidden" name="" value="English">
   </form>
 
-  <!-- <div class=".col-xs-6">
-  <h3>HPV</h3>
-  <table class="table table-bordered " id=hpv>
-    <thead>
-      <tr>
-        <th></th>
-        <th>Department</th>
-        <th>Day</th>
-        <th>Shift 1</th>
-        <th>Shift 2</th>
-      </tr>
-    </thead>
-  </div> -->
-    <!-- <tbody>
-      {% for department in hpv_data %}
-      <tr>
-        {% for entry in department %}
-        <td {% if forloop.first %} class="dept">{{entry}}{% else %}>
-          {{entry|floatformat}}
-          {% endif %}
-        </td>
-        {% endfor %}
-      </tr>
-      {% endfor %}
-    </tbody>
-  </table> -->
   <div class="col-xs-5">
     <h3>HPV</h3>
     <table id=hpv>
@@ -72,29 +46,6 @@
     </script>
   </div>
 
-  <!-- <div class="col-xs-12">
-    <h3 id=claim_title>Finished</h3>
-    <table id=claim_day>
-      <tr class=head>
-        <td class=head><b>Day</b></td>
-      </tr>
-      <tr>
-        <td class=total>Total: {{ day_total }}</td>
-      </tr>
-      <tr>
-        <td class=total>HPV: {{day_HPV|floatformat}}</td>
-      </tr>
-    </table>
-
-    <table id=claim_hour>
-      <tr class=head>
-        <td class=head><b>Current</b></td>
-      </tr>
-      <tr>
-        <td class=total>Total: {{ hour_total }}</td>
-      </tr>
-    </table>
-  </div> -->
   <div class="col-xs-6">
     <h3 id=shift1_title>Shift 1</h3>
     <table id=shift1_attendance>
@@ -120,6 +71,7 @@
       {% endfor %}
     </table>
   </div>
+
   <div class="col-xs-6">
     <h3 id=shift2_title>Shift 2</h3>
     <table id=shift2_attendance>
@@ -145,6 +97,43 @@
     {% endfor %}
     </table>
   </div>
+
+  <div class="col-xs-6">
+    </br>
+    <tr class=head>
+      <td class=total>Current Total: {{ hour_total }}</td></br>
+    </tr>
+  </div>
+  <div class="col-xs-6">
+    <tr class=head>
+      <td class=total>Total Count: {{ day_total }}</td></br>
+      <td class=total>Total HPV: {{day_HPV|floatformat}}</td></br>
+    </tr>
+  </div>
+    <!-- <h3 id=claim_title>Finished</h3> -->
+    <!-- <table id=claim_day>
+      <tr class=head>
+        <!-- <td class=head><b>Day</b></td> -->
+      <!-- </tr>
+      <tr>
+        <td class=total>Current Total: {{ hour_total }}</td>
+        <td class=total>Total Count: {{ day_total }}</td>
+        <td class=total>Total HPV: {{day_HPV|floatformat}}</td>
+      </tr>
+      <tr>
+        <!-- <td class=total>Total HPV: {{day_HPV|floatformat}}</td> -->
+      <!-- </tr>
+    </table>
+
+    <table id=claim_hour>
+      <tr class=head>
+        <!-- <td class=head><b>Current</b></td> -->
+      <!-- </tr>
+      <tr>
+        <td class=total>Current Total: {{ hour_total }}</td>
+      </tr>
+    </table>
+  </div> -->
 
 </div>
 {% endblock %}
