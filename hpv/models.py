@@ -39,7 +39,7 @@ class Attendance(models.Model):
         clocked_out_during = clocked_out_after_start.filter(clock_out_time__lt=stop)
         all_relevent = were_clocked_in | clocked_in_during | clocked_out_during
         print('-'*50)
-        print(all_relevent)
+        print(all_relevent.count())
         manhours = 0
         for employee in all_relevent:
             begin = max(employee.clock_in_time, start)

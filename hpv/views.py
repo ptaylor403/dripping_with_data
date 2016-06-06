@@ -9,7 +9,7 @@ import pytz
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth import logout
 
-NOW = datetime.now() + dt.timedelta(hours=10)
+NOW = datetime.now() + dt.timedelta(hours=0)
 
 
 class Load(LoginRequiredMixin, TemplateView):
@@ -143,9 +143,10 @@ class HPV(LoginRequiredMixin, TemplateView):
         shift_2 = HPV._get_shift_history(departments, START_TIME2, today)
         shift1_manhours = HPV._get_shift_manhour_history(departments, START_TIME1, today)
         shift2_manhours = HPV._get_shift_manhour_history(departments, START_TIME2, today)
-        print("NOW: ", NOW)
         day_total = Complete.claims_by_time(NOW)  # datetime.now())
-        print("Day total: ", day_total)
+        shift_1_time = dt.datetime.combine(NOW.date(), dt.time(START_TIME2 + 1, 30))
+        shift_1_total = Complete.claims_by_time(shift_1_time)
+        print("Shift 1 total: ", shift_1_total)
         hour_delta = dt.timedelta(hours=1)
         hour_ago = NOW - hour_delta  # datetime.now() - hour_delta
         hour_total = day_total - Complete.claims_by_time(hour_ago)
