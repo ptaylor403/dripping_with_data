@@ -1,6 +1,7 @@
 from django.db import models
 from .functions.process_raw_csv_data import *
 from .functions.csv_file_paths import *
+import datetime
 
 
 """
@@ -16,6 +17,7 @@ class RawClockData(models.Model):
     PNCHEVNT_IN = models.DateTimeField(null=True, blank=True)
     end_rsn_txt = models.CharField(max_length=100)
     PNCHEVNT_OUT = models.DateTimeField(null=True, blank=True)
+
 
     @staticmethod
     def load_raw_data():
@@ -33,6 +35,95 @@ class RawClockData(models.Model):
             )
             created_row.save()
         print("LOADED Raw Clock Data Row")
+
+
+    @staticmethod
+    def get_department(HM_LBRACCT_FULL_NAM):
+        departments = ['CIW', 'FCB', 'PNT', 'PCH', 'FCH', 'DAC', 'MAINT', 'QA', 'MAT']
+        if RawClockData.objects.filter(HM_LBRACCT_FULL_NAM__startswith='017.10000'):
+            CIW = list(RawClockData.objects.filter(HM_LBRACCT_FULL_NAM__startswith='017.10000'))
+        elif RawClockData.objects.filter(HM_LBRACCT_FULL_NAM__startswith='017.20000'):
+            FCB = list(RawClockData.objects.filter(HM_LBRACCT_FULL_NAM__startswith='017.20000'))
+        elif RawClockData.objects.filter(HM_LBRACCT_FULL_NAM__startswith='017.30000'):
+            PNT = list(RawClockData.objects.filter(HM_LBRACCT_FULL_NAM__startswith='017.30000'))
+        elif RawClockData.objects.filter(HM_LBRACCT_FULL_NAM__startswith='017.40000'):
+            PCH = list(RawClockData.objects.filter(HM_LBRACCT_FULL_NAM__startswith='017.40000'))
+        elif RawClockData.objects.filter(HM_LBRACCT_FULL_NAM__startswith='017.50000'):
+            FCH = list(RawClockData.objects.filter(HM_LBRACCT_FULL_NAM__startswith='017.50000'))
+        elif RawClockData.objects.filter(HM_LBRACCT_FULL_NAM__startswith='017.60000'):
+            DAC = list(RawClockData.objects.filter(HM_LBRACCT_FULL_NAM__startswith='017.60000'))
+        elif RawClockData.objects.filter(HM_LBRACCT_FULL_NAM__startswith='017.70000'):
+            MAINT = list(RawClockData.objects.filter(HM_LBRACCT_FULL_NAM__startswith='017.70000'))
+        elif RawClockData.objects.filter(HM_LBRACCT_FULL_NAM__startswith='017.80000'):
+            QA = list(RawClockData.objects.filter(HM_LBRACCT_FULL_NAM__startswith='017.80000'))
+        elif RawClockData.objects.filter(HM_LBRACCT_FULL_NAM__startswith='017.90000'):
+            MAT = list(RawClockData.objects.filter(HM_LBRACCT_FULL_NAM__startswith='017.90000'))
+        return CIW, FCB, PNT, PCH, FCH, DAC, MAINT, QA, MAT
+
+
+
+    @staticmethod
+    def get_manhours_during(start, stop=None, department='all', shift='all'):
+
+        if stop is None:
+            stop = datetime.datetime.now()
+        if shift == 'all':
+            this_shift = RawClockData.objects.all()
+        else:
+            this_shift = RawClockData.objects.filter(shift=shift)
+        if department == 'all' or department == 'plant':
+            in_department = this_shift
+        else:
+            in_department = this_shift.filter(department=department)
+        were_clocked_in = in_department.filter(PNCHEVNT_IN__lt=start).exclude(PNCHEVNT_OUT__lt=start)
+        clocked_in_after_start = in_department.filter(PNCHEVNT_IN__gte=start)
+        clocked_in_during = clocked_in_after_start.filter(PNCHEVNT_IN__lt=stop)
+        clocked_out_after_start = in_department.filter(PNCHEVNT_OUT__gte=start)
+        clocked_out_during = clocked_out_after_start.filter(PNCHEVNT_OUT__lt=stop)
+        all_relevent = were_clocked_in | clocked_in_during | clocked_out_during
+
+        manhours = 0
+        for employee in all_relevent:
+            begin = max(employee.PNCHEVNT_IN, start)
+            if employee.PNCHEVNT_OUT == None:
+                end = stop
+            else:
+                end = min(employee.PNCHEVNT_OUT, stop)
+            manhours += ((end - begin).total_seconds())/3600
+        return manhours
+
+
+    @staticmethod
+    def get_active_at(active_time=None, department='all', shift='all'):
+        if active_time is None:
+            active_time = datetime.datetime.now()
+        if shift == 'all':
+            this_shift = RawClockData.objects.all()
+        else:
+            this_shift = RawClockData.objects.filter(shift=shift)
+        if department == 'all' or department == 'plant':
+            in_department = this_shift
+        else:
+            in_department = this_shift.filter(department=department)
+        have_clocked_in = in_department.filter(PNCHEVNT_IN__lt=active_time)
+        not_clocked_out_yet = have_clocked_in.filter(PNCHEVNT_OUT__gt=active_time)
+        never_clocked_out = have_clocked_in.filter(PNCHEVNT_OUT=None)
+        not_clocked_out = not_clocked_out_yet | never_clocked_out
+        return not_clocked_out.count()
+
+    # def is_ot(self, time_in_question=None):
+    #     if time_in_question is None:
+    #         time_in_question = datetime.datetime.now().time()
+    #     if self.shift == 0:
+    #         if not self.PNCHEVNT_OUT and time_in_question > datetime.time(14, 30):
+    #             return True
+    #         else:
+    #             return False
+    #     else:
+    #         if not self.PNCHEVNT_OUT and time_in_question > datetime.time(22, 30):
+    #             return True
+    #         else:
+    #             return False
 
 
 class RawDirectRunData(models.Model):

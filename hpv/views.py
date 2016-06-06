@@ -152,11 +152,20 @@ class HPV(LoginRequiredMixin, TemplateView):
         day_start = datetime.combine(today, dt.time(START_TIME1))
         day_start = pytz.utc.localize(day_start)
         day_man_hours = Attendance.get_manhours_during(start=day_start, stop=pytz.utc.localize(NOW))
-        day_HPV = day_man_hours / day_total
+        try:
+            day_HPV = day_man_hours / day_total
+        except:
+            day_HPV = 0
         start_time1 = datetime.combine(today, dt.time(START_TIME1))
         start_time2 = datetime.combine(today, dt.time(START_TIME2))
         hpv_data = HPV._get_department_hpv(departments, start_time1, start_time2, NOW)
+        last_hpv = 0
+        try:
+            last_hpv = HPVATM.objects.latest('timestamp')
+        except:
+            HPVATM.objects.create(hpv_plant=day_HPV)
 
+        if (pytz.utc.localize(dt.datetime.now()) - last_hpv.timestamp) 
 
         context.update({'shift_1': shift_1, 'shift_2': shift_2,
                         "manhours_1": shift1_manhours, "manhours_2": shift2_manhours,
