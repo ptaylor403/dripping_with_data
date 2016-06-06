@@ -8,6 +8,7 @@ https://docs.djangoproject.com/en/1.9/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/1.9/ref/settings/
 """
+
 from .secrets import *
 import os
 import dj_database_url
@@ -37,6 +38,7 @@ LOGIN_REDIRECT_URL = "/hpv/"
 # Application definition
 
 INSTALLED_APPS = (
+    'api.apps.ApiConfig',
     'crys.apps.CrysConfig',
     'get_data.apps.GetDataConfig',
     'hpv.apps.HpvConfig',
@@ -153,6 +155,7 @@ STATICFILES_STORAGE = 'whitenoise.django.GzipManifestStaticFilesStorage'
 REST_FRAMEWORK = {
     # Use Django's standard `django.contrib.auth` permissions,
     # or allow read-only access for unauthenticated users.
+    'TEST_REQUEST_DEFAULT_FORMAT': 'json',
     'DEFAULT_PERMISSION_CLASSES': [
         'rest_framework.permissions.DjangoModelPermissionsOrAnonReadOnly'
     ]
