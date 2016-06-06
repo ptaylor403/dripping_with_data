@@ -159,7 +159,6 @@ class HPV(LoginRequiredMixin, TemplateView):
         start_time1 = datetime.combine(today, dt.time(START_TIME1))
         start_time2 = datetime.combine(today, dt.time(START_TIME2))
         hpv_data = HPV._get_department_hpv(departments, start_time1, start_time2, NOW)
-
         last_hpv = 0
         try:
             last_hpv = HPVATM.objects.latest('timestamp')
