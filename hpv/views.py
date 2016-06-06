@@ -9,6 +9,7 @@ import pytz
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth import logout
 from django.http import HttpResponseRedirect
+from get_data.models import RawPlantActivity
 
 NOW = datetime.now() + dt.timedelta(hours=0)
 
@@ -136,6 +137,10 @@ class HPV(LoginRequiredMixin, TemplateView):
     def get_context_data(self, **kwargs):
         # When during the hour should we do the headcount?
         context = super().get_context_data(**kwargs)
+
+
+
+
         departments = ['FCH', 'CIW', 'FCB', 'PNT', 'PCH', 'plant']
         today = datetime.today().date()
         START_TIME1 = 6
@@ -164,6 +169,8 @@ class HPV(LoginRequiredMixin, TemplateView):
         start_time1 = datetime.combine(today, dt.time(START_TIME1))
         start_time2 = datetime.combine(today, dt.time(START_TIME2))
         hpv_data = HPV._get_department_hpv(departments, start_time1, start_time2, NOW)
+
+
         last_hpv = 0
         try:
             last_hpv = HPVATM.objects.latest('timestamp')
@@ -171,7 +178,7 @@ class HPV(LoginRequiredMixin, TemplateView):
             HPVATM.objects.create(hpv_plant=day_HPV)
             last_hpv = HPVATM.objects.latest('timestamp')
         if (pytz.utc.localize(dt.datetime.now()) - last_hpv.timestamp) > dt.timedelta(minutes=5):
-            HPVATM.objects.create(hpv_plant=day_HPV)
+            HPVATM.objects.create(hpv_plant=)
 
 
         context.update({'shift_1': shift_1, 'shift_2': shift_2,
