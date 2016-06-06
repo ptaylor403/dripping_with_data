@@ -43,10 +43,7 @@ class Attendance(models.Model):
         manhours = 0
         for employee in all_relevent:
             begin = max(employee.clock_in_time, start)
-            if employee.clock_out_time == None:
-                end = stop
-            else:
-                end = min(employee.clock_out_time, stop)
+            end = min(employee.clock_out_time, stop)
             manhours += ((end - begin).total_seconds())/3600
         return manhours
 
