@@ -1,11 +1,11 @@
 from django.shortcuts import render
 from .models import HPVATM
 from .serializers import HPVSerializer
-from rest_framework import generics, renderers
-from rest_framework import permissions
+from rest_framework import generics, renderers, permissions
+from django.contrib.auth.mixins import LoginRequiredMixin
 
 
-class HPVAPI(generics.ListCreateAPIView):
+class HPVAPI(LoginRequiredMixin, generics.ListCreateAPIView):
     queryset = HPVATM.objects.all()
     serializer_class = HPVSerializer
-    permission_classes = (permissions.IsAuthenticatedOrReadOnly,)
+    login_url = '/login/'
