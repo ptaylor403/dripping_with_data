@@ -62,7 +62,6 @@ jQuery(function($) {
 
   // setInterval(function () {
   //     $.get('');
-  //   }, 120
-  //
-  //    )
+  //   }, 12000
+  // )
 });

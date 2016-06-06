@@ -236,11 +236,11 @@ class OrgUnits(models.Model):
         # process generator file. Punch CSV has headers.
         # each row is a dict.
         for row in read_csv_generator(departments_csv, headers=True):
-            created_row = RawDirectRunData.objects.create(
+            created_row = OrgUnits.objects.create(
                 DEPT_NAME=row['Name'],
                 DEPT_ABRV=row['dept_abvr'],
-                DEPT_ID=row['Shift - ID#'],
-                SHIFT_ID=row['shift_id']
+                DEPT_ID=row['Shift'],
+                SHIFT_ID=row['shift_id'],
             )
             created_row.save()
         print("LOADED Department List Row")

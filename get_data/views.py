@@ -1,6 +1,6 @@
 from django.shortcuts import render
 from django.views.generic.base import TemplateView
-from .models import RawClockData, RawDirectRunData, RawCrysData, RawPlantActivity
+from .models import RawClockData, RawDirectRunData, RawCrysData, RawPlantActivity, OrgUnits
 
 
 # Create your views here.
@@ -15,6 +15,7 @@ class Clone(TemplateView):
             RawDirectRunData.load_raw_data()
             RawCrysData.load_raw_data()
             RawPlantActivity.load_raw_data()
+            OrgUnits.load_raw_data()
             done=True
 
         context = {'done': done}
