@@ -68,11 +68,6 @@ class Load(LoginRequiredMixin, TemplateView):
 
         return render(request, self.template_name, context)
 
-from django.http import JsonResponse
-
-def json_data(arg):
-    return JsonResponse({'foo': 'bar'})
-
 
 class HPV(LoginRequiredMixin, TemplateView):
     template_name = "hpv/hpv2.html"

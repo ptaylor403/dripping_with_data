@@ -1,5 +1,5 @@
 from django.conf.urls import url
-from .views import Load, HPV, Drip, logout_view, json_data
+from .views import Load, HPV, Drip, logout_view
 from django.views.generic.base import RedirectView
 
 urlpatterns = [
@@ -8,5 +8,4 @@ urlpatterns = [
     url(r'^hpv/$', HPV.as_view(), name="hpv"),
     url(r'^drip/$', Drip.as_view()),
     url(r'^logout/$', logout_view),
-    url(r'^foo', json_data),
 ]
