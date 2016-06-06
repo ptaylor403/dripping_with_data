@@ -8,6 +8,7 @@ https://docs.djangoproject.com/en/1.9/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/1.9/ref/settings/
 """
+
 from .secrets import *
 import os
 import dj_database_url
@@ -38,6 +39,7 @@ LOGIN_REDIRECT_URL = "/hpv/"
 
 INSTALLED_APPS = (
     'generic_dripper.apps.GenericDripperConfig',
+    'api.apps.ApiConfig',
     'crys.apps.CrysConfig',
     'get_data.apps.GetDataConfig',
     'hpv.apps.HpvConfig',
@@ -89,16 +91,16 @@ WSGI_APPLICATION = 'dtna_dashboard.wsgi.application'
 # https://docs.djangoproject.com/en/1.9/ref/settings/#databases
 
 
-# DATABASES = {
-#     'default': {
+DATABASES = {
+    'default': {
 #         'ENGINE': 'django.db.backends.postgresql',
 #         'NAME': 'dtna_dashboard',
 #         'USER': 'SomeOne',
 #         'PASSWORD': '',
 #         'HOST': '127.0.0.1',
 #         'PORT': '5432',
-#     }
-# }
+    }
+}
 
 
 AUTH_PASSWORD_VALIDATORS = (

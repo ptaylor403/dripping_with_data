@@ -13,50 +13,23 @@
       <p>
         {{time}}
       </p>
-      <h3>Shift 1</h3>
-      <table id=shift1_attendance>
+      <h3>HPV</h3>
+      <table id=hpv>
         <tr class=head>
           <td class=head><b>Department</b></td>
-          <td class=head><b>Hour 1</b></td>
-          <td class=head><b>Hour 2</b></td>
-          <td class=head><b>Hour 3</b></td>
-          <td class=head><b>Hour 4</b></td>
-          <td class=head><b>Hour 5</b></td>
-          <td class=head><b>Hour 6</b></td>
-          <td class=head><b>Hour 7</b></td>
-          <td class=head><b>Hour 8</b></td>
+          <td class=head><b>Day</b></td>
+          <td class=head><b>Shift 1</b></td>
+          <td class=head><b>Shift 2</b></td>
         </tr>
-        {% for department in shift_1 %}
-          <tr>
-            {% for entry in department %}
-              <td{% if forloop.first %} class="dept"{% endif %}>
-                {{entry}}
-              </td>
-            {% endfor %}
-          </tr>
+      {% for department in hpv_data %}
+      <tr>
+        {% for entry in department %}
+        <td {% if forloop.first %} class="dept">{{entry}}{% else %}>
+          {{entry|floatformat}}
+          {% endif %}
+        </td>
         {% endfor %}
-      </table>
-      <h3>Shift 2</h3>
-      <table id=shift2_attendance>
-      <tr class=head>
-        <td class=head><b>Department</b></td>
-        <td class=head><b>Hour 1</b></td>
-        <td class=head><b>Hour 2</b></td>
-        <td class=head><b>Hour 3</b></td>
-        <td class=head><b>Hour 4</b></td>
-        <td class=head><b>Hour 5</b></td>
-        <td class=head><b>Hour 6</b></td>
-        <td class=head><b>Hour 7</b></td>
-        <td class=head><b>Hour 8</b></td>
       </tr>
-      {% for department in shift_2 %}
-        <tr>
-          {% for entry in department %}
-            <td{% if forloop.first %} class="dept"{% endif %}>
-              {{entry}}
-            </td>
-          {% endfor %}
-        </tr>
       {% endfor %}
       </table>
 
