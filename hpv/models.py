@@ -88,7 +88,7 @@ class Complete(models.Model):
     completed = models.DateTimeField()
 
     @staticmethod
-    def claims_by_time(time_in_question):
+    def claims_by_time(time_in_question, hour=None):
         day = time_in_question.date()
         return Complete.objects.filter(completed__gt=datetime.datetime.combine(day,
                 datetime.time(0))).filter(completed__lt=time_in_question).count()

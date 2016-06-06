@@ -38,6 +38,7 @@ class RawClockData(models.Model):
             created_row.save()
         print("LOADED Raw Clock Data Row")
 
+
     @staticmethod
     def get_plant_man_hours_atm(start, stop=None):
         """
@@ -82,6 +83,7 @@ class RawClockData(models.Model):
         """
         return RawClockData.objects.filter(PNCHEVNT_IN__lt=stop).exclude(PNCHEVNT_OUT__lt=start)
 
+
     @staticmethod
     def get_clocked_in_after_start(start):
         """
@@ -90,6 +92,7 @@ class RawClockData(models.Model):
         :return: filtered objects after the start value
         """
         return RawClockData.objects.filter(PNCHEVNT_IN__gte=datetime.date(start)).exclude(PNCHEVNT_IN__lt=start)
+
 
     @staticmethod
     def get_clocked_out_after_start(start):
@@ -101,33 +104,41 @@ class RawClockData(models.Model):
         return RawClockData.objects.filter(PNCHEVNT_OUT__gt=start)
 
 
-
     def currently_clocked_in(self):
         pass
 
+
     @staticmethod
     def get_department(HM_LBRACCT_FULL_NAM):
-        departments = ['CIW', 'FCB', 'PNT', 'PCH', 'FCH', 'DAC', 'MAINT', 'QA', 'MAT']
+        departments = []
         if RawClockData.objects.filter(HM_LBRACCT_FULL_NAM__startswith='017.10000'):
             CIW = list(RawClockData.objects.filter(HM_LBRACCT_FULL_NAM__startswith='017.10000'))
-        elif RawClockData.objects.filter(HM_LBRACCT_FULL_NAM__startswith='017.20000'):
+            departments.append(CIW)
+        if RawClockData.objects.filter(HM_LBRACCT_FULL_NAM__startswith='017.20000'):
             FCB = list(RawClockData.objects.filter(HM_LBRACCT_FULL_NAM__startswith='017.20000'))
-        elif RawClockData.objects.filter(HM_LBRACCT_FULL_NAM__startswith='017.30000'):
+            departments.append(FCB)
+        if RawClockData.objects.filter(HM_LBRACCT_FULL_NAM__startswith='017.30000'):
             PNT = list(RawClockData.objects.filter(HM_LBRACCT_FULL_NAM__startswith='017.30000'))
-        elif RawClockData.objects.filter(HM_LBRACCT_FULL_NAM__startswith='017.40000'):
+            departments.append(PNT)
+        if RawClockData.objects.filter(HM_LBRACCT_FULL_NAM__startswith='017.40000'):
             PCH = list(RawClockData.objects.filter(HM_LBRACCT_FULL_NAM__startswith='017.40000'))
-        elif RawClockData.objects.filter(HM_LBRACCT_FULL_NAM__startswith='017.50000'):
+            departments.append(PCH)
+        if RawClockData.objects.filter(HM_LBRACCT_FULL_NAM__startswith='017.50000'):
             FCH = list(RawClockData.objects.filter(HM_LBRACCT_FULL_NAM__startswith='017.50000'))
-        elif RawClockData.objects.filter(HM_LBRACCT_FULL_NAM__startswith='017.60000'):
+            departments.append(FCH)
+        if RawClockData.objects.filter(HM_LBRACCT_FULL_NAM__startswith='017.60000'):
             DAC = list(RawClockData.objects.filter(HM_LBRACCT_FULL_NAM__startswith='017.60000'))
-        elif RawClockData.objects.filter(HM_LBRACCT_FULL_NAM__startswith='017.70000'):
+            departments.append(DAC)
+        if RawClockData.objects.filter(HM_LBRACCT_FULL_NAM__startswith='017.70000'):
             MAINT = list(RawClockData.objects.filter(HM_LBRACCT_FULL_NAM__startswith='017.70000'))
-        elif RawClockData.objects.filter(HM_LBRACCT_FULL_NAM__startswith='017.80000'):
+            departments.append(MAINT)
+        if RawClockData.objects.filter(HM_LBRACCT_FULL_NAM__startswith='017.80000'):
             QA = list(RawClockData.objects.filter(HM_LBRACCT_FULL_NAM__startswith='017.80000'))
-        elif RawClockData.objects.filter(HM_LBRACCT_FULL_NAM__startswith='017.90000'):
+            departments.append(QA)
+        if RawClockData.objects.filter(HM_LBRACCT_FULL_NAM__startswith='017.90000'):
             MAT = list(RawClockData.objects.filter(HM_LBRACCT_FULL_NAM__startswith='017.90000'))
-        return CIW, FCB, PNT, PCH, FCH, DAC, MAINT, QA, MAT
-
+            departments.append(MAT)
+        return departments
 
 
     @staticmethod

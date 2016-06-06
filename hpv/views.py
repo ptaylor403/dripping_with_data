@@ -10,7 +10,7 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth import logout
 from django.http import HttpResponseRedirect
 
-NOW = datetime.now() + dt.timedelta(hours=10)
+NOW = datetime.now() + dt.timedelta(hours=0)
 
 
 class Load(LoginRequiredMixin, TemplateView):
@@ -150,6 +150,9 @@ class HPV(LoginRequiredMixin, TemplateView):
         hour_delta = dt.timedelta(hours=1)
         hour_ago = NOW - hour_delta  # datetime.now() - hour_delta
         hour_total = day_total - Complete.claims_by_time(hour_ago)
+        shift1_time = dt.datetime.combine(NOW.date(), dt.time(START_TIME2 + 1, 30))
+        shift1_total = Complete.claims_by_time(shift1_time)
+        shift2_total = day_total - shift1_total
         day_start = datetime.combine(today, dt.time(START_TIME1))
         day_start = pytz.utc.localize(day_start)
         day_man_hours = Attendance.get_manhours_during(start=day_start, stop=pytz.utc.localize(NOW))
@@ -165,7 +168,7 @@ class HPV(LoginRequiredMixin, TemplateView):
             last_hpv = HPVATM.objects.latest('timestamp')
         except:
             HPVATM.objects.create(hpv_plant=day_HPV)
-
+            last_hpv = HPVATM.objects.latest('timestamp')
         if (pytz.utc.localize(dt.datetime.now()) - last_hpv.timestamp) > dt.timedelta(minutes=5):
             HPVATM.objects.create(hpv_plant=day_HPV)
 
@@ -173,7 +176,8 @@ class HPV(LoginRequiredMixin, TemplateView):
         context.update({'shift_1': shift_1, 'shift_2': shift_2,
                         "manhours_1": shift1_manhours, "manhours_2": shift2_manhours,
                         'hour_total': hour_total, 'day_total': day_total, 'time': NOW,
-                        "day_HPV": day_HPV, 'hpv_data': hpv_data})
+                        "day_HPV": day_HPV, 'hpv_data': hpv_data, 'shift1_total': shift1_total,
+                        'shift2_total': shift2_total})
         return context
 
 
