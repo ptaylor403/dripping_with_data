@@ -131,7 +131,7 @@ class HPV(LoginRequiredMixin, TemplateView):
                 else:
                     department_hpv.append('')
             hpv_data.append(department_hpv)
-        return hpv_data
+        return hpv_data        
 
     def get_context_data(self, **kwargs):
         # When during the hour should we do the headcount?
