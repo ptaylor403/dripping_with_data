@@ -2,7 +2,7 @@ from django.db import models
 from hpv.models import Attendance, Complete
 import datetime as dt
 import pytz
-from get_data.models import *
+# from get_data.models import *
 
 
 class AttendanceDripper(models.Model):
@@ -99,9 +99,11 @@ class CombinedDripper:
         self.simulated_time = start_time
         self.time_step = time_step
 
-    def add_dripper(self, dripper):
-        if dripper not in self.drippers:
-            self.drippers.append(dripper)
+    def add_dripper(self, *args):
+        for dripper in args:
+            if dripper not in self.drippers:
+                self.drippers.append(dripper)
+                dripper.update_target(self.simulated_time)
 
     def update_to(self, new_time):
         for dripper in self.drippers:

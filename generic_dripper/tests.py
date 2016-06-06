@@ -1,5 +1,5 @@
 from django.test import TestCase
-from .models import CompleteDripper, AttendanceDripper
+from .models import CompleteDripper, AttendanceDripper, CombinedDripper
 from hpv.models import Complete, Attendance
 import datetime as dt
 import pytz
@@ -137,9 +137,7 @@ class test_editing_dripper(TestCase):
                                              clock_out_time=out_time,
                                              create_at=in_time,
                                              edit_1_at=out_time)
-        # print("ticks: ", ['none' if x is None else '{}:{}'.format(x.hour, x.minute) for x in self.tick_times])
-        # print("in:    ", ['none' if x is None else '{}:{}'.format(x.hour, x.minute) for x in self.in_times])
-        # print("out:   ", ['none' if x is None else '{}:{}'.format(x.hour, x.minute) for x in self.out_times])
+        AttendanceDripper.last_drip = dt.datetime(1, 1, 1, 0, 0, tzinfo=pytz.utc)
 
     def test_drips(self):
         for i, t in enumerate(self.tick_times):
@@ -155,3 +153,79 @@ class test_editing_dripper(TestCase):
                     self.assertIsNone(entry.clock_out_time)
                 else:
                     self.assertEqual(entry.clock_out_time, out_time)
+
+
+class test_combined_dripper(TestCase):
+    time1 = dt.datetime.now(pytz.utc)
+    in_times = []
+    for i in range(5):
+        in_times.append(time1 + dt.timedelta(minutes=i, hours=i))
+        in_times.append(time1 + dt.timedelta(hours=i, minutes=i+30))
+    in_times.sort()
+    out_times = []
+    for i in range(5):
+        out_times.append(in_times[i]+dt.timedelta(hours=i))
+        out_times.append(None)
+    employee_numbers = range(1, 11)
+    serial_numbers = [str(x) for x in range(1, 11)]
+
+    def setUp(self):
+        for in_time, out_time, employee_number in zip(self.in_times,
+                                                      self.out_times,
+                                                      self.employee_numbers):
+            AttendanceDripper.objects.create(employee_number=employee_number,
+                                             clock_in_time=in_time,
+                                             clock_out_time=out_time,
+                                             create_at=in_time,
+                                             edit_1_at=out_time)
+        AttendanceDripper.last_drip = dt.datetime(1, 1, 1, 0, 0, tzinfo=pytz.utc)
+        for time, serial_number in zip(self.in_times, self.serial_numbers):
+            CompleteDripper.objects.create(serial_number=serial_number,
+                                           completed=time, create_at=time)
+        CompleteDripper.last_drip = dt.datetime(1, 1, 1, 0, 0, tzinfo=pytz.utc)
+        self.master_dripper = CombinedDripper(start_time=self.time1 - dt.timedelta(minutes=7))
+        self.master_dripper.add_dripper(AttendanceDripper, CompleteDripper)
+
+    def test_update_to(self):
+        new_time = self.in_times[5]
+        self.assertEqual(Complete.objects.count(), 0)
+        self.assertEqual(Attendance.objects.count(), 0)
+        self.master_dripper.update_to(new_time)
+        self.assertEqual(Complete.objects.count(), 6)
+        self.assertEqual(Attendance.objects.count(), 6)
+        for entry, time, serial_number in zip(Complete.objects.order_by('pk'),
+                                              self.in_times,
+                                              self.serial_numbers):
+            assert(entry.serial_number == serial_number)
+            assert(entry.completed == time)
+        for entry, in_time, out_time, employee_number in zip(Attendance.objects.order_by('pk'),
+                                                             self.in_times,
+                                                             self.out_times,
+                                                             self.employee_numbers):
+            self.assertEqual(entry.employee_number, employee_number)
+            self.assertEqual(entry.clock_in_time, in_time)
+            if out_time is None or out_time > new_time:
+                self.assertIsNone(entry.clock_out_time)
+            else:
+                self.assertEqual(entry.clock_out_time, out_time)
+        self.assertEqual(new_time, self.master_dripper.simulated_time)
+
+    def test_update_by(self):
+        start = self.master_dripper.simulated_time
+        self.master_dripper.update_by(dt.timedelta(minutes=25))
+        self.assertEqual(start + dt.timedelta(minutes=25), self.master_dripper.simulated_time)
+        for entry, time, serial_number in zip(Complete.objects.order_by('pk'),
+                                              self.in_times,
+                                              self.serial_numbers):
+            assert(entry.serial_number == serial_number)
+            assert(entry.completed == time)
+        for entry, in_time, out_time, employee_number in zip(Attendance.objects.order_by('pk'),
+                                                             self.in_times,
+                                                             self.out_times,
+                                                             self.employee_numbers):
+            self.assertEqual(entry.employee_number, employee_number)
+            self.assertEqual(entry.clock_in_time, in_time)
+            if out_time is None or out_time > self.master_dripper.simulated_time:
+                self.assertIsNone(entry.clock_out_time)
+            else:
+                self.assertEqual(entry.clock_out_time, out_time)
