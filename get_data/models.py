@@ -193,7 +193,7 @@ class RawPlantActivity(models.Model):
         return claimed_objects
 
     @staticmethod
-    def get_hpv(start, stop):
+    def get_hpv_at_slice(start, stop):
         """
         Calculates the plants HPV at current slice of time
         :param start: Datetime object that points to the start of the query
