@@ -1,6 +1,7 @@
 from django.db import models
 import datetime
 
+
 class Attendance(models.Model):
     employee_number = models.IntegerField()
     department = models.CharField(max_length=16)
@@ -42,7 +43,10 @@ class Attendance(models.Model):
         manhours = 0
         for employee in all_relevent:
             begin = max(employee.clock_in_time, start)
-            end = min(employee.clock_out_time, stop)
+            if employee.clock_out_time == None:
+                end = stop
+            else:
+                end = min(employee.clock_out_time, stop)
             manhours += ((end - begin).total_seconds())/3600
         return manhours
 
@@ -78,6 +82,7 @@ class Attendance(models.Model):
                 return True
             else:
                 return False
+
 
 class Complete(models.Model):
     serial_number = models.CharField(max_length=10)

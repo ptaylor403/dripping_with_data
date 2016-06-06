@@ -69,6 +69,7 @@ class RawClockData(models.Model):
             print('MANHOURS =', man_hours)
         return man_hours
 
+
     @staticmethod
     def get_clocked_in_before_stop(stop):
         """
@@ -98,6 +99,9 @@ class RawClockData(models.Model):
         return RawClockData.objects.filter(PNCHEVNT_OUT__gt=start)
 
 
+
+    def currently_clocked_in(self):
+        pass
 
 class RawDirectRunData(models.Model):
     VEH_SER_NO = models.CharField(max_length=6)
