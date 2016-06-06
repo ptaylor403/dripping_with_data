@@ -16,7 +16,7 @@ class HPVATM(models.Model):
     # num_claims_second = models.IntegerField(null=True)
     # num_claims_third = models.IntegerField(null=True)
     # manhours = models.IntegerField(null=True)
-    hpv_plant = models.IntegerField(null=True)
+    hpv_plant = models.DecimalField(decimal_places=1, max_digits=4, null=True)
 
 
 ### To Add
