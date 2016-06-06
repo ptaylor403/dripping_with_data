@@ -16,6 +16,7 @@ class HPVAPITest(TestCase):
 
         HPVATM.objects.create(timestamp=pytz.utc.localize(dt.datetime(2016, 6, 1, 15, 30, 0, 0)), hpv_plant=86.7)
 
+
     def test_list_view(self):
         request = self.factory.get('/api/hpv')
 
@@ -28,3 +29,5 @@ class HPVAPITest(TestCase):
         # Returns the correct HPV when querying the response data
         self.assertEqual(response.data[0]['hpv_plant'], '89.9')
         self.assertEqual(response.data[1]['hpv_plant'], '86.7')
+
+        
