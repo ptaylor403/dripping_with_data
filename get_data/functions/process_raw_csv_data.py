@@ -5,9 +5,7 @@ import fileinput
 
 #used to convert SQL datetime format to Postgres
 postgres_date_format = '%Y-%m-%d %H:%M:%S.%f'
-# path = '/Users/Nic/TIY/customer-dtna/data/emp+item+punch.csv'
-path2 = '/Users/Nic/TIY/customer-dtna/data/Direct_Run.csv'
-path3 = '/Users/Nic/TIY/customer-dtna/data/temp.txt'
+
 
 
 def read_csv_generator(path, headers=True):
