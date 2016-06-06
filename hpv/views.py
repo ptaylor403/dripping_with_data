@@ -3,6 +3,7 @@ from django.views.generic.base import TemplateView
 import datetime as dt
 from .data_sim import *
 from .models import Attendance, Complete
+from api.models import HPVATM
 import random
 import pytz
 from django.contrib.auth.mixins import LoginRequiredMixin
@@ -72,6 +73,7 @@ from django.http import JsonResponse
 def json_data(arg):
     return JsonResponse({'foo': 'bar'})
 
+
 class HPV(LoginRequiredMixin, TemplateView):
     template_name = "hpv/hpv2.html"
     login_url = '/login/'
@@ -83,9 +85,7 @@ class HPV(LoginRequiredMixin, TemplateView):
             for i in range(1, 9):
                 this_dt = datetime.combine(today, dt.time(shift_start_time + i))
                 if this_dt <= NOW:  # datetime.now():
-                    dpt_data.append(Attendance.get_active_at(active_time=this_dt,
-                                                             department=department)
-                                    )
+                    dpt_data.append(Attendance.get_active_at(active_time=this_dt,department=department))
                 else:
                     dpt_data.append("")
 
@@ -102,10 +102,7 @@ class HPV(LoginRequiredMixin, TemplateView):
                 this_dt = pytz.utc.localize(this_dt)
                 start_dt = pytz.utc.localize(start_dt)
                 if this_dt <= pytz.utc.localize(NOW):  # datetime.now():
-                    dpt_data.append(Attendance.get_manhours_during(start=start_dt,
-                                                                   stop=this_dt,
-                                                                   department=department)
-                                    )
+                    dpt_data.append(Attendance.get_manhours_during(start=start_dt, stop=this_dt, department=department))
                 else:
                     dpt_data.append("")
 
@@ -130,10 +127,11 @@ class HPV(LoginRequiredMixin, TemplateView):
                 this_dt = pytz.utc.localize(this_dt)
                 start_dt = pytz.utc.localize(start_dt)
                 if this_dt <= pytz.utc.localize(end_time):  # datetime.now():
-                    dept_manhours = Attendance.get_manhours_during(start=start_dt,
-                                                                   stop=this_dt,
-                                                                   department=department)
-                    department_hpv.append(dept_manhours / truck_total)
+                    dept_manhours = Attendance.get_manhours_during(start=start_dt, stop=this_dt, department=department)
+                    try:
+                        department_hpv.append(dept_manhours / truck_total)
+                    except:
+                        department_hpv.append(0)
                 else:
                     department_hpv.append('')
             hpv_data.append(department_hpv)
@@ -157,17 +155,29 @@ class HPV(LoginRequiredMixin, TemplateView):
         day_start = datetime.combine(today, dt.time(START_TIME1))
         day_start = pytz.utc.localize(day_start)
         day_man_hours = Attendance.get_manhours_during(start=day_start, stop=pytz.utc.localize(NOW))
-        day_HPV = day_man_hours / day_total
+        try:
+            day_HPV = day_man_hours / day_total
+        except:
+            day_HPV = 0
         start_time1 = datetime.combine(today, dt.time(START_TIME1))
         start_time2 = datetime.combine(today, dt.time(START_TIME2))
         hpv_data = HPV._get_department_hpv(departments, start_time1, start_time2, NOW)
 
+        last_hpv = 0
+        try:
+            last_hpv = HPVATM.objects.latest('timestamp')
+        except:
+            HPVATM.objects.create(hpv_plant=day_HPV)
+
+        if (pytz.utc.localize(dt.datetime.now()) - last_hpv.timestamp) > dt.timedelta(minutes=5):
+            HPVATM.objects.create(hpv_plant=day_HPV)
 
         context.update({'shift_1': shift_1, 'shift_2': shift_2,
                         "manhours_1": shift1_manhours, "manhours_2": shift2_manhours,
                         'hour_total': hour_total, 'day_total': day_total, 'time': NOW,
                         "day_HPV": day_HPV, 'hpv_data': hpv_data})
         return context
+
 
 class Drip(LoginRequiredMixin, TemplateView):
     template_name = "hpv/drip.html"
