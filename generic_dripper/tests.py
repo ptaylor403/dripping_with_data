@@ -1,5 +1,8 @@
 from django.test import TestCase
 from .models import CompleteDripper, AttendanceDripper, CombinedDripper
+from .models import RawClockDataDripper, RawDirectRunDataDripper
+from .models import RawCrysDataDripper, RawPlantActivityDripper
+from get_data.models import RawClockData, RawDirectRunData, RawCrysData, RawPlantActivity
 from hpv.models import Complete, Attendance
 import datetime as dt
 import pytz
@@ -229,3 +232,5 @@ class test_combined_dripper(TestCase):
                 self.assertIsNone(entry.clock_out_time)
             else:
                 self.assertEqual(entry.clock_out_time, out_time)
+
+class Test_Real_Date_Drippers(TestCase):
