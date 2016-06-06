@@ -3,7 +3,7 @@ from hpv.models import Attendance, Complete
 import datetime as dt
 import pytz
 from get_data.models import RawClockData, RawDirectRunData, RawCrysData, RawPlantActivity
-# from get_data.functions.process_raw_csv_data import process_date
+# Model._meta.get_all_field_names()
 
 
 class AttendanceDripper(models.Model):
@@ -16,8 +16,6 @@ class AttendanceDripper(models.Model):
     edit_1_at = models.DateTimeField(null=True)
     target = Attendance
     last_drip = dt.datetime(1, 1, 1, 0, 0, tzinfo=pytz.utc)
-
-# Model._meta.get_all_field_names()
 
     @classmethod
     def load_from_target(cls):
@@ -108,7 +106,12 @@ class RawClockDataDripper(models.Model):
 
     @classmethod
     def load_from_target(cls):
-        for entry in cls.target.objects.all():
+        earliest_time = cls.target.objects.earliest('PNCHEVNT_IN').PNCHEVNT_IN
+        for entry in cls.target.objects.order_by('pk'):
+            if entry.start_rsn_txt in [None, "&newShift"]:
+                create_time = dt.datetime.combine(earliest_time, dt.time(hour=3))
+            else:
+                create_time = entry.PNCHEVNT_IN
             cls.objects.create(PRSN_NBR_TXT=entry.PRSN_NBR_TXT,
                                full_nam=entry.full_nam,
                                HM_LBRACCT_FULL_NAM=entry.HM_LBRACCT_FULL_NAM,
@@ -116,8 +119,11 @@ class RawClockDataDripper(models.Model):
                                PNCHEVNT_IN=entry.PNCHEVNT_IN,
                                end_rsn_txt=entry.end_rsn_txt,
                                PNCHEVNT_OUT=entry.PNCHEVNT_OUT,
-                               create_at=entry.PNCHEVNT_IN,
-                               edit_1_at=entry.PNCHEVNT_OUT)
+                               create_at=create_time,
+                               edit_1_at=entry.PNCHEVNT_IN,
+                               edit_2_at=entry.PNCHEVNT_OUT)
+            if entry.PNCHEVNT_IN is not None:
+                earliest_time = entry.PNCHEVNT_IN
 
     @classmethod
     def _create_on_target(cls, stop):
@@ -127,24 +133,40 @@ class RawClockDataDripper(models.Model):
             cls.target.objects.create(PRSN_NBR_TXT=entry.PRSN_NBR_TXT,
                                       full_nam=entry.full_nam,
                                       HM_LBRACCT_FULL_NAM=entry.HM_LBRACCT_FULL_NAM,
-                                      start_rsn_txt=entry.start_rsn_txt,
-                                      PNCHEVNT_IN=entry.PNCHEVNT_IN,
-                                      end_rsn_txt=entry.end_rsn_txt,
+                                      start_rsn_txt=None,
+                                      PNCHEVNT_IN=None,
+                                      end_rsn_txt=None,
                                       PNCHEVNT_OUT=None)
 
     @classmethod
     def _edit_1_on_target(cls, stop):
-        relevant = cls.objects.filter(edit_1_at__gt=cls.last_drip)
-        relevant = relevant.filter(edit_1_at__lte=stop)
+        relevant = cls.objects.filter(edit_1__gt=cls.last_drip)
+        relevant = relevant.filter(edit_1__lte=stop)
+        for entry in relevant.order_by('pk'):
+            cls.target.objects.filter(PRSN_NBR_TXT=entry.PRSN_NBR_TXT,
+                                      full_nam=entry.full_nam,
+                                      HM_LBRACCT_FULL_NAM=entry.HM_LBRACCT_FULL_NAM).last().update(
+                                      PNCHEVNT_IN=entry.PNCHEVNT_IN,
+                                      start_rsn_txt=entry.start_rsn_txt,
+                                      end_rsn_txt="&missedOut"
+                                      )
+
+
+    @classmethod
+    def _edit_2_on_target(cls, stop):
+        relevant = cls.objects.filter(edit_2_at__gt=cls.last_drip)
+        relevant = relevant.filter(edit_2_at__lte=stop)
         for entry in relevant.order_by('pk'):
             cls.target.objects.filter(HM_LBRACCT_FULL_NAM=entry.HM_LBRACCT_FULL_NAM,
                                       PNCHEVNT_IN=entry.PNCHEVNT_IN).update(
+                                      end_rsn_txt=entry.end_rsn_txt,
                                       PNCHEVNT_OUT=entry.PNCHEVNT_OUT)
 
     @classmethod
     def update_target(cls, *args, **kwargs):
         cls._create_on_target(*args, **kwargs)
         cls._edit_1_on_target(*args, **kwargs)
+        cls._edit_2_on_target(*args, **kwargs)
         if "stop" in kwargs:
             stop = kwargs['stop']
         else:
@@ -255,7 +277,6 @@ class RawPlantActivityDripper(models.Model):
     TS_LOAD = models.DateTimeField()
     DATE_WORK = models.DateTimeField()
     create_at = models.DateTimeField()
-    edit_1_at = models.DateTimeField()
     target = RawPlantActivity
     last_drip = dt.datetime(1, 1, 1, 0, 0, tzinfo=pytz.utc)
 
@@ -266,8 +287,8 @@ class RawPlantActivityDripper(models.Model):
                                POOL_TRIG_TYPE=entry.POOL_TRIG_TYPE,
                                TS_LOAD=entry.TS_LOAD,
                                DATE_WORK=entry.DATE_WORK,
-                               create_at=entry.TS_LOAD,
-                               edit_1_at=entry.DATE_WORK)
+                               create_at=entry.TS_LOAD
+                               )
 
     @classmethod
     def _create_on_target(cls, stop):
@@ -277,22 +298,22 @@ class RawPlantActivityDripper(models.Model):
             cls.target.objects.create(VEH_SER_NO=entry.VEH_SER_NO,
                                       POOL_TRIG_TYPE=entry.POOL_TRIG_TYPE,
                                       TS_LOAD=entry.TS_LOAD,
-                                      DATE_WORK=entry.None)
+                                      DATE_WORK=entry.DATE_WORK
+                                      )
 
-    @classmethod
-    def _edit_1_on_target(cls, stop):
-        relevant = cls.objects.filter(edit_1_at__gt=cls.last_drip)
-        relevant = relevant.filter(edit_1_at__lte=stop)
-        for entry in relevant.order_by('pk'):
-            cls.target.objects.filter(VEH_SER_NO=entry.VEH_SER_NO,
-                                      POOL_TRIG_TYPE=entry.POOL_TRIG_TYPE,
-                                      TS_LOAD=entry.TS_LOAD).update(
-                                      DATE_WORK=entry.DATE_WORK)
+    # @classmethod
+    # def _edit_1_on_target(cls, stop):
+    #     relevant = cls.objects.filter(edit_1_at__gt=cls.last_drip)
+    #     relevant = relevant.filter(edit_1_at__lte=stop)
+    #     for entry in relevant.order_by('pk'):
+    #         cls.target.objects.filter(VEH_SER_NO=entry.VEH_SER_NO,
+    #                                   POOL_TRIG_TYPE=entry.POOL_TRIG_TYPE,
+    #                                   TS_LOAD=entry.TS_LOAD).update(
+    #                                   DATE_WORK=entry.DATE_WORK)
 
     @classmethod
     def update_target(cls, *args, **kwargs):
         cls._create_on_target(*args, **kwargs)
-        cls._edit_1_on_target(*args, **kwargs)
         if "stop" in kwargs:
             stop = kwargs['stop']
         else:
