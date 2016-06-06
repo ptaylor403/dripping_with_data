@@ -11,7 +11,31 @@
     {{time}}
   </p>
   <h3>HPV</h3>
-  <table id=hpv>
+  <table class="table table-bordered" id=hpv>
+    <thead>
+      <tr>
+        <th></th>
+        <th>Department</th>
+        <th>Day</th>
+        <th>Shift 1</th>
+        <th>Shift 2</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for department in hpv_data %}
+      <tr>
+        {% for entry in department %}
+        <td {% if forloop.first %} class="dept">{{entry}}{% else %}>
+          {{entry|floatformat}}
+          {% endif %}
+        </td>
+        {% endfor %}
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+  <!-- <table id=hpv>
     <tr class=head>
       <td class=head><b>Department</b></td>
       <td class=head><b>Day</b></td>
@@ -28,7 +52,7 @@
     {% endfor %}
   </tr>
   {% endfor %}
-  </table>
+  </table> -->
 
   <h3 id=claim_title>Finished</h3>
   <table id=claim_day>
@@ -53,7 +77,7 @@
   </table>
 
   <div id='chart'>
-    <svg style='height:500px'> </svg>
+    <svg style='height:400px'> </svg>
   </div><script src='{% static "hpv/graph.js" %}' type='text/javascript'> </script>
 
   <script type='text/javascript'>

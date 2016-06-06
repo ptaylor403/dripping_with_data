@@ -1,6 +1,6 @@
 /*Container/Body*/
 .container{
-  margin-top: 60px;
+  margin-top: 30px;
 }
 
 /*Table*/
@@ -14,8 +14,8 @@
 
 #claim_hour{
   position: absolute;
-  top: 270px;
-  right: 250px;
+  top: 80px;
+  right: 400px;
   width: 100px;
 }
 
