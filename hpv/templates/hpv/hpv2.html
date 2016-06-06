@@ -54,6 +54,56 @@
           <td class=total>total: {{ hour_total }}</td>
         </tr>
       </table>
+
+      <h3>Shift 1 man-hours</h3>
+      <table id=shift1_manhours>
+        <tr class=head>
+          <td class=head><b>Department</b></td>
+          <td class=head><b>Hour 1</b></td>
+          <td class=head><b>Hour 2</b></td>
+          <td class=head><b>Hour 3</b></td>
+          <td class=head><b>Hour 4</b></td>
+          <td class=head><b>Hour 5</b></td>
+          <td class=head><b>Hour 6</b></td>
+          <td class=head><b>Hour 7</b></td>
+          <td class=head><b>Hour 8</b></td>
+        </tr>
+        {% for department in manhours_1 %}
+          <tr>
+            {% for entry in department %}
+              <td{% if forloop.first %} class="dept">{{entry}}{% else %}>
+                {{entry|floatformat}}
+                {%endif%}
+              </td>
+            {% endfor %}
+          </tr>
+        {% endfor %}
+      </table>
+      <h3>Shift 2 man-hours</h3>
+      <table id=shift2_manhours>
+        <tr class=head>
+          <td class=head><b>Department</b></td>
+          <td class=head><b>Hour 1</b></td>
+          <td class=head><b>Hour 2</b></td>
+          <td class=head><b>Hour 3</b></td>
+          <td class=head><b>Hour 4</b></td>
+          <td class=head><b>Hour 5</b></td>
+          <td class=head><b>Hour 6</b></td>
+          <td class=head><b>Hour 7</b></td>
+          <td class=head><b>Hour 8</b></td>
+        </tr>
+        {% for department in manhours_2 %}
+          <tr>
+            {% for entry in department %}
+              <td{% if forloop.first %} class="dept">{{entry}}{% else %}>
+                {{entry|floatformat}}
+                {%endif%}
+              </td>
+            {% endfor %}
+          </tr>
+        {% endfor %}
+      </table>
+
       {% endblock %}
     </body>
 </html>

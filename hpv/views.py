@@ -3,13 +3,15 @@ from django.views.generic.base import TemplateView
 import datetime as dt
 from .data_sim import *
 from .models import Attendance, Complete
+from api.models import HPVATM
 import random
 import pytz
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth import logout
 from django.http import HttpResponseRedirect
 
-NOW = datetime.now() + dt.timedelta(hours=0)
+NOW = datetime.now() + dt.timedelta(hours=10)
+
 
 class Load(LoginRequiredMixin, TemplateView):
     template_name = "hpv/load.html"
@@ -19,7 +21,7 @@ class Load(LoginRequiredMixin, TemplateView):
         context = {}
         if request.GET.get('grabAttendance'):
             shift_starts = [6, 14]
-            for day in range(1, 6):
+            for day in range(1, 11):
                 for hour in shift_starts:
                     for _ in range(1, 501):
                         emp = get_employee()
@@ -30,7 +32,7 @@ class Load(LoginRequiredMixin, TemplateView):
                         else:
                             shift = "second"
 
-                        if day == 5 and hour == 14:
+                        if day == 10 and hour == 14:
                             time_out = None
                         else:
                             time_out = clock_out(day, hour)
@@ -41,14 +43,14 @@ class Load(LoginRequiredMixin, TemplateView):
                                                   clock_out_time=time_out,
                                                   shift=shift)
 
-            text = "5 days worth of clockin data added to the database."
+            text = "10 days worth of clockin data added to the database."
             context['text'] = text
 
         if request.GET.get('grabComplete'):
             serial_number = get_truck_serial()
             completed = get_completed(1, 7, 0)
             Complete.objects.create(serial_number=serial_number, completed=completed)
-            for day in range(1, 6):
+            for day in range(1, 11):
                 for hour in range(7, 23):
                     while True:
                         last_truck = Complete.objects.latest('completed')
@@ -62,10 +64,11 @@ class Load(LoginRequiredMixin, TemplateView):
                             minute = prev_time.minute + random.randint(7, 12)
                         completed = get_completed(day, hour, minute)
                         Complete.objects.create(serial_number=serial_number, completed=completed)
-            text2 = "5 days worth of data added to the database."
+            text2 = "10 days worth of data added to the database."
             context['text2'] = text2
 
         return render(request, self.template_name, context)
+
 
 class HPV(LoginRequiredMixin, TemplateView):
     template_name = "hpv/hpv2.html"
@@ -78,9 +81,7 @@ class HPV(LoginRequiredMixin, TemplateView):
             for i in range(1,9):
                 this_dt = datetime.combine(today, dt.time(shift_start_time + i))
                 if this_dt <= NOW:  # datetime.now():
-                    dpt_data.append(Attendance.get_active_at(active_time=this_dt,
-                                                             department=department)
-                                    )
+                    dpt_data.append(Attendance.get_active_at(active_time=this_dt,department=department))
                 else:
                     dpt_data.append("")
 
@@ -97,10 +98,7 @@ class HPV(LoginRequiredMixin, TemplateView):
                 this_dt = pytz.utc.localize(this_dt)
                 start_dt = pytz.utc.localize(start_dt)
                 if this_dt <= pytz.utc.localize(NOW):  # datetime.now():
-                    dpt_data.append(Attendance.get_manhours_during(start=start_dt,
-                                                                   stop=this_dt,
-                                                                   department=department)
-                                    )
+                    dpt_data.append(Attendance.get_manhours_during(start=start_dt, stop=this_dt, department=department))
                 else:
                     dpt_data.append("")
 
@@ -125,10 +123,11 @@ class HPV(LoginRequiredMixin, TemplateView):
                 this_dt = pytz.utc.localize(this_dt)
                 start_dt = pytz.utc.localize(start_dt)
                 if this_dt <= pytz.utc.localize(end_time):  # datetime.now():
-                    dept_manhours = Attendance.get_manhours_during(start=start_dt,
-                                                                   stop=this_dt,
-                                                                   department=department)
-                    department_hpv.append(dept_manhours / truck_total)
+                    dept_manhours = Attendance.get_manhours_during(start=start_dt, stop=this_dt, department=department)
+                    try:
+                        department_hpv.append(dept_manhours / truck_total)
+                    except:
+                        department_hpv.append(0)
                 else:
                     department_hpv.append('')
             hpv_data.append(department_hpv)
@@ -145,7 +144,9 @@ class HPV(LoginRequiredMixin, TemplateView):
         shift_2 = HPV._get_shift_history(departments, START_TIME2, today)
         shift1_manhours = HPV._get_shift_manhour_history(departments, START_TIME1, today)
         shift2_manhours = HPV._get_shift_manhour_history(departments, START_TIME2, today)
+        print("NOW: ", NOW)
         day_total = Complete.claims_by_time(NOW)  # datetime.now())
+        print("Day total: ", day_total)
         hour_delta = dt.timedelta(hours=1)
         hour_ago = NOW - hour_delta  # datetime.now() - hour_delta
         hour_total = day_total - Complete.claims_by_time(hour_ago)
@@ -165,13 +166,16 @@ class HPV(LoginRequiredMixin, TemplateView):
         except:
             HPVATM.objects.create(hpv_plant=day_HPV)
 
-        if (pytz.utc.localize(dt.datetime.now()) - last_hpv.timestamp) 
+        if (pytz.utc.localize(dt.datetime.now()) - last_hpv.timestamp) > dt.timedelta(minutes=5):
+            HPVATM.objects.create(hpv_plant=day_HPV)
+
 
         context.update({'shift_1': shift_1, 'shift_2': shift_2,
                         "manhours_1": shift1_manhours, "manhours_2": shift2_manhours,
                         'hour_total': hour_total, 'day_total': day_total, 'time': NOW,
                         "day_HPV": day_HPV, 'hpv_data': hpv_data})
         return context
+
 
 class Drip(LoginRequiredMixin, TemplateView):
     template_name = "hpv/drip.html"

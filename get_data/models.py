@@ -3,19 +3,21 @@ from .functions.process_raw_csv_data import *
 from .functions.csv_file_paths import *
 import datetime
 
+from datetime import datetime
 
 """
 This model is intended to hold
 all model data for the raw CSV dumps.
 """
 
+
 class RawClockData(models.Model):
     PRSN_NBR_TXT = models.CharField(max_length=100)
     full_nam = models.TextField()
     HM_LBRACCT_FULL_NAM = models.TextField()
-    start_rsn_txt = models.CharField(max_length=100)
+    start_rsn_txt = models.CharField(max_length=100, blank=True)
     PNCHEVNT_IN = models.DateTimeField(null=True, blank=True)
-    end_rsn_txt = models.CharField(max_length=100)
+    end_rsn_txt = models.CharField(max_length=100, blank=True)
     PNCHEVNT_OUT = models.DateTimeField(null=True, blank=True)
 
 
@@ -36,6 +38,72 @@ class RawClockData(models.Model):
             created_row.save()
         print("LOADED Raw Clock Data Row")
 
+    @staticmethod
+    def get_plant_man_hours_atm(start, stop=None):
+        """
+
+        :param start: a filter based on when you want to start analyzing manhours
+        :param stop:  a filter based on when you want to stop analyzing manhours
+        :return: Man_hours based on employees in and out during the given time
+            frame
+        """
+        if stop is None:
+            stop = datetime.now()
+
+        currently_clocked_in = RawClockData.get_clocked_in_before_stop(stop)
+        clocked_in_after_start = RawClockData.get_clocked_in_after_start(start)
+        clocked_out_after_start = RawClockData.get_clocked_out_after_start(start)
+
+        # Filtering employees who didn't clock out after timeframe
+        clocked_out_during_time_period = clocked_out_after_start.filter(PNCHEVNT_OUT__lt=stop)
+        # creates a query set of the filters objects
+        all_relevent = currently_clocked_in | clocked_in_after_start | clocked_out_during_time_period
+        print('-' * 50)
+        print(all_relevent.count())
+
+        # Performing actual calculations on man_hours
+        man_hours = 0
+        for employee in all_relevent:
+            begin = max(employee.PNCHEVNT_IN, start)
+            end = min(employee.PNCHEVNT_OUT, stop)
+            man_hours += ((end - begin).total_seconds()) / 3600
+            print('-' * 50)
+            print('MANHOURS =', man_hours)
+        return man_hours
+
+
+    @staticmethod
+    def get_clocked_in_before_stop(stop):
+        """
+        Filters employees who clocked in before shift time, exluding those who
+        have clocked out
+        :param stop: the start of time that you want to look at
+        :return: filtered objects before the start value
+        """
+        return RawClockData.objects.filter(PNCHEVNT_IN__lt=stop).exclude(PNCHEVNT_OUT__lt=start)
+
+    @staticmethod
+    def get_clocked_in_after_start(start):
+        """
+        Filtering employees who came in after the start of this shift
+        :param start: the start of time that you want to look at
+        :return: filtered objects after the start value
+        """
+        return RawClockData.objects.filter(PNCHEVNT_IN__gte=datetime.date(start)).exclude(PNCHEVNT_IN__lt=start)
+
+    @staticmethod
+    def get_clocked_out_after_start(start):
+        """
+        Filtering employees who clocked out after the start
+        :param start: the start of time that you want to look at
+        :return: filtered objects after the start value
+        """
+        return RawClockData.objects.filter(PNCHEVNT_OUT__gt=start)
+
+
+
+    def currently_clocked_in(self):
+        pass
 
     @staticmethod
     def get_department(HM_LBRACCT_FULL_NAM):
@@ -162,7 +230,6 @@ class RawCrysData(models.Model):
     INSP_COMT = models.TextField()
     TS_LOAD = models.DateTimeField()
 
-
     @staticmethod
     def load_raw_data():
         # process generator file. Punch CSV has headers.
@@ -179,6 +246,7 @@ class RawCrysData(models.Model):
             )
             created_row.save()
         print("LOADED crys Row")
+
 
 class RawPlantActivity(models.Model):
     VEH_SER_NO = models.CharField(max_length=6)
@@ -201,12 +269,14 @@ class RawPlantActivity(models.Model):
             created_row.save()
         print("LOADED crys Row")
 
+
 # Based on the Mount Holly Org Updates 2015 Excel File
 class OrgUnits(models.Model):
     dept_name = models.CharField(max_length=255)
     dept_abrv = models.CharField(max_length=5)
     dept_id = models.CharField(max_length=100)
     shift_id = models.CharField(max_length=10)
+
 
 
 # class RawShopCalls(models.Model):
@@ -226,3 +296,21 @@ class OrgUnits(models.Model):
 #             )
 #             created_row.save()
 #         print("LOADED shopcalls Row")
+
+    # class RawShopCalls(models.Model):
+    #     SC_ID = models.CharField(max_length=6)
+    #     VEH_SER_NO = models.CharField(max_length=6)
+    #
+    #     @staticmethod
+    #     def load_raw_data():
+    #         # process generator file. Punch CSV has headers.
+    #         # each row is a dict.
+    #         for row in read_csv_generator(shopcalls_csv, headers=True):
+    #             print(row)
+    #             print('*'*40)
+    #             created_row = RawShopCalls.objects.create(
+    #                 SC_ID=row['SC_ID'],
+    #                 VEH_SER_NO=row['VEH_SER_NO'],
+    #             )
+    #             created_row.save()
+    #         print("LOADED shopcalls Row")
