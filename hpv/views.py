@@ -121,7 +121,6 @@ class HPV(LoginRequiredMixin, TemplateView):
             else:
                 shift.append("")
 
-            print("num_in: ", num_in)
         return shift
 
     def _get_shift_manhour_history(departments, shift_start_time, today):
