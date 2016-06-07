@@ -7,8 +7,11 @@
   {% endfor %}
 </ul>
 <a href="{% url 'dripper:load' %}">load</a>
-<a href="{% url 'dripper:run' %}">run</a>
+<br>
 <a href="{% url 'dripper:flush_targets' %}">flush targets</a>
-<a href="{% url 'dripper:flush_drippers' %}">flush_drippers</a>
+<br>
+<a href="{% url 'dripper:run' %}">run</a>
+<br>
+<a href="{% url 'dripper:status' %}">stop</a>
 
 <meta http-equiv="refresh" content="2">

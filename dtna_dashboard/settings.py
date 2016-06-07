@@ -38,6 +38,7 @@ LOGIN_REDIRECT_URL = "/hpv/"
 # Application definition
 
 INSTALLED_APPS = (
+    'django_nose',
     'generic_dripper.apps.GenericDripperConfig',
     'api.apps.ApiConfig',
     'crys.apps.CrysConfig',
@@ -52,6 +53,15 @@ INSTALLED_APPS = (
     'django.contrib.messages',
     'django.contrib.staticfiles',
 )
+
+# Use nose to run all tests
+TEST_RUNNER = 'django_nose.NoseTestSuiteRunner'
+
+# Tell nose to measure coverage on the 'foo' and 'bar' apps
+NOSE_ARGS = [
+    '--with-coverage',
+    '--cover-package=generic_dripper,hpv,api,crys,plantsettings',
+]
 
 MIDDLEWARE_CLASSES = (
     'django.contrib.sessions.middleware.SessionMiddleware',
