@@ -205,10 +205,11 @@ class ManHoursTestCase(TestCase):
     def test_get_currently_clocked_in(self):
         """Test for employees who clocked in before start is accurate"""
         start = dt.datetime(2016, 6, 3, 6, 30)
+        stop = None
         expected_employees = ['001', '003', '004', '006', '005', '002']
         func_name = 'test_get_currently_clocked_in_before_start'
 
-        employees = RawClockData.get_clocked_in(start)
+        employees = RawClockData.get_clocked_in(start, stop)
 
         # for employee in employees:
         #     ManHoursTestCase.print_employee_results(func_name, employee)

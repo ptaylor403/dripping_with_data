@@ -56,6 +56,7 @@ class RawClockData(models.Model):
 
         currently_clocked_in = RawClockData.get_clocked_in(start)
 
+
         if by_department:
             for employee in currently_clocked_in:
                 pass

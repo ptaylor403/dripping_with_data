@@ -10,12 +10,12 @@ class HPVATM(models.Model):
     :param num_claims_to_time: Number of trucks completed so far that day
     """
     timestamp = models.DateTimeField(auto_now_add=True)
-    num_clocked_in = models.IntegerField()
-    num_claims = models.IntegerField()
-    num_claims_first = models.IntegerField(null=True)
-    num_claims_second = models.IntegerField(null=True)
-    num_claims_third = models.IntegerField(null=True)
-    manhours = models.IntegerField(null=True)
+    # num_clocked_in = models.IntegerField()
+    # num_claims = models.IntegerField()
+    # num_claims_first = models.IntegerField(null=True)
+    # num_claims_second = models.IntegerField(null=True)
+    # num_claims_third = models.IntegerField(null=True)
+    # manhours = models.IntegerField(null=True)
     hpv_plant = models.DecimalField(decimal_places=1, max_digits=4, null=True)
 
 
