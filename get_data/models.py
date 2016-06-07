@@ -42,7 +42,8 @@ class RawClockData(models.Model):
     @staticmethod
     def get_plant_man_hours_atm(start, stop=None, by_department=False):
         """
-
+        Static method that calls RawClockedData.get_clocked_in to determine how
+        many people are clocked in at the specified time slice.
         :param start: a filter based on when you want to start analyzing manhours
         :param stop:  a filter based on when you want to stop analyzing manhours
         :return: num of employees clocked as int and manhours as a float
@@ -51,7 +52,6 @@ class RawClockData(models.Model):
             stop = datetime.now()
 
         currently_clocked_in = RawClockData.get_clocked_in(start)
-
 
         if by_department:
             for employee in currently_clocked_in:
@@ -63,14 +63,13 @@ class RawClockData(models.Model):
             man_hours = timedelta(hours=0)
             num_employees = currently_clocked_in.count()
             for employee in currently_clocked_in:
-
                 begin = max(employee.PNCHEVNT_IN, start)
+                begin = start
                 end = stop
                 man_hours += end-begin
                 man_seconds = man_hours.total_seconds()
                 total_man_hours =man_seconds/3600
             return total_man_hours, num_employees
-
 
     @staticmethod
     def get_clocked_in(start):
@@ -218,7 +217,13 @@ class RawPlantActivity(models.Model):
 
         return plant_hpv_at_slice, num_claims_at_slice, total_hours_at_slice, current_num_employees
 
+    @staticmethod
+    def get_department_manhours(employees_obj_from_slice):
+        """
 
+        :param employees_obj_from_slice:
+        :return:
+        """
 
 # Based on the Mount Holly Org Updates 2015 Excel File
 class OrgUnits(models.Model):
