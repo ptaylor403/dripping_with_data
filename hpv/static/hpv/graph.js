@@ -16,7 +16,7 @@ jQuery(function($) {
     var graphData = [{
       key: 'Today',
       values: [],
-      color: '#ff7f0e'
+      color: '#4252ce'
     }];
     for (i = 0; i < data.length; i++) {
       // unix = Math.round((new Date(data[i]["timestamp"]).getTime()) / 1000);
@@ -47,7 +47,7 @@ jQuery(function($) {
       //
       chart.yAxis
           .axisLabel('Time')
-          // .tickFormat(d3.format(',f'));
+          .tickFormat(d3.format(',f'));
 
       d3.select('#chart svg')
           .datum(graphData)
@@ -59,9 +59,9 @@ jQuery(function($) {
       return chart;
     });
   });
-
-  // setInterval(function () {
-  //     $.get('');
-  //   }, 12000
-  // )
+  var timeout = setTimeout("location.reload(true);",60000);
+    function resetTimeout() {
+      clearTimeout(timeout);
+      timeout = setTimeout("location.reload(true);",60000);
+    }
 });

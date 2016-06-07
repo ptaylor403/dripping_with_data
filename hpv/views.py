@@ -9,7 +9,7 @@ import pytz
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth import logout
 
-NOW = datetime.now() + dt.timedelta(hours=0)
+NOW = datetime.now() + dt.timedelta(hours=9)
 
 
 class Load(LoginRequiredMixin, TemplateView):
