@@ -11,9 +11,12 @@ from django.contrib.auth import logout
 from django.http import HttpResponseRedirect
 from get_data.models import RawPlantActivity, RawClockData
 from generic_dripper.views import the_dripper
+import sys
 
-# NOW = datetime.now() - dt.timedelta(days=5, hours=3)
-NOW = the_dripper.simulated_time.replace(tzinfo=None)
+if "runserver" in sys.argv:
+    NOW = the_dripper.simulated_time.replace(tzinfo=None)
+else:
+    NOW = datetime.now() - dt.timedelta(days=5, hours=3)
 
 
 class Load(LoginRequiredMixin, TemplateView):

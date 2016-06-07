@@ -4,17 +4,20 @@ from .models import RawCrysDataDripper, RawPlantActivityDripper, CombinedDripper
 from get_data.models import RawClockData, RawDirectRunData, RawCrysData, RawPlantActivity
 from plantsettings.models import PlantSetting
 import datetime as dt
+import sys
 
-
-all_data_tables = [RawClockData, RawDirectRunData,
-                   RawCrysData, RawPlantActivity]
-all_drippers = [RawClockDataDripper, RawDirectRunDataDripper,
-                RawCrysDataDripper, RawPlantActivityDripper]
-if not PlantSetting.objects.exists():
-    PlantSetting().save()
-the_dripper = CombinedDripper(PlantSetting.objects.last().dripper_start,
-                              dt.timedelta(minutes=15))
-the_dripper.add_dripper(*all_drippers)
+if "runserver" in sys.argv:
+    all_data_tables = [RawClockData, RawDirectRunData,
+                       RawCrysData, RawPlantActivity]
+    all_drippers = [RawClockDataDripper, RawDirectRunDataDripper,
+                    RawCrysDataDripper, RawPlantActivityDripper]
+    if not PlantSetting.objects.exists():
+        PlantSetting().save()
+    the_dripper = CombinedDripper(PlantSetting.objects.last().dripper_start,
+                                  dt.timedelta(minutes=15))
+    the_dripper.add_dripper(*all_drippers)
+else:
+    the_dripper = None
 
 
 def status(request):
