@@ -38,6 +38,7 @@ LOGIN_REDIRECT_URL = "/hpv/"
 # Application definition
 
 INSTALLED_APPS = (
+    'generic_dripper.apps.GenericDripperConfig',
     'api.apps.ApiConfig',
     'crys.apps.CrysConfig',
     'get_data.apps.GetDataConfig',

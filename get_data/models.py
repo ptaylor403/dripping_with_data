@@ -18,9 +18,9 @@ class RawClockData(models.Model):
     PRSN_NBR_TXT = models.CharField(max_length=100)
     full_nam = models.TextField()
     HM_LBRACCT_FULL_NAM = models.TextField()
-    start_rsn_txt = models.CharField(max_length=100, blank=True)
+    start_rsn_txt = models.CharField(max_length=100, null=True)
     PNCHEVNT_IN = models.DateTimeField(null=True, blank=True)
-    end_rsn_txt = models.CharField(max_length=100, blank=True)
+    end_rsn_txt = models.CharField(max_length=100, null=True)
     PNCHEVNT_OUT = models.DateTimeField(null=True, blank=True)
 
 
