@@ -213,7 +213,10 @@ class RawPlantActivity(models.Model):
         print("total_hours_at_slice: ", total_hours_at_slice)
 
         #calculating the HPV
-        plant_hpv_at_slice = total_hours_at_slice/num_claims_at_slice
+        if num_claims_at_slice != 0:
+            plant_hpv_at_slice = total_hours_at_slice/num_claims_at_slice
+        else:
+            plant_hpv_at_slice = 0
 
         return plant_hpv_at_slice, num_claims_at_slice, total_hours_at_slice, current_num_employees
 

@@ -112,11 +112,6 @@ class HPV(LoginRequiredMixin, TemplateView):
             print('Hour: ', i)
             this_dt = datetime.combine(today, dt.time(shift_start_time + i))
             if this_dt <= NOW:  # datetime.now():
-                dpt_data.append(Attendance.get_active_at(active_time=this_dt,department=department))
-            else:
-                dpt_data.append("")
-
-            if this_dt <= NOW:  # datetime.now():
                 num_in = RawClockData.get_clocked_in(start=this_dt).filter(PNCHEVNT_IN__gte=this_dt, PNCHEVNT_IN__lt=this_dt + dt.timedelta(i + 1)).count()
                 shift.append(num_in)
 
@@ -189,7 +184,7 @@ class HPV(LoginRequiredMixin, TemplateView):
         # Claims - by day and shift
 
 
-        context.update({'plant_attendance': plant_attendance, 'plant_hpv':plant_hpv, "dripper_time": dripper_time})
+        context.update({'plant_attendance': plant_attendance, 'plant_hpv':plant_hpv})
 
 
         # today = datetime.today().date()
@@ -231,10 +226,10 @@ class HPV(LoginRequiredMixin, TemplateView):
         #     HPVATM.objects.create(hpv_plant=day_HPV)
 
 
-        context.update({'shift_1': shift_1, 'shift_2': shift_2,
-                        "manhours_1": shift1_manhours, "manhours_2": shift2_manhours,
-                        'hour_total': hour_total, 'day_total': day_total, 'time': NOW,
-                        "day_HPV": day_HPV, 'hpv_data': hpv_data})
+        # context.update({'shift_1': shift_1, 'shift_2': shift_2,
+        #                 "manhours_1": shift1_manhours, "manhours_2": shift2_manhours,
+        #                 'hour_total': hour_total, 'day_total': day_total, 'time': NOW,
+        #                 "day_HPV": day_HPV, 'hpv_data': hpv_data})
         return context
 
 
