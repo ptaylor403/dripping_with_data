@@ -66,6 +66,7 @@ class RawClockData(models.Model):
             #write in case for max employee clock in and clockout = none
             man_hours = timedelta(hours=0)
             num_employees = currently_clocked_in.count()
+            total_man_hours = man_hours
             for employee in currently_clocked_in:
                 begin = start
                 end = stop
