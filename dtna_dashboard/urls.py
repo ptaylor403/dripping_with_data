@@ -8,4 +8,5 @@ urlpatterns = [
     url(r'^', include('api.urls')),
     url(r'^', include('django.contrib.auth.urls')),
     url(r'^getdata/', include('get_data.urls')),
+    url(r'^dripper/', include('generic_dripper.urls'))
 ]

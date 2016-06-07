@@ -95,9 +95,9 @@ class RawClockDataDripper(models.Model):
     PRSN_NBR_TXT = models.CharField(max_length=100)
     full_nam = models.TextField()
     HM_LBRACCT_FULL_NAM = models.TextField()
-    start_rsn_txt = models.CharField(max_length=100, blank=True)
+    start_rsn_txt = models.CharField(max_length=100, null=True)
     PNCHEVNT_IN = models.DateTimeField(null=True, blank=True)
-    end_rsn_txt = models.CharField(max_length=100, blank=True)
+    end_rsn_txt = models.CharField(max_length=100, null=True)
     PNCHEVNT_OUT = models.DateTimeField(null=True, blank=True)
     create_at = models.DateTimeField(null=True, blank=True)
     edit_1_at = models.DateTimeField(null=True, blank=True)
@@ -120,8 +120,7 @@ class RawClockDataDripper(models.Model):
                                end_rsn_txt=entry.end_rsn_txt,
                                PNCHEVNT_OUT=entry.PNCHEVNT_OUT,
                                create_at=create_time,
-                               edit_1_at=entry.PNCHEVNT_IN,
-                               edit_2_at=entry.PNCHEVNT_OUT)
+                               edit_1_at=entry.PNCHEVNT_IN)
             if entry.PNCHEVNT_IN is not None:
                 earliest_time = entry.PNCHEVNT_IN
 
@@ -140,33 +139,34 @@ class RawClockDataDripper(models.Model):
 
     @classmethod
     def _edit_1_on_target(cls, stop):
-        relevant = cls.objects.filter(edit_1__gt=cls.last_drip)
-        relevant = relevant.filter(edit_1__lte=stop)
+        relevant = cls.objects.filter(edit_1_at__gt=cls.last_drip)
+        relevant = relevant.filter(edit_1_at__lte=stop)
         for entry in relevant.order_by('pk'):
-            cls.target.objects.filter(PRSN_NBR_TXT=entry.PRSN_NBR_TXT,
-                                      full_nam=entry.full_nam,
-                                      HM_LBRACCT_FULL_NAM=entry.HM_LBRACCT_FULL_NAM).last().update(
-                                      PNCHEVNT_IN=entry.PNCHEVNT_IN,
-                                      start_rsn_txt=entry.start_rsn_txt,
-                                      end_rsn_txt="&missedOut"
-                                      )
+            to_update = cls.target.objects.filter(PRSN_NBR_TXT=entry.PRSN_NBR_TXT,
+                                                  full_nam=entry.full_nam,
+                                                  HM_LBRACCT_FULL_NAM=entry.HM_LBRACCT_FULL_NAM).last()
+            if to_update:
+                to_update.PNCHEVNT_IN = entry.PNCHEVNT_IN
+                to_update.start_rsn_txt = entry.start_rsn_txt
+                to_update.end_rsn_txt = "&missedOut"
+                to_update.save()
 
 
-    @classmethod
-    def _edit_2_on_target(cls, stop):
-        relevant = cls.objects.filter(edit_2_at__gt=cls.last_drip)
-        relevant = relevant.filter(edit_2_at__lte=stop)
-        for entry in relevant.order_by('pk'):
-            cls.target.objects.filter(HM_LBRACCT_FULL_NAM=entry.HM_LBRACCT_FULL_NAM,
-                                      PNCHEVNT_IN=entry.PNCHEVNT_IN).update(
-                                      end_rsn_txt=entry.end_rsn_txt,
-                                      PNCHEVNT_OUT=entry.PNCHEVNT_OUT)
+    # @classmethod
+    # def _edit_2_on_target(cls, stop):
+    #     relevant = cls.objects.filter(edit_2_at__gt=cls.last_drip)
+    #     relevant = relevant.filter(edit_2_at__lte=stop)
+    #     for entry in relevant.order_by('pk'):
+    #         cls.target.objects.filter(HM_LBRACCT_FULL_NAM=entry.HM_LBRACCT_FULL_NAM,
+    #                                   PNCHEVNT_IN=entry.PNCHEVNT_IN).update(
+    #                                   end_rsn_txt=entry.end_rsn_txt,
+    #                                   PNCHEVNT_OUT=entry.PNCHEVNT_OUT)
 
     @classmethod
     def update_target(cls, *args, **kwargs):
         cls._create_on_target(*args, **kwargs)
         cls._edit_1_on_target(*args, **kwargs)
-        cls._edit_2_on_target(*args, **kwargs)
+        # cls._edit_2_on_target(*args, **kwargs)
         if "stop" in kwargs:
             stop = kwargs['stop']
         else:
@@ -345,3 +345,15 @@ class CombinedDripper:
 
     def update(self):
         self.update_by(self.time_step)
+
+    def clear_targets(self):
+        for dripper in self.drippers:
+            dripper.target.objects.all().delete()
+
+    def load_drippers(self):
+        for dripper in self.drippers:
+            dripper.load_from_target()
+
+    def clear_drippers(self):
+        for dripper in self.drippers:
+            dripper.objects.all().delete()
