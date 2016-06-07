@@ -233,4 +233,4 @@ class test_combined_dripper(TestCase):
             else:
                 self.assertEqual(entry.clock_out_time, out_time)
 
-class Test_Real_Date_Drippers(TestCase):
+# class Test_Real_Date_Drippers(TestCase):

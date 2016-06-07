@@ -2,14 +2,17 @@ from django.shortcuts import render, redirect
 from .models import RawClockDataDripper, RawDirectRunDataDripper
 from .models import RawCrysDataDripper, RawPlantActivityDripper, CombinedDripper
 from get_data.models import RawClockData, RawDirectRunData, RawCrysData, RawPlantActivity
+from plantsettings.models import PlantSetting
 import datetime as dt
-import pytz
+
 
 all_data_tables = [RawClockData, RawDirectRunData,
                    RawCrysData, RawPlantActivity]
 all_drippers = [RawClockDataDripper, RawDirectRunDataDripper,
                 RawCrysDataDripper, RawPlantActivityDripper]
-the_dripper = CombinedDripper(dt.datetime(2016, 5, 30, 16, tzinfo=pytz.utc),
+if not PlantSetting.objects.exists():
+    PlantSetting().save()
+the_dripper = CombinedDripper(PlantSetting.objects.last().dripper_start,
                               dt.timedelta(minutes=15))
 the_dripper.add_dripper(*all_drippers)
 
@@ -34,6 +37,9 @@ def load(request):
 
 def run(request):
     the_dripper.update()
+    dripper_time = PlantSetting.objects.last()
+    dripper_time.dripper_start = the_dripper.simulated_time
+    dripper_time.save()
     context = {}
     status_list = []
     for table in all_data_tables:
