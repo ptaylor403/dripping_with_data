@@ -10,8 +10,10 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth import logout
 from django.http import HttpResponseRedirect
 from get_data.models import RawPlantActivity, RawClockData
+from generic_dripper.views import the_dripper
 
-NOW = datetime.now() - dt.timedelta(days=5, hours=3)
+# NOW = datetime.now() - dt.timedelta(days=5, hours=3)
+NOW = the_dripper.simulated_time.replace(tzinfo=None)
 
 
 class Load(LoginRequiredMixin, TemplateView):
@@ -170,7 +172,8 @@ class HPV(LoginRequiredMixin, TemplateView):
         # When during the hour should we do the headcount?
         context = super().get_context_data(**kwargs)
         departments = ['CIW', 'FCB', 'PNT', 'PCH', 'FCH', 'DAC', 'MAINT', 'QA', 'MAT']
-
+        NOW = the_dripper.simulated_time.replace(tzinfo=None)
+        print("NOW: ", NOW)
         today = NOW.date()
         START_TIME1 = 6
         START_TIME2 = 14
@@ -183,7 +186,7 @@ class HPV(LoginRequiredMixin, TemplateView):
         # Claims - by day and shift
 
 
-        context.update({'plant_attendance': plant_attendance, 'plant_hpv':plant_hpv})
+        context.update({'plant_attendance': plant_attendance, 'plant_hpv':plant_hpv, "dripper_time": dripper_time})
 
 
         # today = datetime.today().date()
