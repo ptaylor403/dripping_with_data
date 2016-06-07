@@ -20,6 +20,7 @@ class Clone(TemplateView):
             RawDirectRunData.load_raw_data()
             RawCrysData.load_raw_data()
             RawPlantActivity.load_raw_data()
+            OrgUnits.load_raw_data()
             done=True
 
         context = {'done': done}

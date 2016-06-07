@@ -1,18 +1,29 @@
+{% extends 'hpv/base.html' %}
 {% load staticfiles %}
 
 {%block content%}
-Please sign in for access
-<form action="{% url 'login' %}" method="post" id="login-form">{% csrf_token %}
-  <div class="form-row">
-    {{ form.username.errors }}
-    {{ form.username.label_tag }} {{ form.username }}
+<div class="container">
+  <div class="row">
+    <div class="col-md-offset-4 col-md-4">
+      <h2>Please sign in for access</h2>
+      <form action="{% url 'login' %}" method="post" class="login-form">
+        {% csrf_token %}
+        <div class="form-row">
+          {{ form.username.label_tag }}<br />
+          {{ form.username }}
+        </div>
+        <div class="form-row">
+          {{ form.password.label_tag }}<br />
+          {{ form.password }}
+        </div>
+        <div class="wrapper">
+          <br />
+          <div class="submit-row">
+            <input type="submit" class="btn btn-primary btn-md" value="Log in" />
+          </div>
+        </div>
+      </form>
+    </div>
   </div>
-  <div class="form-row">
-    {{ form.password.errors }}
-    {{ form.password.label_tag }} {{ form.password }}
-  </div>
-  <div class="submit-row">
-    <label>&nbsp;</label><input type="submit" value="Log in" />
-  </div>
-</form>
+</div>
 {%endblock%}

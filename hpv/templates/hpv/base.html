@@ -3,20 +3,36 @@
 <!DOCTYPE html>
 <html>
   <head>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous">
     <link rel="stylesheet" type="text/css" href="../static/hpv/style.css"/>
     <meta charset="utf-8">
-    <title>DTNA</title>
+    <link href="../static/hpv/build/nv.d3.min.css" rel="stylesheet">
+    <script src="https://d3js.org/d3.v3.min.js" charset="utf-8"></script>
+    <script src="https://code.jquery.com/jquery-2.2.4.min.js" integrity="sha256-BbhdlvQf/xTY9gja0Dq3HiwQF8LaCRTXxZKRutelT44=" crossorigin="anonymous"></script>
   </head>
 
   <body>
     {% if user.is_authenticated %}
-      <b>logged in as {{user.username}}</b>
-      <a href="{% url 'logout' %}">Logout</a>
+    <div class="collapse" id="exCollapsingNavbar">
+      <div class="bg-inverse p-a-1"><p>
+        {{time}} || <b>Signed in as {{user.username}} </b> || <a href="{% url 'logout' %}">Logout</a></p>
+      </div>
+    </div>
+    <nav class="navbar navbar-light bg-faded">
+      <div class="navbar-header">
+        <b><a class="navbar-brand" href="#">Daimler</a></b>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#exCollapsingNavbar">
+        &#9776;
+        </button>
+      </div>
+    </nav>
     {% endif %}
 
     {% block content %}
       {{ content }}
     {% endblock %}
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js" integrity="sha384-0mSbJDEHialfmuBBQP6A4Qrprq5OVfW37PRR3j5ELqxss1yVqOtnepnHVP9aJ7xS" crossorigin="anonymous"></script>
+    <script src="../static/hpv/build/nv.d3.js"></script>
   </body>
 
 </html>

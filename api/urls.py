@@ -4,5 +4,5 @@ from . import views
 
 
 urlpatterns = [
-    url(r'^api/hpv', views.HPVAPI.as_view()),
+   url(r'^api/hpv', views.HPVAPI.as_view()),
 ]
