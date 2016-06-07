@@ -71,7 +71,7 @@ class RawClockData(models.Model):
                 end = stop
                 man_hours += end-begin
                 man_seconds = man_hours.total_seconds()
-                total_man_hours =man_seconds/3600
+                total_man_hours = man_seconds/3600
             return total_man_hours, num_employees
 
 
@@ -83,11 +83,8 @@ class RawClockData(models.Model):
         :return: filtered objects before the start value
         """
         employees = RawClockData.objects.filter(
-            PNCHEVNT_IN__year=start.year,
-            PNCHEVNT_IN__month=start.month,
-            PNCHEVNT_IN__day=start.day,
-            PNCHEVNT_OUT__exact=None,
-        ).exclude(end_rsn_txt__exact='&out')
+            PNCHEVNT_IN__gte=start
+        )
 
         return employees
 
@@ -167,8 +164,6 @@ class RawPlantActivity(models.Model):
             created_row.save()
         print("LOADED plant Row")
 
-
-
     @staticmethod
     def get_claims_date_range(start, stop=None, dept='all'):
         """
@@ -214,6 +209,8 @@ class RawPlantActivity(models.Model):
         #calls the two methods to get the needed data
         num_claims_at_slice = RawPlantActivity.get_claims_date_range(start, stop)
         total_hours_at_slice, current_num_employees = RawClockData.get_plant_man_hours_atm(start, stop)
+        print("current_num_employees: ", current_num_employees)
+        print("total_hours_at_slice: ", total_hours_at_slice)
 
         #calculating the HPV
         plant_hpv_at_slice = total_hours_at_slice/num_claims_at_slice

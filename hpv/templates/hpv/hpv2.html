@@ -14,12 +14,18 @@
         {{time}}
       </p>
 
+      <table>
       {% for item in plant_attendance %}
-      <p>
-          {{item}}
-      </p>
+      <tr>
+          <td>Hour {{forloop.counter}}</td>
+          <td>{{item}}</td>
+      </tr>
       {% endfor %}
-      {{plant_attendance}}
+      </table>
+
+      Plant HPV
+      {{plant_hpv}}
+
       <h3>HPV</h3>
       <table id=hpv>
         <tr class=head>
@@ -68,7 +74,7 @@
         </tr>
       </table> -->
 
-      <h3 id=shift1_title>Shift 1</h3>
+      <!-- <h3 id=shift1_title>Shift 1</h3>
        <table id=shift1_attendance>
          <tr class=head>
            <td class=head><b>Department</b></td>
@@ -113,7 +119,7 @@
            {% endfor %}
          </tr>
        {% endfor %}
-       </table>
+       </table> -->
 
       {% endblock %}
     </body>

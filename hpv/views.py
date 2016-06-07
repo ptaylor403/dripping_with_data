@@ -11,7 +11,7 @@ from django.contrib.auth import logout
 from django.http import HttpResponseRedirect
 from get_data.models import RawPlantActivity, RawClockData
 
-NOW = datetime.now() - dt.timedelta(days=6, hours=12)
+NOW = datetime.now() - dt.timedelta(days=5, hours=3)
 
 
 class Load(LoginRequiredMixin, TemplateView):
@@ -68,6 +68,34 @@ class Load(LoginRequiredMixin, TemplateView):
             text2 = "10 days worth of data added to the database."
             context['text2'] = text2
 
+        if request.GET.get('grabAPI'):
+            for day in range(1, 11):
+                for hour in range(6, 23):
+                    for minute in [5, 15, 25, 35, 45, 55]:
+                        timestamp = dt.datetime(2016, 6, day, hour, minute)
+                        if hour == 6:
+                            hpv_plant = random.randint(100, 103)
+                            num_clocked_in = random.randint(750, 800)
+                        elif hour >= 7 and hour <= 9:
+                            hpv_plant = random.randint(97, 100)
+                            num_clocked_in = random.randint(750, 800)
+                        elif hour >= 10 and hour <= 14:
+                            hpv_plant = random.randint(94, 97)
+                            num_clocked_in = random.randint(750, 800)
+                        elif hour >= 15 and hour <= 17:
+                            hpv_plant = random.randint(91, 94)
+                            num_clocked_in = random.randint(550, 600)
+                        elif hour >= 18:
+                            hpv_plant = random.randint(88, 91)
+                            num_clocked_in = random.randint(550, 600)
+                        hpv_obj = HPVATM.objects.create(hpv_plant=hpv_plant, num_clocked_in=num_clocked_in)
+                        hpv_obj.timestamp = timestamp
+                        hpv_obj.save()
+
+                    text3 = "10 days worth of data added to the database."
+                    context['text3'] = text3
+
+
         return render(request, self.template_name, context)
 
 
@@ -80,6 +108,7 @@ class HPV(LoginRequiredMixin, TemplateView):
         # for department in departments:
         #     dpt_data = [department]
         for i in range(1,17):
+            print('Hour: ', i)
             this_dt = datetime.combine(today, dt.time(shift_start_time + i))
 
             if this_dt <= NOW:  # datetime.now():
@@ -89,7 +118,7 @@ class HPV(LoginRequiredMixin, TemplateView):
             else:
                 shift.append("")
 
-
+            print("num_in: ", num_in)
         return shift
 
     def _get_shift_manhour_history(departments, shift_start_time, today):
@@ -150,11 +179,11 @@ class HPV(LoginRequiredMixin, TemplateView):
         shift1_attendance = []
         shift2_attendance = []
         # HPV - by department and plant wide, by day and shift
-        
+        plant_hpv = RawPlantActivity.get_hpv_at_slice(datetime.combine(today, dt.time(0)), NOW)[0]
         # Claims - by day and shift
 
 
-        context.update({'plant_attendance': plant_attendance})
+        context.update({'plant_attendance': plant_attendance, 'plant_hpv':plant_hpv})
 
 
         # today = datetime.today().date()
