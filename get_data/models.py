@@ -285,10 +285,24 @@ class RawPlantActivity(models.Model):
 
 # Based on the Mount Holly Org Updates 2015 Excel File
 class OrgUnits(models.Model):
-    dept_name = models.CharField(max_length=255)
-    dept_abrv = models.CharField(max_length=5)
-    dept_id = models.CharField(max_length=100)
-    shift_id = models.CharField(max_length=10)
+    DEPT_NAME = models.CharField(max_length=255)
+    DEPT_ABRV = models.CharField(max_length=5)
+    DEPT_ID = models.CharField(max_length=100)
+    SHIFT_ID = models.CharField(max_length=10)
+
+    @staticmethod
+    def load_raw_data():
+        # process generator file. Punch CSV has headers.
+        # each row is a dict.
+        for row in read_csv_generator(departments_csv, headers=True):
+            created_row = OrgUnits.objects.create(
+                DEPT_NAME=row['Name'],
+                DEPT_ABRV=row['dept_abvr'],
+                DEPT_ID=row['Shift'],
+                SHIFT_ID=row['shift_id'],
+            )
+            created_row.save()
+        print("LOADED Department List Row")
 
 
     # class RawShopCalls(models.Model):

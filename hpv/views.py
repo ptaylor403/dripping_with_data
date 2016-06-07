@@ -8,7 +8,6 @@ import random
 import pytz
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth import logout
-from django.http import HttpResponseRedirect
 
 NOW = datetime.now() + dt.timedelta(hours=0)
 
@@ -67,6 +66,31 @@ class Load(LoginRequiredMixin, TemplateView):
             text2 = "10 days worth of data added to the database."
             context['text2'] = text2
 
+        if request.GET.get('grabAPI'):
+            for day in range(1, 11):
+                for hour in range(6, 23):
+                    for minute in [5, 15, 25, 35, 45, 55]:
+                        timestamp = dt.datetime(2016, 6, day, hour, minute)
+                        if hour == 6:
+                            hpv_plant = random.randint(100, 103)
+                            num_clocked_in = random.randint(750, 800)
+                        elif hour >= 7 and hour <= 9:
+                            hpv_plant = random.randint(97, 100)
+                            num_clocked_in = random.randint(750, 800)
+                        elif hour >= 10 and hour <= 14:
+                            hpv_plant = random.randint(94, 97)
+                            num_clocked_in = random.randint(750, 800)
+                        elif hour >= 15 and hour <= 17:
+                            hpv_plant = random.randint(91, 94)
+                            num_clocked_in = random.randint(550, 600)
+                        elif hour >= 18:
+                            hpv_plant = random.randint(88, 91)
+                            num_clocked_in = random.randint(550, 600)
+                        hpv_obj = HPVATM.objects.create(hpv_plant=hpv_plant, num_clocked_in=num_clocked_in)
+                        hpv_obj.timestamp = timestamp
+                        hpv_obj.save()
+                    text3 = "10 days worth of data added to the database."
+                    context['text3'] = text3
         return render(request, self.template_name, context)
 
 
@@ -78,7 +102,7 @@ class HPV(LoginRequiredMixin, TemplateView):
         shift = []
         for department in departments:
             dpt_data = [department]
-            for i in range(1,9):
+            for i in range(1, 9):
                 this_dt = datetime.combine(today, dt.time(shift_start_time + i))
                 if this_dt <= NOW:  # datetime.now():
                     dpt_data.append(Attendance.get_active_at(active_time=this_dt,department=department))
@@ -136,7 +160,7 @@ class HPV(LoginRequiredMixin, TemplateView):
     def get_context_data(self, **kwargs):
         # When during the hour should we do the headcount?
         context = super().get_context_data(**kwargs)
-        departments = ['FCH', 'CIW', 'FCB', 'PNT', 'PCH', 'plant']
+        departments = ['FCH', 'CIW', 'FCB', 'PNT', 'PCH', 'Plant']
         today = datetime.today().date()
         START_TIME1 = 6
         START_TIME2 = 14
@@ -159,17 +183,19 @@ class HPV(LoginRequiredMixin, TemplateView):
         except:
             day_HPV = 0
         start_time1 = datetime.combine(today, dt.time(START_TIME1))
-        start_time2 = datetime.combine(today, dt.time(START_TIME2))
+        if datetime.combine(today, dt.time(START_TIME2)) > NOW:
+            start_time2 = None
+        else:
+            start_time2 = datetime.combine(today, dt.time(START_TIME2))
         hpv_data = HPV._get_department_hpv(departments, start_time1, start_time2, NOW)
-
         last_hpv = 0
-        try:
-            last_hpv = HPVATM.objects.latest('timestamp')
-        except:
-            HPVATM.objects.create(hpv_plant=day_HPV)
-
-        if (pytz.utc.localize(dt.datetime.now()) - last_hpv.timestamp) > dt.timedelta(minutes=5):
-            HPVATM.objects.create(hpv_plant=day_HPV)
+        # try:
+        #     last_hpv = HPVATM.objects.latest('timestamp')
+        # except:
+        #     HPVATM.objects.create(hpv_plant=day_HPV)
+        #
+        # if (pytz.utc.localize(dt.datetime.now()) - last_hpv.timestamp) > dt.timedelta(minutes=5):
+        #     HPVATM.objects.create(hpv_plant=day_HPV)
 
         context.update({'shift_1': shift_1, 'shift_2': shift_2,
                         "manhours_1": shift1_manhours, "manhours_2": shift2_manhours,

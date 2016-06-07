@@ -28,7 +28,7 @@ class Attendance(models.Model):
             this_shift = Attendance.objects.all()
         else:
             this_shift = Attendance.objects.filter(shift=shift)
-        if department == 'all' or department == 'plant':
+        if department == 'all' or department == 'Plant':
             in_department = this_shift
         else:
             in_department = this_shift.filter(department=department)
@@ -59,7 +59,7 @@ class Attendance(models.Model):
             this_shift = Attendance.objects.all()
         else:
             this_shift = Attendance.objects.filter(shift=shift)
-        if department == 'all' or department == 'plant':
+        if department == 'all' or department == 'Plant':
             in_department = this_shift
         else:
             in_department = this_shift.filter(department=department)

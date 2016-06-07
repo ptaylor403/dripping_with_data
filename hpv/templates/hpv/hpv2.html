@@ -1,18 +1,18 @@
 {% extends 'hpv/base.html' %}
 {% load staticfiles %}
 
-<!DOCTYPE html>
-<html>
-    <head>
-        <link rel="stylesheet" href="../static/hpv/style.css">
-        <meta charset="utf-8">
-        <title>HPV Data</title>
-    </head>
-    <body>
-      {% block content %}
-      <p>
-        {{time}}
-      </p>
+<head>
+    <title>HPV Data</title>
+</head>
+
+{% block content %}
+<div class=container>
+  <form class="" action="" method="get">
+    <input type="hidden" name="" value="English">
+  </form>
+
+  <div class="row">
+    <div class="col-sm-12 col-md-5">
       <h3>HPV</h3>
       <table id=hpv>
         <tr class=head>
@@ -32,76 +32,114 @@
       </tr>
       {% endfor %}
       </table>
+    </div>
 
-      <h3 id=claim_title>Finished</h3>
-      <table id=claim_day>
-        <tr class=head>
-          <td class=head><b>Day</b></td>
-        </tr>
-        <tr>
-          <td class=total>total: {{ day_total }}</td>
-        </tr>
-        <tr>
-          <td class=total>hpv: {{day_HPV|floatformat}}</td>
-        </tr>
-      </table>
+    <div class="col-sm-12 col-md-7">
+      <div id='chart'>
+        <svg style='height:300px',> </svg>
+      </div><script src='{% static "hpv/graph.js" %}' type='text/javascript'> </script>
 
-      <table id=claim_hour>
-        <tr class=head>
-          <td class=head><b>Current</b></td>
-        </tr>
-        <tr>
-          <td class=total>total: {{ hour_total }}</td>
-        </tr>
-      </table>
-      <h3>Shift 1 man-hours</h3>
-      <table id=shift1_manhours>
+      <script type='text/javascript'>
+        d3.text("{% static "hpv/graph.js" %}","text/plain",function(err,text) {
+            d3.select("pre.prettyprint").text(text);
+            prettyPrint();
+        });
+      </script>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-xs-12 col-md-6">
+      <h3 id=shift1_title>Shift 1</h3>
+      <table id=shift1_attendance>
         <tr class=head>
           <td class=head><b>Department</b></td>
-          <td class=head><b>Hour 1</b></td>
-          <td class=head><b>Hour 2</b></td>
-          <td class=head><b>Hour 3</b></td>
-          <td class=head><b>Hour 4</b></td>
-          <td class=head><b>Hour 5</b></td>
-          <td class=head><b>Hour 6</b></td>
-          <td class=head><b>Hour 7</b></td>
-          <td class=head><b>Hour 8</b></td>
+          <td class=head><b>Hr 1</b></td>
+          <td class=head><b>Hr 2</b></td>
+          <td class=head><b>Hr 3</b></td>
+          <td class=head><b>Hr 4</b></td>
+          <td class=head><b>Hr 5</b></td>
+          <td class=head><b>Hr 6</b></td>
+          <td class=head><b>Hr 7</b></td>
+          <td class=head><b>Hr 8</b></td>
         </tr>
-        {% for department in manhours_1 %}
+        {% for department in shift_1 %}
           <tr>
             {% for entry in department %}
-              <td{% if forloop.first %} class="dept">{{entry}}{% else %}>
-                {{entry|floatformat}}
-                {%endif%}
+              <td{% if forloop.first %} class="dept"{% endif %}>
+                {{entry}}
               </td>
             {% endfor %}
           </tr>
         {% endfor %}
       </table>
-      <h3>Shift 2 man-hours</h3>
-      <table id=shift2_manhours>
-        <tr class=head>
-          <td class=head><b>Department</b></td>
-          <td class=head><b>Hour 1</b></td>
-          <td class=head><b>Hour 2</b></td>
-          <td class=head><b>Hour 3</b></td>
-          <td class=head><b>Hour 4</b></td>
-          <td class=head><b>Hour 5</b></td>
-          <td class=head><b>Hour 6</b></td>
-          <td class=head><b>Hour 7</b></td>
-          <td class=head><b>Hour 8</b></td>
+    </div>
+
+    <div class="col-xs-12 col-md-6">
+      <h3 id=shift2_title>Shift 2</h3>
+      <table id=shift2_attendance>
+      <tr class=head>
+        <td class=head><b>Department</b></td>
+        <td class=head><b>Hr 1</b></td>
+        <td class=head><b>Hr 2</b></td>
+        <td class=head><b>Hr 3</b></td>
+        <td class=head><b>Hr 4</b></td>
+        <td class=head><b>Hr 5</b></td>
+        <td class=head><b>Hr 6</b></td>
+        <td class=head><b>Hr 7</b></td>
+        <td class=head><b>Hr 8</b></td>
+      </tr>
+      {% for department in shift_2 %}
+        <tr>
+          {% for entry in department %}
+            <td{% if forloop.first %} class="dept"{% endif %}>
+              {{entry}}
+            </td>
+          {% endfor %}
         </tr>
-        {% for department in manhours_2 %}
-          <tr>
-            {% for entry in department %}
-              <td{% if forloop.first %} class="dept">{{entry}}{% else %}>
-                {{entry|floatformat}}
-                {%endif%}
-              </td>
-            {% endfor %}
-          </tr>
-        {% endfor %}
+      {% endfor %}
       </table>
-      {% endblock %}
-    </body>
-</html>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-xs-12">
+      <center>
+      <h3>Current Total: {{ hour_total }} | Total Count: {{ day_total }} |  Total HPV: {{day_HPV|floatformat}}</h3>
+      </center>
+      <!-- <tr class=head>
+        <td class=total>Current Total: {{ hour_total }}</td></br>
+      </tr> -->
+    </div>
+    <!-- <div class="col-xs-6">
+      <tr class=head>
+        <td class=total>Total Count: {{ day_total }}</td></br>
+        <td class=total>Total HPV: {{day_HPV|floatformat}}</td></br>
+      </tr>
+    </div> -->
+  </div>
+    <!-- <h3 id=claim_title>Finished</h3> -->
+    <!-- <table id=claim_day>
+      <tr class=head>
+        <!-- <td class=head><b>Day</b></td> -->
+      <!-- </tr>
+      <tr>
+        <td class=total>Current Total: {{ hour_total }}</td>
+        <td class=total>Total Count: {{ day_total }}</td>
+        <td class=total>Total HPV: {{day_HPV|floatformat}}</td>
+      </tr>
+      <tr>
+        <!-- <td class=total>Total HPV: {{day_HPV|floatformat}}</td> -->
+      <!-- </tr>
+    </table>
+
+    <table id=claim_hour>
+      <tr class=head>
+        <!-- <td class=head><b>Current</b></td> -->
+      <!-- </tr>
+      <tr>
+        <td class=total>Current Total: {{ hour_total }}</td>
+      </tr>
+    </table>
+  </div> -->
+
+</div>
+{% endblock %}
