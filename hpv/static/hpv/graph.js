@@ -12,7 +12,7 @@ jQuery(function($) {
   //   }
   // });
 
-  d3.json('/api/hpv/?format=json', function(data) {
+  d3.json('/api/hpv/?date=1&format=json', function(data) {
     var graphData = [{
       key: 'Today',
       values: [],
@@ -24,10 +24,9 @@ jQuery(function($) {
       graphData[0].values.push([unix, data[i]["hpv_plant"]]);
     }
     console.log(graphData);
-
     nv.addGraph(function() {
     var chart = nv.models.lineChart()
-      .useInteractiveGuideline(true)
+      .useInteractiveGuideline(false)
       .x(function(d) { return d[0] })
       .y(function(d) { return d[1] })
       ;
@@ -38,15 +37,15 @@ jQuery(function($) {
     //                 .color(d3.scale.category10().range())
     //                 .useInteractiveGuideline(true)
     //                 ;
-      //
-       chart.xAxis
-          .axisLabel('Time')
-          .tickFormat(function(d) {
-              return d3.time.format('%H:%M')(new Date(d))
-            });
-      //
+      chart.xAxis
+        .axisLabel('Time')
+        .tickFormat(function(d) {
+            return d3.time.format('%H:%M')(new Date(d))
+          });
+
+      chart.yDomain([70, 110])
       chart.yAxis
-          .axisLabel('Time')
+          .axisLabel('HPV')
           .tickFormat(d3.format(',f'));
 
       d3.select('#chart svg')
@@ -59,9 +58,6 @@ jQuery(function($) {
       return chart;
     });
   });
-  var timeout = setTimeout("location.reload(true);",60000);
-    function resetTimeout() {
-      clearTimeout(timeout);
-      timeout = setTimeout("location.reload(true);",60000);
-    }
+  // reload page every 60 seconds
+  // setTimeout(function() {location.reload(true);},60000);
 });
