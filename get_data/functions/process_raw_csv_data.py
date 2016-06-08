@@ -43,4 +43,5 @@ def process_date(date_string):
         return None
     else:
         date_object = datetime.strptime(date_string, postgres_date_format)
+        # convert EST to UTC datetime here.
         return date_object.strftime('%Y-%m-%d %H:%M:%S')
