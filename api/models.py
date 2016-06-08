@@ -1,6 +1,5 @@
 from django.db import models
 
-# Create your models here.
 class HPVATM(models.Model):
     """
     Keeps track of all data related to HPV (Man Hours per Vehicle) for graphing and historical viewing. All values are ATM (At This Moment) referring to the timestamp.
@@ -78,16 +77,6 @@ class HPVATM(models.Model):
     PLANT_s_hpv = models.DecimalField(decimal_places=1, max_digits=4, null=True)
     PLANT_s_ne = models.IntegerField()
     PLANT_s_mh = models.DecimalField(decimal_places=2, max_digits=6, null=True)
-
-
-
-    # num_claims = models.IntegerField()
-    # num_claims_first = models.IntegerField(null=True)
-    # num_claims_second = models.IntegerField(null=True)
-    # num_claims_third = models.IntegerField(null=True)
-    # manhours = models.IntegerField(null=True)
-    hpv_plant = models.DecimalField(decimal_places=1, max_digits=4, null=True)
-
 
 ### To Add
 # calculated tables hpv atm
