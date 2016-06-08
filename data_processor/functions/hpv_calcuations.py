@@ -20,10 +20,13 @@ def get_hpv(by_dept_dict):
     # calculating the HPV
     for key in by_dept_dict:
         if key in dept_list:
+            plant_mh += by_dept_dict[key]['mh']
+            plant_ne += by_dept_dict[key]['ne']
+
+
+            # If claims is not 0, do some division, else hpv = 0
             if by_dept_dict['claims_for_range']:
                 by_dept_dict[key]['hpv'] = by_dept_dict[key]['mh']/by_dept_dict['claims_for_range']
-                plant_mh += by_dept_dict[key]['mh']
-                plant_ne += by_dept_dict[key]['ne']
                 plant_hpv += by_dept_dict[key]['hpv']
             else:
                 by_dept_dict[key]['hpv'] = 0
