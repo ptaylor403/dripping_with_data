@@ -50,19 +50,8 @@ p {
 }
 /*Table*/
 
-#claim_day{
-  position: absolute;
-  top: 80px 250px;
-  width: 100px;
-}
-
-#claim_hour{
-  position: absolute;
-  top: 80px 400px;
-  width: 100px;
-}
-
 td, th {
+  font-size: 18px;
   width: 4rem;
   height: 2rem;
   border: 1px solid #ccc;
@@ -92,32 +81,4 @@ td {
   font-weight: bold;
   background: lightblue;
   border-color: white;
-}
-
-#claim_title {
-  position: absolute;
-  top: 25px;
-  right: 267px;
-}
-
-#shift1_attendance{
-  position: absolute;
-  top: 450px;
-}
-
-#shift1_title{
-  position: absolute;
-  top: 400px;
-}
-
-#shift2_attendance{
-  position: absolute;
-  right: 90px;
-  top: 450px;
-}
-
-#shift2_title{
-  position: absolute;
-  right: 545px;
-  top: 400px;
 }

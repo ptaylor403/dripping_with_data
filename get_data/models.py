@@ -212,7 +212,7 @@ class RawPlantActivity(models.Model):
         total_hours_at_slice, current_num_employees = RawClockData.get_plant_man_hours_atm(start, stop)
         print("current_num_employees: ", current_num_employees)
         print("total_hours_at_slice: ", total_hours_at_slice)
-
+        print("num_claims_at_slice: ", num_claims_at_slice)
         #calculating the HPV
         if num_claims_at_slice != 0:
             plant_hpv_at_slice = total_hours_at_slice/num_claims_at_slice

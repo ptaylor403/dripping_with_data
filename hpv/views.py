@@ -13,10 +13,12 @@ from get_data.models import RawPlantActivity, RawClockData
 from generic_dripper.views import the_dripper
 import sys
 
-if "runserver" in sys.argv:
-    NOW = the_dripper.simulated_time.replace(tzinfo=None)
-else:
-    NOW = datetime.now() - dt.timedelta(days=5, hours=3)
+# if "runserver" in sys.argv:
+#     NOW = the_dripper.simulated_time.replace(tzinfo=None)
+# else:
+NOW = datetime.now() - dt.timedelta(days=7, hours=0)
+today = datetime.now() - dt.timedelta(days=7, hours=0)
+
 
 
 class Load(LoginRequiredMixin, TemplateView):
@@ -117,7 +119,7 @@ class HPV(LoginRequiredMixin, TemplateView):
             if this_dt <= NOW:  # datetime.now():
                 num_in = RawClockData.get_clocked_in(start=this_dt).filter(PNCHEVNT_IN__gte=this_dt, PNCHEVNT_IN__lt=this_dt + dt.timedelta(i + 1)).count()
                 shift.append(num_in)
-
+                print("num_in: ", num_in)
             else:
                 shift.append("")
 
@@ -172,7 +174,7 @@ class HPV(LoginRequiredMixin, TemplateView):
         # When during the hour should we do the headcount?
         context = super().get_context_data(**kwargs)
         departments = ['CIW', 'FCB', 'PNT', 'PCH', 'FCH', 'DAC', 'MAINT', 'QA', 'MAT']
-        NOW = the_dripper.simulated_time.replace(tzinfo=None)
+        # NOW = the_dripper.simulated_time.replace(tzinfo=None)
         print("NOW: ", NOW)
         today = NOW.date()
         START_TIME1 = 6
@@ -186,7 +188,7 @@ class HPV(LoginRequiredMixin, TemplateView):
         # Claims - by day and shift
 
 
-        context.update({'plant_attendance': plant_attendance, 'plant_hpv':plant_hpv})
+        context.update({'plant_attendance': plant_attendance, 'plant_hpv':plant_hpv, 'NOW': NOW})
 
 
         # today = datetime.today().date()
