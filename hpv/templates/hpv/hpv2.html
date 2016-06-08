@@ -1,17 +1,15 @@
 {% extends 'hpv/base.html' %}
 {% load staticfiles %}
 
-<!DOCTYPE html>
 <head>
     <link rel="stylesheet" href="../static/hpv/style.css">
     <meta charset="utf-8">
     <title>HPV Data</title>
 </head>
-  {% block content %}
 
+{% block content %}
 
 <div class=container>
-
   <p>
     {{dripper_time}}
   </p>
@@ -65,11 +63,11 @@
       <script type='text/javascript'>
         d3.text("{% static "hpv/graph.js" %}","text/plain",function(err,text) {
             d3.select("pre.prettyprint").text(text);
-            prettyPrint();
         });
       </script>
     </div>
   </div>
+
   <div class="row">
     <div class="col-xs-12 col-md-6">
       <h3 id=shift1_title>Shift 1</h3>
@@ -128,41 +126,8 @@
       <center>
       <h3>Current Total: {{ hour_total }} | Total Count: {{ day_total }} |  Total HPV: {{day_HPV|floatformat}}</h3>
       </center>
-      <!-- <tr class=head>
-        <td class=total>Current Total: {{ hour_total }}</td></br>
-      </tr> -->
     </div>
-    <!-- <div class="col-xs-6">
-      <tr class=head>
-        <td class=total>Total Count: {{ day_total }}</td></br>
-        <td class=total>Total HPV: {{day_HPV|floatformat}}</td></br>
-      </tr>
-    </div> -->
   </div>
-    <!-- <h3 id=claim_title>Finished</h3> -->
-    <!-- <table id=claim_day>
-      <tr class=head>
-        <!-- <td class=head><b>Day</b></td> -->
-      <!-- </tr>
-      <tr>
-        <td class=total>Current Total: {{ hour_total }}</td>
-        <td class=total>Total Count: {{ day_total }}</td>
-        <td class=total>Total HPV: {{day_HPV|floatformat}}</td>
-      </tr>
-      <tr>
-        <!-- <td class=total>Total HPV: {{day_HPV|floatformat}}</td> -->
-      <!-- </tr>
-    </table>
-
-    <table id=claim_hour>
-      <tr class=head>
-        <!-- <td class=head><b>Current</b></td> -->
-      <!-- </tr>
-      <tr>
-        <td class=total>Current Total: {{ hour_total }}</td>
-      </tr>
-    </table>
-  </div> -->
 
 </div>
 {% endblock %}
