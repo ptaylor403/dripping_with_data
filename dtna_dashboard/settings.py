@@ -46,6 +46,7 @@ INSTALLED_APPS = (
     'hpv.apps.HpvConfig',
     'plantsettings.apps.PlantsettingsConfig',
     'rest_framework',
+    'data_processor.apps.DataProcessorConfig.apps.',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
