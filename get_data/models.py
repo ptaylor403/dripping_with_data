@@ -94,6 +94,8 @@ class RawClockData(models.Model):
             num_employees = currently_clocked_in.count()
             total_man_hours = man_hours
             for employee in currently_clocked_in:
+                
+                # TODO begin defined twice here
                 begin = max(employee.PNCHEVNT_IN, start)
                 begin = start
                 end = stop
