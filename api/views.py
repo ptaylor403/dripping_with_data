@@ -12,11 +12,7 @@ class HPVAPI(LoginRequiredMixin, generics.ListCreateAPIView):
     login_url = '/login/'
 
     def get_queryset(self):
-        queryset = HPVATM.objects.all()
-        date = self.request.query_params.get("date", None)
-        if date is not None:
-            date = int(date)
-            date = dt.datetime(2016, 6, date, 0, 1)
-            queryset = queryset.filter(timestamp__gte=date, timestamp__lt=date + dt.timedelta(days=1))
-
+        startdate = dt.datetime(2016, 6, 1, 0, 1) # change date to reflect current
+        enddate = startdate + dt.timedelta(days=1)
+        queryset = HPVATM.objects.filter(timestamp__range=[startdate, enddate])
         return queryset
