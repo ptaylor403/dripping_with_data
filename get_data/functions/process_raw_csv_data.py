@@ -2,9 +2,21 @@ from datetime import datetime
 import csv
 import unicodedata
 import fileinput
+from plantsettings.models import PlantSetting
+from django.utils import timezone
+import sys
 
-#used to convert SQL datetime format to Postgres
-postgres_date_format = '%Y-%m-%d %H:%M:%S.%f'
+# Format of datetimes in CSV files. CSVs store datetimes as naive representing
+# Eastern time
+if "runserver" in sys.argv:
+    plant_tzs = {'017': 'US/Eastern'}
+    if not PlantSetting.objects.exists():
+        PlantSetting().save()
+    tz_name = plant_tzs[PlantSetting.objects.last().plant_code]
+else:
+    tz_name = 'US/Eastern'
+csv_dt_format = '%Y-%m-%d %H:%M:%S.%f'
+
 
 
 def read_csv_generator(path, headers=True):
@@ -33,15 +45,18 @@ def read_csv_generator(path, headers=True):
 
 def process_date(date_string):
     """
-    handles the SQL Dates and converts them Postgres SQL
-    by converting a string into a date object and returning the default
-    Postgres dateformat.
+    Converts CVS datetime strings to datetime objects with appropriate timezone
 
-    :param date_string: takes in a date as a string
+    :param date_string: takes in a date as a string: %Y-%m-%d %H:%M:%S.%f
     :return:
     """
+
     if date_string == "NULL":
         return None
     else:
-        date_object = datetime.strptime(date_string, postgres_date_format)
-        return date_object.strftime('%Y-%m-%d %H:%M:%S')
+        with timezone.override(tz_name):
+            date_object = timezone.make_aware(
+                                              datetime.strptime(date_string,
+                                                                csv_dt_format)
+                                              )
+        return date_object
