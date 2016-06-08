@@ -38,8 +38,6 @@ class Attendance(models.Model):
         clocked_out_after_start = in_department.filter(clock_out_time__gte=start)
         clocked_out_during = clocked_out_after_start.filter(clock_out_time__lt=stop)
         all_relevent = were_clocked_in | clocked_in_during | clocked_out_during
-        print('-'*50)
-        print(all_relevent.count())
         manhours = 0
         for employee in all_relevent:
             begin = max(employee.clock_in_time, start)
@@ -89,7 +87,7 @@ class Complete(models.Model):
     completed = models.DateTimeField()
 
     @staticmethod
-    def claims_by_time(time_in_question):
+    def claims_by_time(time_in_question, hour=None):
         day = time_in_question.date()
         return Complete.objects.filter(completed__gt=datetime.datetime.combine(day,
                 datetime.time(0))).filter(completed__lt=time_in_question).count()

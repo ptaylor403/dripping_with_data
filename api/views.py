@@ -5,6 +5,7 @@ from rest_framework import generics, renderers, permissions
 from django.contrib.auth.mixins import LoginRequiredMixin
 import datetime as dt
 
+
 class HPVAPI(LoginRequiredMixin, generics.ListCreateAPIView):
     queryset = HPVATM.objects.all()
     serializer_class = HPVSerializer
@@ -17,4 +18,5 @@ class HPVAPI(LoginRequiredMixin, generics.ListCreateAPIView):
             date = int(date)
             date = dt.datetime(2016, 6, date, 0, 1)
             queryset = queryset.filter(timestamp__gte=date, timestamp__lt=date + dt.timedelta(days=1))
+
         return queryset

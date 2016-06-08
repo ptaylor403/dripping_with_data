@@ -1,7 +1,6 @@
 from datetime import datetime
 import csv
-import unicodedata
-import fileinput
+import pytz
 
 #used to convert SQL datetime format to Postgres
 postgres_date_format = '%Y-%m-%d %H:%M:%S.%f'

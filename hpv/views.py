@@ -8,8 +8,15 @@ import random
 import pytz
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth import logout
+from django.http import HttpResponseRedirect
+from get_data.models import RawPlantActivity, RawClockData
+from generic_dripper.views import the_dripper
+import sys
 
-NOW = datetime.now() + dt.timedelta(hours=0)
+if "runserver" in sys.argv:
+    NOW = the_dripper.simulated_time.replace(tzinfo=None)
+else:
+    NOW = datetime.now() - dt.timedelta(days=5, hours=3)
 
 
 class Load(LoginRequiredMixin, TemplateView):
@@ -89,8 +96,10 @@ class Load(LoginRequiredMixin, TemplateView):
                         hpv_obj = HPVATM.objects.create(hpv_plant=hpv_plant, num_clocked_in=num_clocked_in)
                         hpv_obj.timestamp = timestamp
                         hpv_obj.save()
+
                     text3 = "10 days worth of data added to the database."
                     context['text3'] = text3
+
         return render(request, self.template_name, context)
 
 
@@ -98,18 +107,20 @@ class HPV(LoginRequiredMixin, TemplateView):
     template_name = "hpv/hpv2.html"
     login_url = '/login/'
 
-    def _get_shift_history(departments, shift_start_time, today):
+    def _get_plant_history(shift_start_time, today):
         shift = []
-        for department in departments:
-            dpt_data = [department]
-            for i in range(1, 9):
-                this_dt = datetime.combine(today, dt.time(shift_start_time + i))
-                if this_dt <= NOW:  # datetime.now():
-                    dpt_data.append(Attendance.get_active_at(active_time=this_dt,department=department))
-                else:
-                    dpt_data.append("")
+        # for department in departments:
+        #     dpt_data = [department]
+        for i in range(1,17):
+            print('Hour: ', i)
+            this_dt = datetime.combine(today, dt.time(shift_start_time + i))
+            if this_dt <= NOW:  # datetime.now():
+                num_in = RawClockData.get_clocked_in(start=this_dt).filter(PNCHEVNT_IN__gte=this_dt, PNCHEVNT_IN__lt=this_dt + dt.timedelta(i + 1)).count()
+                shift.append(num_in)
 
-            shift.append(dpt_data)
+            else:
+                shift.append("")
+
         return shift
 
     def _get_shift_manhour_history(departments, shift_start_time, today):
@@ -160,47 +171,67 @@ class HPV(LoginRequiredMixin, TemplateView):
     def get_context_data(self, **kwargs):
         # When during the hour should we do the headcount?
         context = super().get_context_data(**kwargs)
-        departments = ['FCH', 'CIW', 'FCB', 'PNT', 'PCH', 'Plant']
-        today = datetime.today().date()
+        departments = ['CIW', 'FCB', 'PNT', 'PCH', 'FCH', 'DAC', 'MAINT', 'QA', 'MAT']
+        NOW = the_dripper.simulated_time.replace(tzinfo=None)
+        print("NOW: ", NOW)
+        today = NOW.date()
         START_TIME1 = 6
         START_TIME2 = 14
-        shift_1 = HPV._get_shift_history(departments, START_TIME1, today)
-        shift_2 = HPV._get_shift_history(departments, START_TIME2, today)
-        shift1_manhours = HPV._get_shift_manhour_history(departments, START_TIME1, today)
-        shift2_manhours = HPV._get_shift_manhour_history(departments, START_TIME2, today)
-        day_total = Complete.claims_by_time(NOW)  # datetime.now())
-        shift_1_time = dt.datetime.combine(NOW.date(), dt.time(START_TIME2 + 1, 30))
-        shift_1_total = Complete.claims_by_time(shift_1_time)
-        print("Shift 1 total: ", shift_1_total)
-        hour_delta = dt.timedelta(hours=1)
-        hour_ago = NOW - hour_delta  # datetime.now() - hour_delta
-        hour_total = day_total - Complete.claims_by_time(hour_ago)
-        day_start = datetime.combine(today, dt.time(START_TIME1))
-        day_start = pytz.utc.localize(day_start)
-        day_man_hours = Attendance.get_manhours_during(start=day_start, stop=pytz.utc.localize(NOW))
-        try:
-            day_HPV = day_man_hours / day_total
-        except:
-            day_HPV = 0
-        start_time1 = datetime.combine(today, dt.time(START_TIME1))
-        if datetime.combine(today, dt.time(START_TIME2)) > NOW:
-            start_time2 = None
-        else:
-            start_time2 = datetime.combine(today, dt.time(START_TIME2))
-        hpv_data = HPV._get_department_hpv(departments, start_time1, start_time2, NOW)
-        last_hpv = 0
+        # Attendance - by shift and department
+        plant_attendance = HPV._get_plant_history(START_TIME1, today)
+        shift1_attendance = []
+        shift2_attendance = []
+        # HPV - by department and plant wide, by day and shift
+        plant_hpv = RawPlantActivity.get_hpv_at_slice(datetime.combine(today, dt.time(0)), NOW)[0]
+        # Claims - by day and shift
+
+
+        context.update({'plant_attendance': plant_attendance, 'plant_hpv':plant_hpv})
+
+
+        # today = datetime.today().date()
+        # START_TIME1 = 6
+        # START_TIME2 = 14
+        # shift_1 = HPV._get_shift_history(departments, START_TIME1, today)
+        # shift_2 = HPV._get_shift_history(departments, START_TIME2, today)
+        # shift1_manhours = HPV._get_shift_manhour_history(departments, START_TIME1, today)
+        # shift2_manhours = HPV._get_shift_manhour_history(departments, START_TIME2, today)
+        # day_total = Complete.claims_by_time(NOW)  # datetime.now())
+        # shift_1_time = dt.datetime.combine(NOW.date(), dt.time(START_TIME2 + 1, 30))
+        # shift_1_total = Complete.claims_by_time(shift_1_time)
+        # print("Shift 1 total: ", shift_1_total)
+        # hour_delta = dt.timedelta(hours=1)
+        # hour_ago = NOW - hour_delta  # datetime.now() - hour_delta
+        # hour_total = day_total - Complete.claims_by_time(hour_ago)
+        # shift1_time = dt.datetime.combine(NOW.date(), dt.time(START_TIME2 + 1, 30))
+        # shift1_total = Complete.claims_by_time(shift1_time)
+        # shift2_total = day_total - shift1_total
+        # day_start = datetime.combine(today, dt.time(START_TIME1))
+        # day_start = pytz.utc.localize(day_start)
+        # day_man_hours = Attendance.get_manhours_during(start=day_start, stop=pytz.utc.localize(NOW))
+        # try:
+        #     day_HPV = day_man_hours / day_total
+        # except:
+        #     day_HPV = 0
+        # start_time1 = datetime.combine(today, dt.time(START_TIME1))
+        # start_time2 = datetime.combine(today, dt.time(START_TIME2))
+        # hpv_data = HPV._get_department_hpv(departments, start_time1, start_time2, NOW)
+
+
+        # last_hpv = 0
         # try:
         #     last_hpv = HPVATM.objects.latest('timestamp')
         # except:
         #     HPVATM.objects.create(hpv_plant=day_HPV)
-        #
+        #     last_hpv = HPVATM.objects.latest('timestamp')
         # if (pytz.utc.localize(dt.datetime.now()) - last_hpv.timestamp) > dt.timedelta(minutes=5):
         #     HPVATM.objects.create(hpv_plant=day_HPV)
 
-        context.update({'shift_1': shift_1, 'shift_2': shift_2,
-                        "manhours_1": shift1_manhours, "manhours_2": shift2_manhours,
-                        'hour_total': hour_total, 'day_total': day_total, 'time': NOW,
-                        "day_HPV": day_HPV, 'hpv_data': hpv_data})
+
+        # context.update({'shift_1': shift_1, 'shift_2': shift_2,
+        #                 "manhours_1": shift1_manhours, "manhours_2": shift2_manhours,
+        #                 'hour_total': hour_total, 'day_total': day_total, 'time': NOW,
+        #                 "day_HPV": day_HPV, 'hpv_data': hpv_data})
         return context
 
 

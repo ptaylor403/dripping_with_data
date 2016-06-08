@@ -1,0 +1,17 @@
+<p>
+  Time is: {{time}} {% if running %} RUNNING {% endif %}
+</p>
+<ul>
+  {% for entry in status %}
+    <li>{{entry.0}}: {{entry.1}}</li>
+  {% endfor %}
+</ul>
+<a href="{% url 'dripper:load' %}">load</a>
+<br>
+<a href="{% url 'dripper:flush_targets' %}">flush targets</a>
+<br>
+<a href="{% url 'dripper:run' %}">run</a>
+<br>
+<a href="{% url 'dripper:status' %}">stop</a>
+
+<meta http-equiv="refresh" content="2">

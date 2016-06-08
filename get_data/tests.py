@@ -344,6 +344,3 @@ class ClaimData(TestCase):
         for claim in claimed_objects:
             self.assertIn(claim.VEH_SER_NO, expected_claims)
             self.assertNotIn(claim.VEH_SER_NO, not_expected_claims)
-
-
-

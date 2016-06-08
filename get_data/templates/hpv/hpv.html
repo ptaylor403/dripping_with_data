@@ -1,0 +1,59 @@
+{% extends 'hpv/base.html' %}
+{% load staticfiles %}
+
+<!DOCTYPE html>
+<html>
+    <head>
+        <link rel="stylesheet" href="../static/hpv/style.css">
+        <meta charset="utf-8">
+        <title>HPV Data</title>
+    </head>
+    <body>
+      {% block content %}
+      <p>
+        {{time}}
+      </p>
+      <h3>HPV</h3>
+      <table id=hpv>
+        <tr class=head>
+          <td class=head><b>Department</b></td>
+          <td class=head><b>Day</b></td>
+          <td class=head><b>Shift 1</b></td>
+          <td class=head><b>Shift 2</b></td>
+        </tr>
+      {% for department in hpv_data %}
+      <tr>
+        {% for entry in department %}
+        <td {% if forloop.first %} class="dept">{{entry}}{% else %}>
+          {{entry|floatformat}}
+          {% endif %}
+        </td>
+        {% endfor %}
+      </tr>
+      {% endfor %}
+      </table>
+
+      <h3 id=claim_title>Finished</h3>
+      <table id=claim_day>
+        <tr class=head>
+          <td class=head><b>Day</b></td>
+        </tr>
+        <tr>
+          <td class=total>total: {{ day_total }}</td>
+        </tr>
+        <tr>
+          <td class=total>hpv: {{day_HPV|floatformat}}</td>
+        </tr>
+      </table>
+
+      <table id=claim_hour>
+        <tr class=head>
+          <td class=head><b>Current</b></td>
+        </tr>
+        <tr>
+          <td class=total>total: {{ hour_total }}</td>
+        </tr>
+      </table>
+      {% endblock %}
+    </body>
+</html>

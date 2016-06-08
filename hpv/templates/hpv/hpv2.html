@@ -1,15 +1,32 @@
 {% extends 'hpv/base.html' %}
 {% load staticfiles %}
 
+<!DOCTYPE html>
 <head>
+    <link rel="stylesheet" href="../static/hpv/style.css">
+    <meta charset="utf-8">
     <title>HPV Data</title>
 </head>
+  {% block content %}
 
-{% block content %}
+
 <div class=container>
-  <form class="" action="" method="get">
-    <input type="hidden" name="" value="English">
-  </form>
+
+  <p>
+    {{dripper_time}}
+  </p>
+
+  <table>
+  {% for item in plant_attendance %}
+  <tr>
+      <td>Hour {{forloop.counter}}</td>
+      <td>{{item}}</td>
+  </tr>
+  {% endfor %}
+  </table>
+
+  Plant HPV
+  {{plant_hpv}}
 
   <div class="row">
     <div class="col-sm-12 col-md-5">
@@ -31,6 +48,12 @@
         {% endfor %}
       </tr>
       {% endfor %}
+      <tr>
+        <td><b>trucks</b></td>
+        <td>{{ day_total }}</td>
+        <td>{{ shift1_total }}</td>
+        <td>{{ shift2_total }}</td>
+      </tr>
       </table>
     </div>
 

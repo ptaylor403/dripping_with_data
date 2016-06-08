@@ -1,6 +1,7 @@
 from django.db import models
 from .functions.process_raw_csv_data import *
 from .functions.csv_file_paths import *
+import datetime
 
 from datetime import datetime
 from datetime import timedelta
@@ -18,10 +19,11 @@ class RawClockData(models.Model):
     PRSN_NBR_TXT = models.CharField(max_length=100)
     full_nam = models.TextField()
     HM_LBRACCT_FULL_NAM = models.TextField()
-    start_rsn_txt = models.CharField(max_length=100, blank=True)
+    start_rsn_txt = models.CharField(max_length=100, null=True)
     PNCHEVNT_IN = models.DateTimeField(null=True, blank=True)
-    end_rsn_txt = models.CharField(max_length=100, blank=True)
+    end_rsn_txt = models.CharField(max_length=100, null=True)
     PNCHEVNT_OUT = models.DateTimeField(null=True, blank=True)
+
 
     @staticmethod
     def load_raw_data():
@@ -39,6 +41,7 @@ class RawClockData(models.Model):
             )
             created_row.save()
         print("LOADED Raw Clock Data Row")
+
 
     @staticmethod
     def get_plant_man_hours_atm(start, stop=None, by_department=False):
@@ -76,6 +79,7 @@ class RawClockData(models.Model):
 
         currently_clocked_in = RawClockData.get_clocked_in(start)
 
+
         if by_department:
             for employee in currently_clocked_in:
                 emp_plant, emp_dept, emp_shift = RawClockData.process_department(employee.HM_LBRACCT_FULL_NAM)
@@ -88,14 +92,18 @@ class RawClockData(models.Model):
             # write in case for max employee clock in and clockout = none
             man_hours = timedelta(hours=0)
             num_employees = currently_clocked_in.count()
+            total_man_hours = man_hours
             for employee in currently_clocked_in:
                 begin = max(employee.PNCHEVNT_IN, start)
                 begin = start
                 end = stop
                 man_hours += end - begin
                 man_seconds = man_hours.total_seconds()
+
                 total_man_hours = man_seconds / 3600
             return by_dept_clocked_in
+
+
 
     @staticmethod
     def get_clocked_in(start):
@@ -105,11 +113,8 @@ class RawClockData(models.Model):
         :return: filtered objects before the start value
         """
         employees = RawClockData.objects.filter(
-            PNCHEVNT_IN__year=start.year,
-            PNCHEVNT_IN__month=start.month,
-            PNCHEVNT_IN__day=start.day,
-            PNCHEVNT_OUT__exact=None,
-        ).exclude(end_rsn_txt__exact='&out')
+            PNCHEVNT_IN__gte=start
+        )
 
         return employees
 
@@ -146,7 +151,6 @@ class RawClockData(models.Model):
         shift = re.findall(regex_compiled, dept_string)[0]
 
         return plant_code, dept, shift
-
 
 class RawDirectRunData(models.Model):
     VEH_SER_NO = models.CharField(max_length=6)
@@ -224,7 +228,7 @@ class RawPlantActivity(models.Model):
         print("LOADED plant Row")
 
     @staticmethod
-    def get_claims_date_range(start, stop=None):
+    def get_claims_date_range(start, stop=None, dept='all'):
         """
 
         :param start: Datetime object that points to the start of the query
@@ -268,9 +272,15 @@ class RawPlantActivity(models.Model):
         # calls the two methods to get the needed data
         num_claims_at_slice = RawPlantActivity.get_claims_date_range(start, stop)
         total_hours_at_slice, current_num_employees = RawClockData.get_plant_man_hours_atm(start, stop)
+        print("current_num_employees: ", current_num_employees)
+        print("total_hours_at_slice: ", total_hours_at_slice)
 
-        # calculating the HPV
-        plant_hpv_at_slice = total_hours_at_slice / num_claims_at_slice
+        #calculating the HPV
+        if num_claims_at_slice != 0:
+            plant_hpv_at_slice = total_hours_at_slice/num_claims_at_slice
+
+        else:
+            plant_hpv_at_slice = 0
 
         return plant_hpv_at_slice, num_claims_at_slice, total_hours_at_slice, current_num_employees
 
@@ -304,6 +314,25 @@ class OrgUnits(models.Model):
             created_row.save()
         print("LOADED Department List Row")
 
+
+
+# class RawShopCalls(models.Model):
+#     SC_ID = models.CharField(max_length=6)
+#     VEH_SER_NO = models.CharField(max_length=6)
+#
+#     @staticmethod
+#     def load_raw_data():
+#         # process generator file. Punch CSV has headers.
+#         # each row is a dict.
+#         for row in read_csv_generator(shopcalls_csv, headers=True):
+#             print(row)
+#             print('*'*40)
+#             created_row = RawShopCalls.objects.create(
+#                 SC_ID=row['SC_ID'],
+#                 VEH_SER_NO=row['VEH_SER_NO'],
+#             )
+#             created_row.save()
+#         print("LOADED shopcalls Row")
 
     # class RawShopCalls(models.Model):
     #     SC_ID = models.CharField(max_length=6)
