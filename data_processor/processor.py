@@ -34,7 +34,7 @@ def get_new_hpv_data():
 
     #TODO take out the delta
     with timezone.override("US/Eastern"):
-        now = timezone.localtime(timezone.now() - dt.timedelta(days=7, hours=18))
+        now = timezone.localtime(PlantSetting.objects.last().dripper_start)
     print("TZ: ", now.tzinfo)
 
     # Call function to calc hpv by dept for the current shift.
@@ -213,7 +213,8 @@ def get_day_hpv_dict(hpv_dict, now):
         'claims_s': hpv_dict['claims_for_range'],
         'claims_d': claims_d,
 
-        'shift': hpv_dict['shift']
+        'shift': hpv_dict['shift'],
+        'timestamp': now,
     }
 
     return full_hpv_dict
@@ -256,7 +257,10 @@ def get_dept_day_stats(hpv_dict, now, dept):
             else:
                 mh = float(getattr(last_shift, '{}_s_mh'.format(dept))) + cur_mh
                 claims = last_shift.claims_s + cur_claims
-                hpv = mh/claims
+                try:
+                    hpv = mh/claims
+                except:
+                    hpv = 0
             return hpv, mh
     else:
         return cur_hpv, cur_mh
