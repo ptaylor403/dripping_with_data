@@ -26,7 +26,6 @@ def get_range_of_claims(start, stop):
     :return: int of number of trucks produced from start to stop
     """
     num_trucks = get_claimed_objects_in_range(start, stop)
-
     # for truck in num_trucks:
     #     print(truck.VEH_SER_NO)
 

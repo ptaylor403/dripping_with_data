@@ -1,5 +1,5 @@
 from get_data.models import RawPlantActivity, RawClockData
-from datetime import datetime
+from datetime import datetime, timedelta
 from django.utils import timezone
 
 from .claims_calculations import get_range_of_claims
@@ -86,13 +86,14 @@ def main(start):
     :param shift: Which shift, string
     :return: completed_by_dept_dict that is based on master by dept dict fully calculated.
     """
-    stop = timezone.now()
+    stop = timezone.now() - timedelta(days=7, hours=18)
 
+    print("Stop: ", stop)
     # create instance of master dept dict
     by_dept_dict = get_master_by_dept_dict()
     # populate claims for range
     by_dept_dict['claims_for_range'] = get_range_of_claims(start, stop)
-
+    print("claims_for_range: ", by_dept_dict['claims_for_range'])
     currently_clocked_in = RawClockData.get_clocked_in(start)
 
     for employee in currently_clocked_in:
