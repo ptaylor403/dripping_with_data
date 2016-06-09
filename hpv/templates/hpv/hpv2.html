@@ -12,34 +12,7 @@
   <p>
     {{dripper_time}}
   </p>
-  Time
-  {{NOW}}
-  <!-- <table id=attendance>
-    <tr>
-      <th>Day Hour</th>
-      <th>Num Employees</th>
-    </tr>
-  {% for item in plant_attendance %}
-  <tr>
-      <td>Hour {{forloop.counter}}</td>
-      <td>{{item}}</td>
-  </tr>
-  {% endfor %}
-  </table>
 
-<p></p><br>
-<p></p><br>
-
-  <table id=hpv_table>
-    <tr>
-      <th>Area</th>
-      <th>HPV</th>
-    </tr>
-    <tr>
-      <td>Plant HPV</td>
-      <td>{{plant_hpv|floatformat}}</td>
-    </tr>
-  </table> -->
 
   <div class="row">
     <div class="col-sm-12 col-md-5">
@@ -140,8 +113,8 @@
           {% if shift_3 %}
           <td>{{ plant_s3_hpv }}</td>
           {% endif %}
-          <td>{{ plant_s1_hpv }}</td>
-          <td>{{ plant_s2_hpv }}</td>
+          <td>{{ PLANT_s1_hpv }}</td>
+          <td>{{ PLANT_s2_hpv }}</td>
           <td>{{ PLANT_d_hpv|floatformat }}</td>
         </tr>
         <tr>
@@ -169,7 +142,7 @@
     </div>
   </div>
 
-  <div class="row">
+  <!-- <div class="row">
     {% if shift_3 %}
     <div class="col-xs-4 col-md-4">
     {% else %}
@@ -260,7 +233,7 @@
           {% endfor %}
           </table>
         </div>
-        {% endif %}
+        {% endif %} -->
 
 
   <!-- <div class="row">
@@ -319,7 +292,7 @@
   <div class="row">
     <div class="col-xs-12">
       <center>
-      <h3>Current Total: {{ hour_total }} | Total Count: {{ day_total }} |  Total HPV: {{day_hpv|floatformat}}</h3>
+      <h3> Total Count: {{ day_total }} |  Total HPV: {{ PLANT_d_hpv|floatformat }}</h3>
       </center>
     </div>
   </div>

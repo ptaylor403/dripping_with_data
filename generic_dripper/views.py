@@ -14,7 +14,7 @@ if "runserver" in sys.argv:
     if not PlantSetting.objects.exists():
         PlantSetting().save()
     the_dripper = CombinedDripper(PlantSetting.objects.last().dripper_start,
-                                  dt.timedelta(minutes=15))
+                                  dt.timedelta(minutes=240))
     the_dripper.add_dripper(*all_drippers)
 else:
     the_dripper = None

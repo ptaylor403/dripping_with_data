@@ -103,6 +103,9 @@ def main(start):
         if emp_dept in by_dept_dict:
             by_dept_dict[emp_dept]['ne'] += 1
             by_dept_dict[emp_dept]['mh'] += get_emp_man_hours(employee, start, stop)
+            print("/*"*50)
+            print("MAIN-HPV-FUNC")
+            print("BY DEPT DICT ", by_dept_dict)
 
 
     completed_by_dept_dict = get_hpv(by_dept_dict)

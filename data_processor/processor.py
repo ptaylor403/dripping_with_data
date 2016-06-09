@@ -1,5 +1,5 @@
 from api.models import HPVATM
-from get_data.models import RawDirectRunData
+from get_data.models import RawPlantActivity
 from plantsettings.models import PlantSetting
 import datetime as dt
 from django.utils import timezone
@@ -17,7 +17,9 @@ Returns: Nothing
 def get_new_hpv_data():
     # Is there a claim in the database? Errors could be: Server locked, no matching result for the query. Errors cause function escape.
     try:
-        last_claim = RawDirectRunData.objects.latest('TS_LOAD')
+        last_claim = RawPlantActivity.objects.latest('TS_LOAD')
+        print("/"*50)
+        print("LAST_CLAIM=", last_claim.VEH_SER_NO)
     # TODO "server busy" is a placeholder and will need to change when we know the real error message
     # except "ServerBusy":
     #     return print("Server busy. Checking again in 5 minutes.")
@@ -26,11 +28,13 @@ def get_new_hpv_data():
 
     # Check for the last entry to the processed data table. Escape if no new claim since last entry. Errors include: No objects for the query - continues to writing logic.
     try:
+        print("ATTEMPT HPVATM GET")
         last_api_write = HPVATM.objects.latest('timestamp')
-        if last_claim <= last_api_write:
+        print("GOTTEN", last_api_write.timestamp)
+        if last_claim.TS_LOAD <= last_api_write.timestamp:
             return print("No new data at this time. Checking again in 5 minutes.")
-    except:
-        print("No objects in processed table. Writing.")
+    except Exception as e:
+        print("No objects in processed table. Writing.  ", e)
 
     #TODO take out the delta
     with timezone.override("US/Eastern"):
@@ -63,9 +67,12 @@ Returns: Dictionary of department keys containing a dictionary of manhours, numb
 
 def get_hpv_snap(now):
     settings = PlantSetting.objects.latest('timestamp')
-
+    print(">"*50)
+    print("SETINGS",settings.timestamp)
+    print("NOW,",now)
+    print(">"*50)
     start, shift = get_shift_info(settings, now)
-
+    print(">"*50)
     print("Start: ", start)
     print("Shift: ", shift)
     print("-" * 50)
@@ -91,34 +98,46 @@ def get_shift_info(settings, now):
     print('now: ', now)
     print("First_shift: ", settings.first_shift)
     print("Second shift: ", settings.second_shift)
+    print("-" * 50)
 
     now = timezone.localtime(now)
+    shift = 1
+    start = dt.datetime.combine(now.date(), settings.first_shift)
+    start = timezone.make_aware(start)
+    print("LALALALALA")
     # Catch time before first shift if there are 3 shifts. Shift will have started the day before.
-    if now.time() < settings.first_shift and setting.num_of_shifts == 3:
+    if now.time() < settings.first_shift and settings.num_of_shifts == 3:
+        print("SHIFTS=3")
         shift = 3
         yesterday = (now.date() - dt.timedelta(days=1)).date()
         start = dt.datetime.combine(yesterday, settings.third_shift)
         start = timezone.make_aware(start)
     # Catch anything after first shift.
     elif now.time() >= settings.first_shift:
+        print("AHHHHH")
         # If more than 1 shift, check if time is in those shift(s).
         if settings.num_of_shifts >= 2:
+            print("BLABLABLA")
             if now.time() >= settings.second_shift:
+                print("SO MANY THINGS")
                 # If 3 shifts, check if time is in that shift.
                 if settings.num_of_shifts == 3:
                     if now.time() >= settings.third_shift:
                         shift = 3
                         start = dt.datetime.combine(now.date, settings.third_shift)
                         start = timezone.make_aware(start)
-                        return start, shift
-                shift = 2
-                start = dt.datetime.combine(now.date(), settings.second_shift)
-                start = timezone.make_aware(start)
-                return start, shift
-        shift = 1
-        start = dt.datetime.combine(now.date(), settings.first_shift)
-        start = timezone.make_aware(start)
-        return start, shift
+                else:
+                    shift = 2
+                    start = dt.datetime.combine(now.date(), settings.second_shift)
+                    start = timezone.make_aware(start)
+
+
+    print(":" * 50)
+    print('START: ', start)
+    print('SHIFT: ', shift)
+    print(":" * 50)
+
+    return start, shift
 
 
 def get_day_hpv_dict(hpv_dict, now):
