@@ -1,8 +1,5 @@
 from datetime import datetime
 import csv
-<<<<<<< HEAD
-import pytz
-=======
 import unicodedata
 import fileinput
 from plantsettings.models import PlantSetting
@@ -19,8 +16,6 @@ if "runserver" in sys.argv:
 else:
     tz_name = 'US/Eastern'
 csv_dt_format = '%Y-%m-%d %H:%M:%S.%f'
->>>>>>> 249f2cd74d68f359b30c61ca597a1f79bd416f00
-
 
 
 def read_csv_generator(path, headers=True):
@@ -58,15 +53,9 @@ def process_date(date_string):
     if date_string == "NULL":
         return None
     else:
-<<<<<<< HEAD
-        date_object = datetime.strptime(date_string, postgres_date_format)
-        # convert EST to UTC datetime here.
-        return date_object.strftime('%Y-%m-%d %H:%M:%S')
-=======
         with timezone.override(tz_name):
             date_object = timezone.make_aware(
                                               datetime.strptime(date_string,
                                                                 csv_dt_format)
                                               )
         return date_object
->>>>>>> 249f2cd74d68f359b30c61ca597a1f79bd416f00

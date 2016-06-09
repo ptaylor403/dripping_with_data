@@ -3,7 +3,8 @@ from get_data.models import RawDirectRunData
 from plantsettings.models import PlantSetting
 import datetime as dt
 from django.utils import timezone
-# from get_data.models import
+from .functions.process_data_main import main
+
 
 """
 Checks the server for new data and writes a snapshot of current hpv and other key statistics to the processed data table (api app).
@@ -52,6 +53,8 @@ def get_hpv_snap():
             start = datetime.combine(yesterday, settings.third_shift)
 
     hpv_dict = main(start)
+
+    return hpv_dict
 
 
 def write_data(hpv):
