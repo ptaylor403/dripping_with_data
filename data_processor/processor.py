@@ -23,12 +23,13 @@ def get_new_hpv_data():
         return print("No new data at this time. Checking again in 5 minutes.")
 
     # Get list of trucks created in that period and do snap logic on each event using the timestamp on the claim
+    trucks_in_period = RawDirectRunData.objects.filter(timestamp__gte=last_api_write, timestamp__lt=timezone.now())
 
     # Get shift start time based on last_claim and plant settings
 
     # Get shift # based on last_claim and plant settings
 
-    get_data()
+    get_hpv_snap()
     write_data()
 
 

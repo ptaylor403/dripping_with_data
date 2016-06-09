@@ -61,7 +61,7 @@ TEST_RUNNER = 'django_nose.NoseTestSuiteRunner'
 # Tell nose to measure coverage on the 'foo' and 'bar' apps
 NOSE_ARGS = [
     '--with-coverage',
-    '--cover-package=generic_dripper,hpv,api,crys,plantsettings',
+    '--cover-package=generic_dripper,hpv,api,crys,plantsettings,data_processor',
 ]
 
 MIDDLEWARE_CLASSES = (

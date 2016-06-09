@@ -32,8 +32,12 @@ def get_clocked_in(start):
     :return: filtered objects before the start value
     """
     employees = RawClockData.objects.filter(
-        PNCHEVNT_IN__gte=start
-    )
+        PNCHEVNT_IN__year=start.year,
+        PNCHEVNT_IN__month=start.month,
+        PNCHEVNT_IN__day=start.day,
+        PNCHEVNT_OUT__exact=None,
+    ).exclude(end_rsn_txt__exact='&out')
+
     return employees
 
 
@@ -84,7 +88,7 @@ def get_emp_plant_code(dept_string):
     return dept_string[:3]
 
 
-def get_emp_manhours(employee, start, stop):
+def get_emp_man_hours(employee, start, stop):
     """
     Calculates the employee's man hours from start to stop.
     :param employee_object:
