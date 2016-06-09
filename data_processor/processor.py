@@ -11,11 +11,18 @@ Checks the server for new data and writes a snapshot of current hpv and other ke
 
 def get_new_hpv_data():
     last_api_write = HPVATM.objects.latest('timestamp')
-    last_claim = RawDirectRunData.latest('TS_LOAD')
+    try:
+        last_claim = RawDirectRunData.latest('TS_LOAD')
+    # TODO "server busy" is a placeholder and will need to change when we know the real error message
+    except "Server Busy":
+        return print("Server busy. Checking again in 5 minutes.")
+
     settings = PlantSetting.last()
 
     if last_claim <= last_api_write:
         return print("No new data at this time. Checking again in 5 minutes.")
+
+    # Get list of trucks created in that period and do snap logic on each event using the timestamp on the claim
 
     # Get shift start time based on last_claim and plant settings
 
@@ -25,7 +32,7 @@ def get_new_hpv_data():
     write_data()
 
 
-def get_data():
+def get_hpv_snap():
     settings = PlantSetting.latest('timestamp')
     now = timezone.now()
 
@@ -46,5 +53,5 @@ def get_data():
     hpv_dict = main(start)
 
 
-def write_data():
+def write_data(hpv):
     pass

@@ -27,7 +27,7 @@ class RawClockData(models.Model):
 
     @staticmethod
     def load_raw_data():
-        # process generator file. Punch CSV has headers.
+        # process generator file. CSV has headers.
         # each row is a dict.
         for row in read_csv_generator(clock_in_out_csv, headers=True):
             created_row = RawClockData.objects.create(
@@ -94,7 +94,7 @@ class RawClockData(models.Model):
             num_employees = currently_clocked_in.count()
             total_man_hours = man_hours
             for employee in currently_clocked_in:
-                
+
                 # TODO begin defined twice here
                 begin = max(employee.PNCHEVNT_IN, start)
                 begin = start
@@ -152,7 +152,6 @@ class RawClockData(models.Model):
         regex_compiled = re.compile(regex_dict['shift'])
         shift = re.findall(regex_compiled, dept_string)[0]
 
-        return plant_code, dept, shift
 
 class RawDirectRunData(models.Model):
     VEH_SER_NO = models.CharField(max_length=6)
@@ -165,7 +164,7 @@ class RawDirectRunData(models.Model):
 
     @staticmethod
     def load_raw_data():
-        # process generator file. Punch CSV has headers.
+        # process generator file. CSV has headers.
         # each row is a dict.
         for row in read_csv_generator(direct_run_csv, headers=True):
             created_row = RawDirectRunData.objects.create(
@@ -192,7 +191,7 @@ class RawCrysData(models.Model):
 
     @staticmethod
     def load_raw_data():
-        # process generator file. Punch CSV has headers.
+        # process generator file. CSV has headers.
         # each row is a dict.
         for row in read_csv_generator(crys_csv, headers=True):
             created_row = RawCrysData.objects.create(
@@ -210,89 +209,22 @@ class RawCrysData(models.Model):
 
 class RawPlantActivity(models.Model):
     VEH_SER_NO = models.CharField(max_length=6)
-    POOL_TRIG_TYPE = models.CharField(max_length=255)
+    POOL_CD = models.CharField(max_length=10)
     TS_LOAD = models.DateTimeField()
-    DATE_WORK = models.DateTimeField()
 
     @staticmethod
     def load_raw_data():
-        # process generator file. Punch CSV has headers.
+        # process generator file. CSV has headers.
         # each row is a dict.
         for row in read_csv_generator(plant_activty_csv, headers=True):
-            temp_date = row['DATE_WORK']
             created_row = RawPlantActivity.objects.create(
                 VEH_SER_NO=row['VEH_SER_NO'],
-                POOL_TRIG_TYPE=row['POOL_TRIG_TYPE'],
+                POOL_CD=row['POOL_CD'],
                 TS_LOAD=process_date(row['TS_LOAD']),
-                DATE_WORK=process_date(row['DATE_WORK']),
             )
+
             created_row.save()
         print("LOADED plant Row")
-
-    @staticmethod
-    def get_claims_date_range(start, stop=None, dept='all'):
-        """
-
-        :param start: Datetime object that points to the start of the query
-        :param stop: Datetime object or None to slice the view or just get from start to current time
-        :return: int of number of trucks produced from start to stop
-        """
-
-        if stop == None:
-            stop = datetime.now()
-        num_trucks = RawPlantActivity.get_claimed_objects_in_range(start, stop)
-
-        # for truck in num_trucks:
-        #     print(truck.VEH_SER_NO)
-
-        return num_trucks.count()
-
-    @staticmethod
-    def get_claimed_objects_in_range(start, stop):
-        """
-        returns filtered objects within a range of start, stop
-        :param start: Datetime object that points to the start of the query
-        :param stop: Datetime object to slice the view
-        :return: RawPlantActivity, 'claim', objects
-
-        """
-        claimed_objects = RawPlantActivity.objects.filter(
-            TS_LOAD__gte=start,
-            TS_LOAD__lte=stop,
-        )
-        return claimed_objects
-
-    @staticmethod
-    def get_hpv_at_slice(start, stop):
-        """
-        Calculates the plants HPV at current slice of time
-        :param start: Datetime object that points to the start of the query
-        :param stop: Datetime object to slice the view
-        :returns: 4 variables in order of HPV, number of claims, current total hours, and current number of employees
-        """
-
-        # calls the two methods to get the needed data
-        num_claims_at_slice = RawPlantActivity.get_claims_date_range(start, stop)
-        total_hours_at_slice, current_num_employees = RawClockData.get_plant_man_hours_atm(start, stop)
-        print("current_num_employees: ", current_num_employees)
-        print("total_hours_at_slice: ", total_hours_at_slice)
-
-        #calculating the HPV
-        if num_claims_at_slice != 0:
-            plant_hpv_at_slice = total_hours_at_slice/num_claims_at_slice
-
-        else:
-            plant_hpv_at_slice = 0
-
-        return plant_hpv_at_slice, num_claims_at_slice, total_hours_at_slice, current_num_employees
-
-    @staticmethod
-    def get_department_manhours(employees_obj_from_slice):
-        """
-
-        :param employees_obj_from_slice:
-        :return:
-        """
 
 
 # Based on the Mount Holly Org Updates 2015 Excel File
@@ -304,7 +236,7 @@ class OrgUnits(models.Model):
 
     @staticmethod
     def load_raw_data():
-        # process generator file. Punch CSV has headers.
+        # process generator file. CSV has headers.
         # each row is a dict.
         for row in read_csv_generator(departments_csv, headers=True):
             created_row = OrgUnits.objects.create(
@@ -324,7 +256,7 @@ class OrgUnits(models.Model):
 #
 #     @staticmethod
 #     def load_raw_data():
-#         # process generator file. Punch CSV has headers.
+#         # process generator file. CSV has headers.
 #         # each row is a dict.
 #         for row in read_csv_generator(shopcalls_csv, headers=True):
 #             print(row)
@@ -342,7 +274,7 @@ class OrgUnits(models.Model):
     #
     #     @staticmethod
     #     def load_raw_data():
-    #         # process generator file. Punch CSV has headers.
+    #         # process generator file. CSV has headers.
     #         # each row is a dict.
     #         for row in read_csv_generator(shopcalls_csv, headers=True):
     #             print(row)
