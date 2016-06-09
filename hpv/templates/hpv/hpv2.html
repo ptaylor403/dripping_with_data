@@ -14,7 +14,7 @@
   </p>
   Time
   {{NOW}}
-  <table id=attendance>
+  <!-- <table id=attendance>
     <tr>
       <th>Day Hour</th>
       <th>Num Employees</th>
@@ -39,8 +39,7 @@
       <td>Plant HPV</td>
       <td>{{plant_hpv|floatformat}}</td>
     </tr>
-  </table>
-
+  </table> -->
 
   <div class="row">
     <div class="col-sm-12 col-md-5">
@@ -55,25 +54,105 @@
           <th class=head>Shift 2</th>
           <th class=head>Day</th>
         </tr>
-      {% for department in hpv_data %}
-      <tr>
-        {% for entry in department %}
-        <td {% if forloop.first %} class="dept">{{entry}}{% else %}>
-          {{entry|floatformat}}
+        <tr>
+          <td class="dept">CIW</td>
+          {% if shift_3 %}
+          <td>{{ CIW_s3_hpv }}</td>
           {% endif %}
-        </td>
-        {% endfor %}
-      </tr>
-      {% endfor %}
-      <tr>
-        <td class='dept'>Claims</td>
-        {% if shift_3 %}
-        <td>{{shift3_total}}</td>
-        {% endif %}
-        <td>{{shift1_total}}</td>
-        <td>{{shift2_total}}</td>
-        <td>{{day_total}}</td>
-      </tr>
+          <td>{{ CIW_s1_hpv }}</td>
+          <td>{{ CIW_s2_hpv }}</td>
+          <td>{{ CIW_d_hpv }}</td>
+        </tr>
+        <tr>
+          <td class="dept">FCB</td>
+          {% if shift_3 %}
+          <td>{{ FCB_s3_hpv }}</td>
+          {% endif %}
+          <td>{{ FCB_s1_hpv }}</td>
+          <td>{{ FCB_s2_hpv }}</td>
+          <td>{{ FCB_d_hpv }}</td>
+        </tr>
+        <tr>
+          <td class="dept">PNT</td>
+          {% if shift_3 %}
+          <td>{{ PNT_s3_hpv }}</td>
+          {% endif %}
+          <td>{{ PNT_s1_hpv }}</td>
+          <td>{{ PNT_s2_hpv }}</td>
+          <td>{{ PNT_d_hpv }}</td>
+        </tr>
+        <tr>
+          <td class="dept">PCH</td>
+          {% if shift_3 %}
+          <td>{{ PCH_s3_hpv }}</td>
+          {% endif %}
+          <td>{{ PCH_s1_hpv }}</td>
+          <td>{{ PCH_s2_hpv }}</td>
+          <td>{{ PCH_d_hpv }}</td>
+        </tr>
+        <tr>
+          <td class="dept">FCH</td>
+          {% if shift_3 %}
+          <td>{{ FCH_s3_hpv }}</td>
+          {% endif %}
+          <td>{{ FCH_s1_hpv }}</td>
+          <td>{{ FCH_s2_hpv }}</td>
+          <td>{{ FCH_d_hpv }}</td>
+        </tr>
+        <tr>
+          <td class="dept">DAC</td>
+          {% if shift_3 %}
+          <td>{{ DAC_s3_hpv }}</td>
+          {% endif %}
+          <td>{{ DAC_s1_hpv }}</td>
+          <td>{{ DAC_s2_hpv }}</td>
+          <td>{{ DAC_d_hpv }}</td>
+        </tr>
+        <tr>
+          <td class="dept">MAINT</td>
+          {% if shift_3 %}
+          <td>{{ MAINT_s3_hpv }}</td>
+          {% endif %}
+          <td>{{ MAINT_s1_hpv }}</td>
+          <td>{{ MAINT_s2_hpv }}</td>
+          <td>{{ MAINT_d_hpv }}</td>
+        </tr>
+        <tr>
+          <td class="dept">QA</td>
+          {% if shift_3 %}
+          <td>{{ QA_s3_hpv }}</td>
+          {% endif %}
+          <td>{{ QA_s1_hpv }}</td>
+          <td>{{ QA_s2_hpv }}</td>
+          <td>{{ QA_d_hpv }}</td>
+        </tr>
+        <tr>
+          <td class="dept">MAT</td>
+          {% if shift_3 %}
+          <td>{{ MAT_s3_hpv }}</td>
+          {% endif %}
+          <td>{{ MAT_s1_hpv }}</td>
+          <td>{{ MAT_s2_hpv }}</td>
+          <td>{{ MAT_d_hpv }}</td>
+        </tr>
+        <tr>
+          <td class="dept">Plant</td>
+          {% if shift_3 %}
+          <td>{{ plant_s3_hpv }}</td>
+          {% endif %}
+          <td>{{ plant_s1_hpv }}</td>
+          <td>{{ plant_s2_hpv }}</td>
+          <td>{{ plant_day_hpv|floatformat }}</td>
+        </tr>
+        <tr>
+          <td class='dept'>Claims</td>
+          {% if shift_3 %}
+          <td>{{ shift3_total }}</td>
+          {% endif %}
+          <td>{{ shift1_total }}</td>
+          <td>{{ shift2_total }}</td>
+          <td>{{ day_total }}</td>
+        </tr>
       </table>
     </div>
 
@@ -109,11 +188,11 @@
           <th class=head>Hr 7</th>
           <th class=head>Hr 8</th>
         </tr>
-      {% for department in hpv_data %}
+      {% for department in shift1_attendance %}
       <tr>
         {% for entry in department %}
-        <td {% if forloop.first %} class="dept">{{entry}}{% else %}>
-          {{entry|floatformat}}
+        <td {% if forloop.first %} class="dept">{{ entry }}{% else %}>
+          {{ entry|floatformat }}
           {% endif %}
         </td>
         {% endfor %}
@@ -140,11 +219,11 @@
             <th class=head>Hr 7</th>
             <th class=head>Hr 8</th>
           </tr>
-        {% for department in hpv_data %}
+        {% for department in shift2_attendance %}
         <tr>
           {% for entry in department %}
-          <td {% if forloop.first %} class="dept">{{entry}}{% else %}>
-            {{entry|floatformat}}
+          <td {% if forloop.first %} class="dept">{{ entry }}{% else %}>
+            {{ entry|floatformat }}
             {% endif %}
           </td>
           {% endfor %}
@@ -169,11 +248,11 @@
               <th class=head>Hr 7</th>
               <th class=head>Hr 8</th>
             </tr>
-          {% for department in hpv_data %}
+          {% for department in shift3_attendance %}
           <tr>
             {% for entry in department %}
-            <td {% if forloop.first %} class="dept">{{entry}}{% else %}>
-              {{entry|floatformat}}
+            <td {% if forloop.first %} class="dept">{{ entry }}{% else %}>
+              {{ entry|floatformat }}
               {% endif %}
             </td>
             {% endfor %}
@@ -240,7 +319,7 @@
   <div class="row">
     <div class="col-xs-12">
       <center>
-      <h3>Current Total: {{ hour_total }} | Total Count: {{ day_total }} |  Total HPV: {{day_HPV|floatformat}}</h3>
+      <h3>Current Total: {{ hour_total }} | Total Count: {{ day_total }} |  Total HPV: {{day_hpv|floatformat}}</h3>
       </center>
     </div>
   </div>
