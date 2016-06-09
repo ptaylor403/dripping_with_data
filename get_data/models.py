@@ -5,6 +5,7 @@ import datetime
 
 from datetime import datetime
 from datetime import timedelta
+import re
 
 
 
@@ -26,7 +27,7 @@ class RawClockData(models.Model):
 
     @staticmethod
     def load_raw_data():
-        # process generator file. Punch CSV has headers.
+        # process generator file. CSV has headers.
         # each row is a dict.
         for row in read_csv_generator(clock_in_out_csv, headers=True):
             created_row = RawClockData.objects.create(
@@ -46,11 +47,33 @@ class RawClockData(models.Model):
     def get_plant_man_hours_atm(start, stop=None, by_department=False):
         """
         Static method that calls RawClockedData.get_clocked_in to determine how
-        many people are clocked in at the specified time slice.
+        many people are clocked in from specified start. Usage,'new truck claimed',
+            start = start of shift and stop is the datetime of the new truck claim.
+        This is not intended to provide a time slice to look at previous entries.
         :param start: a filter based on when you want to start analyzing manhours
-        :param stop:  a filter based on when you want to stop analyzing manhours
-        :return: num of employees clocked as int and manhours as a float
+        :param stop:  a filter based on when you want to stop analyzing manhours.
+
+        :return: dictionary of departments, plant, total man_hours
+        RETURN DICT is structured by dept_mh and dept_ne.
+        'mh' = manhours for that dept
+        '
         """
+        man_hours_by_dept_dict = {
+            'CIW_mh': 0,
+            'CIW_ne': 0,
+            'FCB': 0,
+            'PNT': 0,
+            'PCH': 0,
+            'FCH': 0,
+            'DAC': 0,
+            'MAINT': 0,
+            'QA': 0,
+            'MAT': 0,
+            'OTHER': 0,
+            'PLANT': 0,
+            'total_man_hours':0,
+        }
+
         if stop is None:
             stop = datetime.now()
 
@@ -59,21 +82,29 @@ class RawClockData(models.Model):
 
         if by_department:
             for employee in currently_clocked_in:
-                pass
+                emp_plant, emp_dept, emp_shift = RawClockData.process_department(employee.HM_LBRACCT_FULL_NAM)
+                if emp_dept in man_hours_by_dept_dict:
+                    by_dept_clocked_in[emp_dept] += 1
+                by_dept_clocked_in['PLANT'] += 1
 
         else:
             # Performing calculations on man_hours for the entire plant
-            #write in case for max employee clock in and clockout = none
+            # write in case for max employee clock in and clockout = none
             man_hours = timedelta(hours=0)
             num_employees = currently_clocked_in.count()
             total_man_hours = man_hours
             for employee in currently_clocked_in:
+
+                # TODO begin defined twice here
+                begin = max(employee.PNCHEVNT_IN, start)
                 begin = start
                 end = stop
-                man_hours += end-begin
+                man_hours += end - begin
                 man_seconds = man_hours.total_seconds()
-                total_man_hours = man_seconds/3600
-            return total_man_hours, num_employees
+
+                total_man_hours = man_seconds / 3600
+            return by_dept_clocked_in
+
 
 
     @staticmethod
@@ -89,6 +120,38 @@ class RawClockData(models.Model):
 
         return employees
 
+    @staticmethod
+    def process_department(dept_string):
+        """
+        Analyzes which department, plant, and shift that employee belongs too.
+        :param dept_string: expects a string from column HM_LBRACCT_FULL_NAM that looks like '017.30000.00.51.05/1/-/017.P000051/-/-/-'
+        :return: plant_code, dept, and shift as strings
+        """
+        dept_dict = {
+            '1': 'CIW',
+            '2': 'FCB',
+            '3': 'PNT',
+            '4': 'PCH',
+            '5': 'FCH',
+            '6': 'DAC',
+            '7': 'MAINT',
+            '8': 'QA',
+            '9': 'MAT',
+        }
+
+        regex_dict = {'shift': "/([1-9])/"}
+        plant_code = dept_string[:3]
+
+        emp_dept_code = dept_string[4:5]
+
+        if emp_dept_code in dept_dict:
+            dept = dept_dict[emp_dept_code]
+        else:
+            dept = 'OTHER'
+
+        regex_compiled = re.compile(regex_dict['shift'])
+        shift = re.findall(regex_compiled, dept_string)[0]
+
 
 class RawDirectRunData(models.Model):
     VEH_SER_NO = models.CharField(max_length=6)
@@ -101,7 +164,7 @@ class RawDirectRunData(models.Model):
 
     @staticmethod
     def load_raw_data():
-        # process generator file. Punch CSV has headers.
+        # process generator file. CSV has headers.
         # each row is a dict.
         for row in read_csv_generator(direct_run_csv, headers=True):
             created_row = RawDirectRunData.objects.create(
@@ -128,7 +191,7 @@ class RawCrysData(models.Model):
 
     @staticmethod
     def load_raw_data():
-        # process generator file. Punch CSV has headers.
+        # process generator file. CSV has headers.
         # each row is a dict.
         for row in read_csv_generator(crys_csv, headers=True):
             created_row = RawCrysData.objects.create(
@@ -149,21 +212,25 @@ class RawPlantActivity(models.Model):
     POOL_TRIG_TYPE = models.CharField(max_length=255)
     TS_LOAD = models.DateTimeField()
     DATE_WORK = models.DateTimeField()
+    POOL_CD = models.CharField(max_length=10, null=True)
+
+
 
     @staticmethod
     def load_raw_data():
-        # process generator file. Punch CSV has headers.
+        # process generator file. CSV has headers.
         # each row is a dict.
         for row in read_csv_generator(plant_activty_csv, headers=True):
-            temp_date = row['DATE_WORK']
             created_row = RawPlantActivity.objects.create(
                 VEH_SER_NO=row['VEH_SER_NO'],
-                POOL_TRIG_TYPE=row['POOL_TRIG_TYPE'],
+                POOL_CD=row['POOL_CD'],
+                DATE_WORK=row['DATE_WORK'],
                 TS_LOAD=process_date(row['TS_LOAD']),
-                DATE_WORK=process_date(row['DATE_WORK']),
             )
+
             created_row.save()
         print("LOADED plant Row")
+
 
     @staticmethod
     def get_claims_date_range(start, stop=None, dept='all'):
@@ -238,7 +305,7 @@ class OrgUnits(models.Model):
 
     @staticmethod
     def load_raw_data():
-        # process generator file. Punch CSV has headers.
+        # process generator file. CSV has headers.
         # each row is a dict.
         for row in read_csv_generator(departments_csv, headers=True):
             created_row = OrgUnits.objects.create(
@@ -249,41 +316,3 @@ class OrgUnits(models.Model):
             )
             created_row.save()
         print("LOADED Department List Row")
-
-
-
-# class RawShopCalls(models.Model):
-#     SC_ID = models.CharField(max_length=6)
-#     VEH_SER_NO = models.CharField(max_length=6)
-#
-#     @staticmethod
-#     def load_raw_data():
-#         # process generator file. Punch CSV has headers.
-#         # each row is a dict.
-#         for row in read_csv_generator(shopcalls_csv, headers=True):
-#             print(row)
-#             print('*'*40)
-#             created_row = RawShopCalls.objects.create(
-#                 SC_ID=row['SC_ID'],
-#                 VEH_SER_NO=row['VEH_SER_NO'],
-#             )
-#             created_row.save()
-#         print("LOADED shopcalls Row")
-
-    # class RawShopCalls(models.Model):
-    #     SC_ID = models.CharField(max_length=6)
-    #     VEH_SER_NO = models.CharField(max_length=6)
-    #
-    #     @staticmethod
-    #     def load_raw_data():
-    #         # process generator file. Punch CSV has headers.
-    #         # each row is a dict.
-    #         for row in read_csv_generator(shopcalls_csv, headers=True):
-    #             print(row)
-    #             print('*'*40)
-    #             created_row = RawShopCalls.objects.create(
-    #                 SC_ID=row['SC_ID'],
-    #                 VEH_SER_NO=row['VEH_SER_NO'],
-    #             )
-    #             created_row.save()
-    #         print("LOADED shopcalls Row")
