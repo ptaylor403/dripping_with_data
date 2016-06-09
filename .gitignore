@@ -7,6 +7,11 @@ __pycache__/
 secrets.py
 .env
 **/migrations/
+*/migrations/
+*/migrations/*
+**/migrations/**
+/plantsettings/migrations/0001_initial.py
+**/plantsettings/migrations/0001_initial.py
 
 # C extensions
 *.so
