@@ -8,7 +8,7 @@ class HPVATM(models.Model):
     :param num_clocked_in: Currently working employees
     :param num_claims_to_time: Number of trucks completed so far that day
     """
-    timestamp = models.DateTimeField(auto_now_add=True)
+    timestamp = models.DateTimeField()
     shift = models.IntegerField()
     claims_s = models.IntegerField()
     claims_d = models.IntegerField()

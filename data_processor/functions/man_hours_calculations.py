@@ -6,6 +6,7 @@ from get_data.models import RawClockData
 from datetime import timedelta
 from django.utils import timezone
 import re
+from django.utils import timezone
 
 
 LOCAL_TIME_ZONE = ''
@@ -101,14 +102,13 @@ def get_emp_man_hours(employee, start, stop):
 
     # initializing man_hours
     man_hours_time_obj = timedelta(hours=0)
-    print("Punch event: ", employee.PNCHEVNT_IN)
-    print("Event TZ:", employee.PNCHEVNT_IN.tzinfo)
-    print("start: ", start)
+    # print("Punch event: ", employee.PNCHEVNT_IN)
+    # print("Event TZ:", employee.PNCHEVNT_IN.tzinfo)
 
     # catching if employee came in late or before start.
     # If before start, then capture start.
     begin = max(employee.PNCHEVNT_IN, start)
-
+    # print("Begin: ", begin)
     man_hours_time_obj += stop - begin
     man_seconds = man_hours_time_obj.total_seconds()
     total_man_hours = man_seconds / 3600

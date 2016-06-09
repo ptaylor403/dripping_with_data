@@ -6,166 +6,98 @@
         <title>HPV Data</title>
     </head>
     <body>
-        <h3>Shift 1</h3>
-        <table>
-          <tr id=head>
-            <td id=head><b>Department</b></td>
-            <td id=head><b>Hour 1</b></td>
-            <td id=head><b>Hour 2</b></td>
-            <td id=head><b>Hour 3</b></td>
-            <td id=head><b>Hour 4</b></td>
-            <td id=head><b>Hour 5</b></td>
-            <td id=head><b>Hour 6</b></td>
-            <td id=head><b>Hour 7</b></td>
-            <td id=head><b>Hour 8</b></td>
-          </tr>
+      <div class="row">
+        {% if shift_3 %}
+        <div class="col-xs-4 col-md-4">
+        {% else %}
+        <div class="col-xs-12 col-md-6">
+        {% endif %}
+          <h3>Shift 1 Attendance</h3>
+          <table id=hpv>
+            <tr class=head>
+              <th class=head>Department</td>
+              <th class=head>Hr 1</th>
+              <th class=head>Hr 2</th>
+              <th class=head>Hr 3</th>
+              <th class=head>Hr 4</th>
+              <th class=head>Hr 5</th>
+              <th class=head>Hr 6</th>
+              <th class=head>Hr 7</th>
+              <th class=head>Hr 8</th>
+            </tr>
+          {% for department in shift1_attendance %}
           <tr>
-            <td id=dept>PCH</td>
-            <td>{{ PCH1 }}</td>
-            <td></td>
-            <td></td>
-            <td></td>
-            <td></td>
-            <td></td>
-            <td></td>
-            <td></td>
+            {% for entry in department %}
+            <td {% if forloop.first %} class="dept">{{ entry }}{% else %}>
+              {{ entry|floatformat }}
+              {% endif %}
+            </td>
+            {% endfor %}
           </tr>
-          <tr>
-            <td id=dept>FCH</td>
-            <td>{{ FCH1 }}</td>
-            <td></td>
-            <td></td>
-            <td></td>
-            <td></td>
-            <td></td>
-            <td></td>
-            <td></td>
-          </tr>
-          <tr>
-            <td id=dept>CIW</td>
-            <td>{{ CIW1 }}</td>
-            <td></td>
-            <td></td>
-            <td></td>
-            <td></td>
-            <td></td>
-            <td></td>
-            <td></td>
-          </tr>
-          <tr>
-            <td id=dept>FCB</td>
-            <td>{{ FCB1 }}</td>
-            <td></td>
-            <td></td>
-            <td></td>
-            <td></td>
-            <td></td>
-            <td></td>
-            <td></td>
-          </tr>
-          <tr>
-            <td id=dept>PNT</td>
-            <td>{{ PNT1 }}</td>
-            <td></td>
-            <td></td>
-            <td></td>
-            <td></td>
-            <td></td>
-            <td></td>
-            <td></td>
-          </tr>
-          <tr>
-            <td id=dept>PLANT</td>
-            <td>{{ plant1 }}</td>
-            <td></td>
-            <td></td>
-            <td></td>
-            <td></td>
-            <td></td>
-            <td></td>
-            <td></td>
-          </tr>
-        </table>
-        <h3>Shift 2</h3>
-        <table id=attendance>
-        <tr id=head>
-          <td id=head><b>Department</b></td>
-          <td id=head><b>Hour 1</b></td>
-          <td id=head><b>Hour 2</b></td>
-          <td id=head><b>Hour 3</b></td>
-          <td id=head><b>Hour 4</b></td>
-          <td id=head><b>Hour 5</b></td>
-          <td id=head><b>Hour 6</b></td>
-          <td id=head><b>Hour 7</b></td>
-          <td id=head><b>Hour 8</b></td>
-        </tr>
-        <tr>
-          <td id=dept>PCH</td>
-          <td>{{ PCH2 }}</td>
-          <td></td>
-          <td></td>
-          <td></td>
-          <td></td>
-          <td></td>
-          <td></td>
-          <td></td>
-        </tr>
-        <tr>
-          <td id=dept>FCH</td>
-          <td>{{ FCH2 }}</td>
-          <td></td>
-          <td></td>
-          <td></td>
-          <td></td>
-          <td></td>
-          <td></td>
-          <td></td>
-        </tr>
-        <tr>
-          <td id=dept>CIW</td>
-          <td>{{ CIW2 }}</td>
-          <td></td>
-          <td></td>
-          <td></td>
-          <td></td>
-          <td></td>
-          <td></td>
-          <td></td>
-        </tr>
-        <tr>
-          <td id=dept>FCB</td>
-          <td>{{ FCB2 }}</td>
-          <td></td>
-          <td></td>
-          <td></td>
-          <td></td>
-          <td></td>
-          <td></td>
-          <td></td>
-        </tr>
-        <tr>
-          <td id=dept>PNT</td>
-          <td>{{ PNT2 }}</td>
-          <td></td>
-          <td></td>
-          <td></td>
-          <td></td>
-          <td></td>
-          <td></td>
-          <td></td>
-        </tr>
-        <tr>
-          <td id=dept>PLANT</td>
-          <td>{{ plant2 }}</td>
-          <td></td>
-          <td></td>
-          <td></td>
-          <td></td>
-          <td></td>
-          <td></td>
-          <td></td>
-        </tr>
-        </table>
+          {% endfor %}
+          </table>
+        </div>
+
+          {% if shift_3 %}
+          <div class="col-xs-4 col-md-4">
+          {% else %}
+          <div class="col-xs-12 col-md-6">
+          {% endif %}
+            <h3>Shift 2 Attendance</h3>
+            <table id=hpv>
+              <tr class=head>
+                <th class=head>Department</th>
+                <th class=head>Hr 1</th>
+                <th class=head>Hr 2</th>
+                <th class=head>Hr 3</th>
+                <th class=head>Hr 4</th>
+                <th class=head>Hr 5</th>
+                <th class=head>Hr 6</th>
+                <th class=head>Hr 7</th>
+                <th class=head>Hr 8</th>
+              </tr>
+            {% for department in shift2_attendance %}
+            <tr>
+              {% for entry in department %}
+              <td {% if forloop.first %} class="dept">{{ entry }}{% else %}>
+                {{ entry|floatformat }}
+                {% endif %}
+              </td>
+              {% endfor %}
+            </tr>
+            {% endfor %}
+            </table>
+          </div>
+
+
+            {% if shift_3 %}
+            <div class="col-xs-4 col-md-4">
+              <h3>Shift 3 Attendance</h3>
+              <table id=hpv>
+                <tr class=head>
+                  <th class=head>Department</th>
+                  <th class=head>Hr 1</th>
+                  <th class=head>Hr 2</th>
+                  <th class=head>Hr 3</th>
+                  <th class=head>Hr 4</th>
+                  <th class=head>Hr 5</th>
+                  <th class=head>Hr 6</th>
+                  <th class=head>Hr 7</th>
+                  <th class=head>Hr 8</th>
+                </tr>
+              {% for department in shift3_attendance %}
+              <tr>
+                {% for entry in department %}
+                <td {% if forloop.first %} class="dept">{{ entry }}{% else %}>
+                  {{ entry|floatformat }}
+                  {% endif %}
+                </td>
+                {% endfor %}
+              </tr>
+              {% endfor %}
+              </table>
+            </div>
+            {% endif %}
 
         <table id=claim_day>
           <tr id=head>

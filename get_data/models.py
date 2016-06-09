@@ -232,6 +232,70 @@ class RawPlantActivity(models.Model):
         print("LOADED plant Row")
 
 
+    @staticmethod
+    def get_claims_date_range(start, stop=None, dept='all'):
+        """
+
+        :param start: Datetime object that points to the start of the query
+        :param stop: Datetime object or None to slice the view or just get from start to current time
+        :return: int of number of trucks produced from start to stop
+        """
+
+        if stop == None:
+            stop = datetime.now()
+        num_trucks = RawPlantActivity.get_claimed_objects_in_range(start, stop)
+
+        # for truck in num_trucks:
+        #     print(truck.VEH_SER_NO)
+
+        return num_trucks.count()
+
+    @staticmethod
+    def get_claimed_objects_in_range(start, stop):
+        """
+        returns filtered objects within a range of start, stop
+        :param start: Datetime object that points to the start of the query
+        :param stop: Datetime object to slice the view
+        :return: RawPlantActivity, 'claim', objects
+
+        """
+        claimed_objects = RawPlantActivity.objects.filter(
+            TS_LOAD__gte=start,
+            TS_LOAD__lte=stop,
+        )
+        return claimed_objects
+
+    @staticmethod
+    def get_hpv_at_slice(start, stop):
+        """
+        Calculates the plants HPV at current slice of time
+        :param start: Datetime object that points to the start of the query
+        :param stop: Datetime object to slice the view
+        :returns: 4 variables in order of HPV, number of claims, current total hours, and current number of employees
+        """
+
+        #calls the two methods to get the needed data
+        num_claims_at_slice = RawPlantActivity.get_claims_date_range(start, stop)
+        total_hours_at_slice, current_num_employees = RawClockData.get_plant_man_hours_atm(start, stop)
+        print("current_num_employees: ", current_num_employees)
+        print("total_hours_at_slice: ", total_hours_at_slice)
+        print("num_claims_at_slice: ", num_claims_at_slice)
+        #calculating the HPV
+        if num_claims_at_slice != 0:
+            plant_hpv_at_slice = total_hours_at_slice/num_claims_at_slice
+        else:
+            plant_hpv_at_slice = 0
+
+        return plant_hpv_at_slice, num_claims_at_slice, total_hours_at_slice, current_num_employees
+
+    @staticmethod
+    def get_department_manhours(employees_obj_from_slice):
+        """
+
+        :param employees_obj_from_slice:
+        :return:
+        """
+
 # Based on the Mount Holly Org Updates 2015 Excel File
 class OrgUnits(models.Model):
     DEPT_NAME = models.CharField(max_length=255)
