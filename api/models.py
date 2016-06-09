@@ -10,7 +10,8 @@ class HPVATM(models.Model):
     """
     timestamp = models.DateTimeField(auto_now_add=True)
     shift = models.IntegerField()
-    claims = models.IntegerField()
+    claims_s = models.IntegerField()
+    claims_d = models.IntegerField()
 
     CIW_d_hpv = models.DecimalField(decimal_places=1, max_digits=4, null=True)
     CIW_d_mh = models.DecimalField(decimal_places=2, max_digits=6, null=True)
