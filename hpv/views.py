@@ -269,3 +269,6 @@ class Drip(LoginRequiredMixin, TemplateView):
 def logout_view(request):
     logout(request)
     return render(request, 'registration/logout.html')
+
+def heatmap(request):
+    return render(request, 'hpv/heatmap.html')
