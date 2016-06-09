@@ -99,6 +99,9 @@ def get_emp_man_hours(employee, start, stop):
 
     # initializing man_hours
     man_hours_time_obj = timedelta(hours=0)
+    print("Punch event: ", employee.PNCHEVNT_IN)
+    print("Event TZ:", employee.PNCHEVNT_IN.tzinfo)
+    print("start: ", start)
 
     # catching if employee came in late or before start.
     # If before start, then capture start.
