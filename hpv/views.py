@@ -197,7 +197,7 @@ class HPV(LoginRequiredMixin, TemplateView):
 
         # # All day info
         # current = HPVATM.objects.lastest('timestamp')
-        # for time:
+        # for current:
         #     CIW_d_hpv = current.CIW_d_hpv
         #     FCB_d_hpv = current.FCB_d_hpv
         #     PNT_d_hpv = current.PNT_d_hpv
@@ -209,6 +209,12 @@ class HPV(LoginRequiredMixin, TemplateView):
         #     MAT_d_hpv = curretn.MAT_d_hpv
         #     PLANT_d_hpv = current.PLANT_d_hpv
         #     day_total = current.claims_d
+        #     context.update({'day_total': day_total, 'CIW_d_hpv': CIW_d_hpv,
+        #                     'FCB_d_hpv': FCB_d_hpv, 'PNT_d_hpv': PNT_d_hpv,
+        #                     'PCH_d_hpv': PCH_d_hpv, 'FCH_d_hpv': FCH_d_hpv,
+        #                     'DAC_d_hpv': DAC_d_hpv, 'MAINT_d_hpv': MAINT_d_hpv,
+        #                     'QA_d_hpv': QA_d_hpv, 'MAT_d_hpv': MAT_d_hpv,
+        #                     'PLANT_d_hpv': PLANT_d_hpv})
         #
         #     if current.shift == 1:
         #         shift1_total = current.claims_s
@@ -258,7 +264,7 @@ class HPV(LoginRequiredMixin, TemplateView):
         #         MAINT_s3_hpv = current.MAINT_s_hpv
         #         QA_s3_hpv = current.QA_s_hpv
         #         MAT_s3_hpv = current.MAT_s_hpv
-        #         PLANT_s3_hpv = time.objects.values(PLANT_s_hpv)
+        #         PLANT_s3_hpv = current.PLANT_s_hpv
         #         context.update({ 'shift3_total': shift3_total, 'CIW_s3_hpv': CIW_s3_hpv,
         #                          'FCB_s3_hpv': FCB_s3_hpv, 'PNT_s3_hpv': PNT_s3_hpv,
         #                          'PCH_s3_hpv': PCH_s3_hpv, 'FCH_s3_hpv': FCH_s3_hpv,
@@ -268,24 +274,8 @@ class HPV(LoginRequiredMixin, TemplateView):
         #     else:
         #         shift_3 = False
         #         context.update({'shift_3': shift_3})
-        #
-        # context.update({'shift1_total': shift1_total, 'shift2_total': shift2_total,
-        #                 'day_total': day_total, 'CIW_s1_hpv': CIW_s1_hpv,
-        #                 'CIW_s2_hpv': CIW_s2_hpv, 'CIW_d_hpv': CIW_d_hpv,
-        #                 'FCB_s1_hpv': FCB_s1_hpv, 'FCB_s2_hpv': FCB_s2_hpv,
-        #                 'FCB_d_hpv': FCB_d_hpv, 'PNT_s1_hpv': PNT_s1_hpv,
-        #                 'PNT_s2_hpv': PNT_s2_hpv, 'PNT_d_hpv': PNT_d_hpv,
-        #                 'PCH_s1_hpv': PCH_s1_hpv, 'PCH_s2_hpv': PCH_s2_hpv,
-        #                 'PCH_d_hpv': PCH_d_hpv, 'FCH_s1_hpv': FCH_s1_hpv,
-        #                 'FCH_s2_hpv': FCH_s2_hpv, 'FCH_d_hpv': FCH_d_hpv,
-        #                 'DAC_s1_hpv': DAC_s1_hpv, 'DAC_s2_hpv': DAC_s2_hpv,
-        #                 'DAC_d_hpv': DAC_d_hpv, 'MAINT_s1_hpv': MAINT_s1_hpv,
-        #                 'MAINT_s2_hpv': MAINT_s2_hpv, 'MAINT_d_hpv': MAINT_d_hpv,
-        #                 'QA_s1_hpv': QA_s1_hpv, 'QA_s2_hpv': QA_s2_hpv,
-        #                 'QA_d_hpv': QA_d_hpv, 'MAT_s1_hpv': MAT_s1_hpv,
-        #                 'MAT_s2_hpv': MAT_s2_hpv, 'MAT_d_hpv': MAT_d_hpv,
-        #                 'PLANT_s1_hpv': PLANT_s1_hpv, 'PLANT_s2_hpv': PLANT_s2_hpv,
-        #                 'PLANT_d_hpv': PLANT_d_hpv})
+
+
 
 
 
