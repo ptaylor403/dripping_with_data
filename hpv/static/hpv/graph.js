@@ -12,7 +12,7 @@ jQuery(function($) {
   //   }
   // });
 
-  d3.json('/api/hpv/?date=1&format=json', function(data) {
+  d3.json('/api/hpv?format=json', function(data) {
     var graphData = [{
       key: 'Today',
       values: [],
@@ -40,17 +40,17 @@ jQuery(function($) {
       chart.xAxis
         .axisLabel('Time')
         .tickFormat(function(d) {
-            return d3.time.format('%H:%M')(new Date(d))
+            return d3.time.format('%H')(new Date(d))
           });
 
       chart.yDomain([70, 110])
       chart.yAxis
-          .axisLabel('HPV')
-          .tickFormat(d3.format(',f'));
+        .axisLabel('HPV')
+        .tickFormat(d3.format(',f'));
 
       d3.select('#chart svg')
-          .datum(graphData)
-          .call(chart);
+        .datum(graphData)
+        .call(chart);
 
       //TODO: Figure out a good way to do this automatically
       nv.utils.windowResize(chart.update);
@@ -58,6 +58,7 @@ jQuery(function($) {
       return chart;
     });
   });
+
   // reload page every 60 seconds
   // setTimeout(function() {location.reload(true);},60000);
 });
