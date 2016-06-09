@@ -1,7 +1,7 @@
 from django.db import models
 from hpv.models import Attendance, Complete
 import datetime as dt
-import pytz
+from django.utils import timezone
 from get_data.models import RawClockData, RawDirectRunData, RawCrysData, RawPlantActivity
 # Model._meta.get_all_field_names()
 
@@ -15,7 +15,7 @@ class AttendanceDripper(models.Model):
     create_at = models.DateTimeField()
     edit_1_at = models.DateTimeField(null=True)
     target = Attendance
-    last_drip = dt.datetime(1, 1, 1, 0, 0, tzinfo=pytz.utc)
+    last_drip = timezone.make_aware(dt.datetime(1, 1, 1, 0, 0))
 
     @classmethod
     def load_from_target(cls):
@@ -64,7 +64,7 @@ class CompleteDripper(models.Model):
     completed = models.DateTimeField()
     create_at = models.DateTimeField()
     target = Complete
-    last_drip = dt.datetime(1, 1, 1, 0, 0, tzinfo=pytz.utc)
+    last_drip = timezone.make_aware(dt.datetime(1, 1, 1, 0, 0))
 
     @classmethod
     def load_from_target(cls):
@@ -99,30 +99,34 @@ class RawClockDataDripper(models.Model):
     PNCHEVNT_IN = models.DateTimeField(null=True, blank=True)
     end_rsn_txt = models.CharField(max_length=100, null=True)
     PNCHEVNT_OUT = models.DateTimeField(null=True, blank=True)
-    create_at = models.DateTimeField(null=True, blank=True)
-    edit_1_at = models.DateTimeField(null=True, blank=True)
+    create_at = models.DateTimeField(null=True)
+    edit_1_at = models.DateTimeField(null=True)
+    edit_2_at = models.DateTimeField(null=True)
     target = RawClockData
-    last_drip = dt.datetime(1, 1, 1, 0, 0, tzinfo=pytz.utc)
+    last_drip = timezone.make_aware(dt.datetime(1, 1, 1, 0, 0))
 
     @classmethod
     def load_from_target(cls):
-        earliest_time = cls.target.objects.earliest('PNCHEVNT_IN').PNCHEVNT_IN
-        for entry in cls.target.objects.order_by('pk'):
-            if entry.start_rsn_txt in [None, "&newShift"]:
-                create_time = dt.datetime.combine(earliest_time, dt.time(hour=3))
-            else:
-                create_time = entry.PNCHEVNT_IN
-            cls.objects.create(PRSN_NBR_TXT=entry.PRSN_NBR_TXT,
-                               full_nam=entry.full_nam,
-                               HM_LBRACCT_FULL_NAM=entry.HM_LBRACCT_FULL_NAM,
-                               start_rsn_txt=entry.start_rsn_txt,
-                               PNCHEVNT_IN=entry.PNCHEVNT_IN,
-                               end_rsn_txt=entry.end_rsn_txt,
-                               PNCHEVNT_OUT=entry.PNCHEVNT_OUT,
-                               create_at=create_time,
-                               edit_1_at=entry.PNCHEVNT_IN)
-            if entry.PNCHEVNT_IN is not None:
-                earliest_time = entry.PNCHEVNT_IN
+        with timezone.override("US/Eastern"):
+            earliest_time = timezone.localtime(cls.target.objects.earliest('PNCHEVNT_IN').PNCHEVNT_IN)
+            for entry in cls.target.objects.order_by('pk'):
+                if entry.start_rsn_txt in [None, "&newShift"]:
+                    create_time = dt.datetime.combine(earliest_time, dt.time(hour=3))
+                    create_time = timezone.make_aware(create_time)
+                else:
+                    create_time = entry.PNCHEVNT_IN
+                cls.objects.create(PRSN_NBR_TXT=entry.PRSN_NBR_TXT,
+                                   full_nam=entry.full_nam,
+                                   HM_LBRACCT_FULL_NAM=entry.HM_LBRACCT_FULL_NAM,
+                                   start_rsn_txt=entry.start_rsn_txt,
+                                   PNCHEVNT_IN=entry.PNCHEVNT_IN,
+                                   end_rsn_txt=entry.end_rsn_txt,
+                                   PNCHEVNT_OUT=entry.PNCHEVNT_OUT,
+                                   create_at=create_time,
+                                   edit_1_at=entry.PNCHEVNT_IN,
+                                   edit_2_at=entry.PNCHEVNT_OUT)
+                if entry.PNCHEVNT_IN is not None:
+                    earliest_time = entry.PNCHEVNT_IN
 
     @classmethod
     def _create_on_target(cls, stop):
@@ -151,22 +155,21 @@ class RawClockDataDripper(models.Model):
                 to_update.end_rsn_txt = "&missedOut"
                 to_update.save()
 
-
-    # @classmethod
-    # def _edit_2_on_target(cls, stop):
-    #     relevant = cls.objects.filter(edit_2_at__gt=cls.last_drip)
-    #     relevant = relevant.filter(edit_2_at__lte=stop)
-    #     for entry in relevant.order_by('pk'):
-    #         cls.target.objects.filter(HM_LBRACCT_FULL_NAM=entry.HM_LBRACCT_FULL_NAM,
-    #                                   PNCHEVNT_IN=entry.PNCHEVNT_IN).update(
-    #                                   end_rsn_txt=entry.end_rsn_txt,
-    #                                   PNCHEVNT_OUT=entry.PNCHEVNT_OUT)
+    @classmethod
+    def _edit_2_on_target(cls, stop):
+        relevant = cls.objects.filter(edit_2_at__gt=cls.last_drip)
+        relevant = relevant.filter(edit_2_at__lte=stop)
+        for entry in relevant.order_by('pk'):
+            cls.target.objects.filter(HM_LBRACCT_FULL_NAM=entry.HM_LBRACCT_FULL_NAM,
+                                      PNCHEVNT_IN=entry.PNCHEVNT_IN).update(
+                                      end_rsn_txt=entry.end_rsn_txt,
+                                      PNCHEVNT_OUT=entry.PNCHEVNT_OUT)
 
     @classmethod
     def update_target(cls, *args, **kwargs):
         cls._create_on_target(*args, **kwargs)
         cls._edit_1_on_target(*args, **kwargs)
-        # cls._edit_2_on_target(*args, **kwargs)
+        cls._edit_2_on_target(*args, **kwargs)
         if "stop" in kwargs:
             stop = kwargs['stop']
         else:
@@ -184,7 +187,7 @@ class RawDirectRunDataDripper(models.Model):
     ENG_SC = models.IntegerField()
     create_at = models.DateTimeField()
     target = RawDirectRunData
-    last_drip = dt.datetime(1, 1, 1, 0, 0, tzinfo=pytz.utc)
+    last_drip = timezone.make_aware(dt.datetime(1, 1, 1, 0, 0))
 
     @classmethod
     def load_from_target(cls):
@@ -232,7 +235,7 @@ class RawCrysDataDripper(models.Model):
     TS_LOAD = models.DateTimeField()
     create_at = models.DateTimeField()
     target = RawCrysData
-    last_drip = dt.datetime(1, 1, 1, 0, 0, tzinfo=pytz.utc)
+    last_drip = timezone.make_aware(dt.datetime(1, 1, 1, 0, 0))
 
     @classmethod
     def load_from_target(cls):
@@ -278,7 +281,7 @@ class RawPlantActivityDripper(models.Model):
     DATE_WORK = models.DateTimeField()
     create_at = models.DateTimeField()
     target = RawPlantActivity
-    last_drip = dt.datetime(1, 1, 1, 0, 0, tzinfo=pytz.utc)
+    last_drip = timezone.make_aware(dt.datetime(1, 1, 1, 0, 0))
 
     @classmethod
     def load_from_target(cls):
