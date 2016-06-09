@@ -31,12 +31,16 @@ def get_new_hpv_data():
     except:
         print("No objects in processed table. Writing.")
 
+    #TODO take out the delta
+    now = timezone.now() - dt.timedelta(hours=9)
+
     # Call function to calc hpv by dept for the current shift.
-    hpv_dict = get_hpv_snap()
+    hpv_dict = get_hpv_snap(now)
     print("-" * 50)
     print("HPV Dict: ", hpv_dict)
+    print("-" * 50)
 
-    hpv_dict_with_day = get_day_hpv(hpv_dict)
+    hpv_dict_with_day = get_day_hpv_dict(hpv_dict, now)
 
     write_data(hpv_dict_with_day)
 
@@ -54,15 +58,17 @@ Finds the current shift and its start time to pass on to the functions that calc
 Returns: Dictionary of department keys containing a dictionary of manhours, number clocked in, and hpv for the current shift.
 """
 
-def get_hpv_snap():
+def get_hpv_snap(now):
     settings = PlantSetting.objects.latest('timestamp')
-    now = timezone.now() - dt.timedelta(hours=9)
 
     start, shift = get_shift_info(settings, now)
 
     print("Start: ", start)
     print("Shift: ", shift)
+    print("-" * 50)
+
     hpv_dict = main(start)
+    hpv_dict['shift'] = shift
 
     return hpv_dict
 
@@ -77,18 +83,13 @@ def get_shift_info(settings, now):
     print("-" * 50)
     print('settings num of shifts: ', settings.num_of_shifts)
     print('now: ', now)
-    print('now.time: ', now.time())
     print("First_shift: ", settings.first_shift)
     print("Second shift: ", settings.second_shift)
-    print("Now > first: ", now.time() >= settings.first_shift)
-    print("Now > second: ", now.time() >= settings.second_shift)
-    print("shifts >= two: ", settings.num_of_shifts >= 2)
-    print("shifts >= three: ", settings.num_of_shifts >= 3)
 
     # Catch time before first shift if there are 3 shifts. Shift will have started the day before.
     if now.time() < settings.first_shift and setting.num_of_shifts == 3:
         shift = 3
-        yesterday = (dt.now() - dt.timedelta(days=1)).date()
+        yesterday = (now.date() - dt.timedelta(days=1)).date()
         start = dt.datetime.combine(yesterday, settings.third_shift)
     # Catch anything after first shift.
     elif now.time() >= settings.first_shift:
@@ -108,6 +109,102 @@ def get_shift_info(settings, now):
         start = dt.datetime.combine(now.date(), settings.first_shift)
 
         return start, shift
+
+
+def get_day_hpv_dict(hpv_dict, now):
+    dept_list = ['CIW', 'FCB', 'PNT', 'PCH', 'FCH', 'DAC', 'MAINT', 'QA', 'MAT', 'OTHER']
+
+    plant_s_hpv = 0
+    plant_s_ne = 0
+    plant_s_mh = 0
+
+    for dept in dept_list:
+        plant_s_hpv += hpv_dict[dept]['hpv']
+        plant_s_mh += hpv_dict[dept]['mh']
+        plant_s_ne += hpv_dict[dept]['ne']
+
+    shift_dict = {
+        'plant_hpv': plant_s_hpv,
+        'plant_mh': plant_s_mh,
+        'plant_ne': plant_s_ne,
+    }
+    hpv_dict.update(shift_dict)
+
+    plant_d_hpv, plant_d_mh = get_day_hpv_and_mh(hpv_dict, now)
+
+    # query server for items starting at day_start. Filter by shift, get last, and add to plant day.
+
+    if hpv_dict.shift == 1:
+        day_dict = {
+            'CIW_d_hpv': hpv_dict['CIW']['hpv'],
+            'CIW_d_mh': hpv_dict['CIW']['mh'],
+            'FCB_d_hpv': hpv_dict['FCB']['hpv'],
+            'FCB_d_mh': hpv_dict['FCB']['mh'],
+            'PNT_d_hpv': hpv_dict['PNT']['hpv'],
+            'PNT_d_mh': hpv_dict['PNT']['mh'],
+            'PCH_d_hpv': hpv_dict['PCH']['hpv'],
+            'PCH_d_mh': hpv_dict['PCH']['mh'],
+            'FCH_d_hpv': hpv_dict['FCH']['hpv'],
+            'FCH_d_mh': hpv_dict['FCH']['mh'],
+            'DAC_d_hpv': hpv_dict['DAC']['hpv'],
+            'DAC_d_mh': hpv_dict['DAC']['mh'],
+            'MAINT_d_hpv': hpv_dict['MAINT']['hpv'],
+            'MAINT_d_mh': hpv_dict['MAINT']['mh'],
+            'QA_d_hpv': hpv_dict['QA']['hpv'],
+            'QA_d_mh': hpv_dict['QA']['mh'],
+            'MAT_d_hpv': hpv_dict['MAT']['hpv'],
+            'MAT_d_mh': hpv_dict['MAT']['mh'],
+            'OTHER_d_hpv': hpv_dict['OTHER']['hpv'],
+            'OTHER_d_mh': hpv_dict['OTHER']['mh'],
+
+            'PLANT_d_hpv': ,
+            'PLANT_d_mh':
+        }
+
+
+def get_day_hpv_and_mh(hpv_dict, now):
+    settings = PlantSetting.objects.latest('timestamp')
+    day_start = get_day_start(settings)
+
+    all_since_start = HPVATM.objects.filter(timestamp__gte=day_start)
+
+    cur_hpv = hpv_dict['plant_hpv']
+    cur_mh = hpv_dict['plant_mh']
+
+    if settings.num_of_shifts == 3:
+        if hpv_dict.shift == 3:
+            return cur_hpv, cur_mh
+        elif hpv_dict.shift == 1:
+            last_shift = all_since_start.filter(shift=3).last()
+            hpv = last_shift.hpv + cur_hpv
+            mh = last_shift.mh + cur_mh
+            return hpv, mh
+        elif hpv_dict.shift == 2:
+            s3 = all_since_start.filter(shift=3).last()
+            s1 = all_since_start.filter(shift=1).last()
+            hpv = s3.hpv + s1.hpv + cur_hpv
+            mh = s3.mh + s1.hpv + cur_mh
+            return hpv, mh
+    elif settings.num_of_shifts == 2:
+        if hpv_dict.shift == 1:
+            return cur_hpv, cur_mh
+        elif hpv_dict.shift == 2:
+            last_shift = all_since_start.filter(shift=1).last()
+            hpv = last_shift.hpv + cur_hpv
+            mh = last_shift.mh + cur_mh
+            return hpv, mh
+    else:
+        return cur_hpv, cur_mh
+
+
+def get_day_start(settings):
+    now = timezone.now
+    if settings.num_of_shifts == 3:
+        yesterday = (now - dt.timedelta(days=1)).date()
+        return dt.datetime.combine(yesterday, settings.third_shift)
+    else:
+        return dt.datetime.combine(now.date(), settings.first_shift)
+
 
 
 def write_data(hpv):
