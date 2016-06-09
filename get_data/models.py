@@ -209,8 +209,12 @@ class RawCrysData(models.Model):
 
 class RawPlantActivity(models.Model):
     VEH_SER_NO = models.CharField(max_length=6)
-    POOL_CD = models.CharField(max_length=10)
+    POOL_TRIG_TYPE = models.CharField(max_length=255)
     TS_LOAD = models.DateTimeField()
+    DATE_WORK = models.DateTimeField()
+    POOL_CD = models.CharField(max_length=10, null=True)
+
+
 
     @staticmethod
     def load_raw_data():
@@ -220,6 +224,7 @@ class RawPlantActivity(models.Model):
             created_row = RawPlantActivity.objects.create(
                 VEH_SER_NO=row['VEH_SER_NO'],
                 POOL_CD=row['POOL_CD'],
+                DATE_WORK=row['DATE_WORK'],
                 TS_LOAD=process_date(row['TS_LOAD']),
             )
 
