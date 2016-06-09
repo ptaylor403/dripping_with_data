@@ -1,5 +1,6 @@
+{% load tz %}
 <p>
-  Time is: {{time}} {% if running %} RUNNING {% endif %}
+  Eastern time is: {{time|timezone:"US/Eastern"}} {% if running %} RUNNING {% endif %}
 </p>
 <ul>
   {% for entry in status %}
