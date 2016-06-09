@@ -18,7 +18,6 @@ else:
 csv_dt_format = '%Y-%m-%d %H:%M:%S.%f'
 
 
-
 def read_csv_generator(path, headers=True):
     """
     csv file generator. Will return generator. Example usage:
