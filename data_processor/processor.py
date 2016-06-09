@@ -49,7 +49,7 @@ def get_new_hpv_data():
 
 
 def get_shift_end(shift):
-    dummy_date = datetime.combine(datetime.date.today(), shift)
+    dummy_date = dt.combine(dt.date.today(), shift)
     shift_len = dt.timedelta(hours=8)
     shift_end = dummy_date + shift_len
     return shift_end.time()
@@ -94,7 +94,7 @@ def get_shift_info(settings, now):
 
     now = timezone.localtime(now)
     # Catch time before first shift if there are 3 shifts. Shift will have started the day before.
-    if now.time() < settings.first_shift and setting.num_of_shifts == 3:
+    if now.time() < settings.first_shift and settings.num_of_shifts == 3:
         shift = 3
         yesterday = (now.date() - dt.timedelta(days=1)).date()
         start = dt.datetime.combine(yesterday, settings.third_shift)
@@ -218,6 +218,7 @@ def get_day_hpv_dict(hpv_dict, now):
     }
 
     return full_hpv_dict
+
 
 def get_dept_day_stats(hpv_dict, now, dept):
     settings = PlantSetting.objects.latest('timestamp')

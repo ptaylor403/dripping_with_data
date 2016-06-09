@@ -171,22 +171,22 @@ class HPV(LoginRequiredMixin, TemplateView):
     def get_context_data(self, **kwargs):
         # When during the hour should we do the headcount?
         context = super().get_context_data(**kwargs)
-        departments = ['CIW', 'FCB', 'PNT', 'PCH', 'FCH', 'DAC', 'MAINT', 'QA', 'MAT']
-        NOW = the_dripper.simulated_time.replace(tzinfo=None)
-        print("NOW: ", NOW)
-        today = NOW.date()
-        START_TIME1 = 6
-        START_TIME2 = 14
-        # Attendance - by shift and department
-        plant_attendance = HPV._get_plant_history(START_TIME1, today)
-        shift1_attendance = []
-        shift2_attendance = []
-        # HPV - by department and plant wide, by day and shift
-        plant_hpv = RawPlantActivity.get_hpv_at_slice(datetime.combine(today, dt.time(0)), NOW)[0]
+        # departments = ['CIW', 'FCB', 'PNT', 'PCH', 'FCH', 'DAC', 'MAINT', 'QA', 'MAT']
+        # NOW = the_dripper.simulated_time.replace(tzinfo=None)
+        # print("NOW: ", NOW)
+        # today = NOW.date()
+        # START_TIME1 = 6
+        # START_TIME2 = 14
+        # # Attendance - by shift and department
+        # plant_attendance = HPV._get_plant_history(START_TIME1, today)
+        # shift1_attendance = []
+        # shift2_attendance = []
+        # # HPV - by department and plant wide, by day and shift
+        # plant_hpv = RawPlantActivity.get_hpv_at_slice(datetime.combine(today, dt.time(0)), NOW)[0]
         # Claims - by day and shift
 
 
-        context.update({'plant_attendance': plant_attendance, 'plant_hpv':plant_hpv})
+        # context.update({'plant_attendance': plant_attendance, 'plant_hpv':plant_hpv})
 
 
         # today = datetime.today().date()
