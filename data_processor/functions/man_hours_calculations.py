@@ -4,6 +4,7 @@ Man hour calculation functions are in this file
 
 from get_data.models import RawClockData
 from datetime import timedelta
+from django.utils import timezone
 import re
 
 
@@ -28,15 +29,16 @@ DEPARTMENT_LOOKUP_DICT = {
 def get_clocked_in(start):
     """
     Filters employees who clocked in before shift time, excluding those who have clocked out from previous shifts
-    :param start: the start of time that you want to look at
+    :param start: datetime object the start of time that you want to look at
     :return: filtered objects before the start value
     """
-    employees = RawClockData.objects.filter(
-        PNCHEVNT_IN__year=start.year,
-        PNCHEVNT_IN__month=start.month,
-        PNCHEVNT_IN__day=start.day,
-        PNCHEVNT_OUT__exact=None,
-    ).exclude(end_rsn_txt__exact='&out')
+    with timezone.override("US/Eastern"):
+        employees = RawClockData.objects.filter(
+            PNCHEVNT_IN__year=start.year,
+            PNCHEVNT_IN__month=start.month,
+            PNCHEVNT_IN__day=start.day,
+            PNCHEVNT_OUT__exact=None,
+        ).exclude(end_rsn_txt__exact='&out')
 
     return employees
 
