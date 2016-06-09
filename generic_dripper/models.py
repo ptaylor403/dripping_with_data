@@ -107,24 +107,26 @@ class RawClockDataDripper(models.Model):
 
     @classmethod
     def load_from_target(cls):
-        earliest_time = cls.target.objects.earliest('PNCHEVNT_IN').PNCHEVNT_IN
-        for entry in cls.target.objects.order_by('pk'):
-            if entry.start_rsn_txt in [None, "&newShift"]:
-                create_time = dt.datetime.combine(earliest_time, dt.time(hour=3))
-            else:
-                create_time = entry.PNCHEVNT_IN
-            cls.objects.create(PRSN_NBR_TXT=entry.PRSN_NBR_TXT,
-                               full_nam=entry.full_nam,
-                               HM_LBRACCT_FULL_NAM=entry.HM_LBRACCT_FULL_NAM,
-                               start_rsn_txt=entry.start_rsn_txt,
-                               PNCHEVNT_IN=entry.PNCHEVNT_IN,
-                               end_rsn_txt=entry.end_rsn_txt,
-                               PNCHEVNT_OUT=entry.PNCHEVNT_OUT,
-                               create_at=create_time,
-                               edit_1_at=entry.PNCHEVNT_IN,
-                               edit_2_at=entry.PNCHEVNT_OUT)
-            if entry.PNCHEVNT_IN is not None:
-                earliest_time = entry.PNCHEVNT_IN
+        with timezone.override("US/Eastern"):
+            earliest_time = timezone.localtime(cls.target.objects.earliest('PNCHEVNT_IN').PNCHEVNT_IN)
+            for entry in cls.target.objects.order_by('pk'):
+                if entry.start_rsn_txt in [None, "&newShift"]:
+                    create_time = dt.datetime.combine(earliest_time, dt.time(hour=3))
+                    create_time = timezone.make_aware(create_time)
+                else:
+                    create_time = entry.PNCHEVNT_IN
+                cls.objects.create(PRSN_NBR_TXT=entry.PRSN_NBR_TXT,
+                                   full_nam=entry.full_nam,
+                                   HM_LBRACCT_FULL_NAM=entry.HM_LBRACCT_FULL_NAM,
+                                   start_rsn_txt=entry.start_rsn_txt,
+                                   PNCHEVNT_IN=entry.PNCHEVNT_IN,
+                                   end_rsn_txt=entry.end_rsn_txt,
+                                   PNCHEVNT_OUT=entry.PNCHEVNT_OUT,
+                                   create_at=create_time,
+                                   edit_1_at=entry.PNCHEVNT_IN,
+                                   edit_2_at=entry.PNCHEVNT_OUT)
+                if entry.PNCHEVNT_IN is not None:
+                    earliest_time = entry.PNCHEVNT_IN
 
     @classmethod
     def _create_on_target(cls, stop):
