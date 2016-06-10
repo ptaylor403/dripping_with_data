@@ -41,7 +41,7 @@ jQuery(function($) {
             return d3.time.format('%H')(new Date(d))
           });
 
-      chart.yDomain([70, 120])
+      // chart.yDomain([70, 120])
       chart.yAxis
         .axisLabel('HPV')
         .tickFormat(d3.format(',f'));
