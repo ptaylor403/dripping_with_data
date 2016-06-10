@@ -32,12 +32,11 @@ def get_new_hpv_data():
     except:
         print("No objects in processed table. Writing.")
 
-    #TODO take out the delta
     with timezone.override("US/Eastern"):
         now = timezone.localtime(PlantSetting.objects.last().dripper_start)
     print("TZ: ", now.tzinfo)
 
-    # Call function to calc hpv by dept for the current shift.
+    # Call function to csalc hpv by dept for the current shift.
     hpv_dict = get_hpv_snap(now)
     print("-" * 50)
     print("HPV Dict: ", hpv_dict)
