@@ -21,7 +21,7 @@ jQuery(function($) {
     for (i = 0; i < data.length; i++) {
       // unix = Math.round((new Date(data[i]["timestamp"]).getTime()) / 1000);
       unix = new Date(data[i]["timestamp"]).getTime()
-      graphData[0].values.push([unix, data[i]["hpv_plant"]]);
+      graphData[0].values.push([unix, data[i]["PLANT_d_hpv"]]);
     }
     console.log(graphData);
     nv.addGraph(function() {
