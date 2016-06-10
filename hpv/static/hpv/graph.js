@@ -22,12 +22,23 @@ jQuery(function($) {
       values: [],
       color: '#4252ce'
     }];
+    data.sort(function(a,b){
+      if (a.timestamp > b.timestamp) {
+        return 1;
+      }
+      if (a.timestamp < b.timestamp) {
+        return -1;
+      }
+      return 0;
+    });
     for (i = 0; i < data.length; i++) {
       // unix = Math.round((new Date(data[i]["timestamp"]).getTime()) / 1000);
-      unix = new Date(data[i]["timestamp"]).getTime()
-      graphData[0].values.push([unix, data[i]["PLANT_d_hpv"]]);
-    }
 
+      time = new Date(data[i]["timestamp"]).getTime()
+      // console.log(i + "/" + data[i]["timestamp"] + " || " + time)
+      graphData[0].values.push([time, data[i]["PLANT_d_hpv"]]);
+    }
+    // console.log(graphData)
     nv.addGraph(function() {
     var chart = nv.models.lineChart()
       .useInteractiveGuideline(false)

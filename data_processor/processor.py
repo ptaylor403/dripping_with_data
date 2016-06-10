@@ -341,6 +341,7 @@ def get_day_stats(hpv_dict, now):
                 mh = cur_mh
                 claims = cur_claims
             else:
+                print("testsjdhkfjhskdjhflakdsjing")
                 mh = last_shift.PLANT_s_mh + cur_mh
                 claims = last_shift.claims_s + cur_claims
                 hpv = mh/claims
