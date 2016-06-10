@@ -41,11 +41,11 @@ INSTALLED_APPS = (
     'django_nose',
     'generic_dripper.apps.GenericDripperConfig',
     'api.apps.ApiConfig',
-    'crys.apps.CrysConfig',
     'get_data.apps.GetDataConfig',
     'hpv.apps.HpvConfig',
     'plantsettings.apps.PlantsettingsConfig',
     'rest_framework',
+    'data_processor.apps.DataProcessorConfig',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -57,10 +57,9 @@ INSTALLED_APPS = (
 # Use nose to run all tests
 TEST_RUNNER = 'django_nose.NoseTestSuiteRunner'
 
-# Tell nose to measure coverage on the 'foo' and 'bar' apps
 NOSE_ARGS = [
     '--with-coverage',
-    '--cover-package=generic_dripper,hpv,api,crys,plantsettings',
+    '--cover-package=generic_dripper,hpv,api,crys,plantsettings,data_processor',
 ]
 
 MIDDLEWARE_CLASSES = (
@@ -103,12 +102,12 @@ WSGI_APPLICATION = 'dtna_dashboard.wsgi.application'
 
 DATABASES = {
     'default': {
-#         'ENGINE': 'django.db.backends.postgresql',
-#         'NAME': 'dtna_dashboard',
-#         'USER': 'SomeOne',
-#         'PASSWORD': '',
-#         'HOST': '127.0.0.1',
-#         'PORT': '5432',
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': 'dtna_dashboard',
+        'USER': 'postgres',
+        'PASSWORD': 'password',
+        'HOST': '127.0.0.1',
+        'PORT': '5432',
     }
 }
 
@@ -138,9 +137,9 @@ USE_L10N = True
 USE_TZ = True
 
 # Update database configuration with $DATABASE_URL.
-my_db = 'postgres:///dtna_dashboard'
-db_from_env = dj_database_url.config(default=my_db, conn_max_age=500)
-DATABASES['default'].update(db_from_env)
+# my_db = 'postgres:///dtna_dashboard'
+# db_from_env = dj_database_url.config(default=my_db, conn_max_age=500)
+# DATABASES['default'].update(db_from_env)
 
 # Honor the 'X-Forwarded-Proto' header for request.is_secure()
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
