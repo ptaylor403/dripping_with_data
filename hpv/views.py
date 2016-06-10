@@ -11,12 +11,15 @@ from django.contrib.auth import logout
 from django.http import HttpResponseRedirect
 from get_data.models import RawPlantActivity, RawClockData
 from generic_dripper.views import the_dripper
+from api.models import HPVATM
 import sys
 
-if "runserver" in sys.argv:
-    NOW = the_dripper.simulated_time.replace(tzinfo=None)
-else:
-    NOW = datetime.now() - dt.timedelta(days=5, hours=3)
+# if "runserver" in sys.argv:
+#     NOW = the_dripper.simulated_time.replace(tzinfo=None)
+# else:
+NOW = datetime.now() - dt.timedelta(days=7, hours=0)
+today = datetime.now() - dt.timedelta(days=7, hours=0)
+
 
 
 class Load(LoginRequiredMixin, TemplateView):
@@ -117,7 +120,7 @@ class HPV(LoginRequiredMixin, TemplateView):
             if this_dt <= NOW:  # datetime.now():
                 num_in = RawClockData.get_clocked_in(start=this_dt).filter(PNCHEVNT_IN__gte=this_dt, PNCHEVNT_IN__lt=this_dt + dt.timedelta(i + 1)).count()
                 shift.append(num_in)
-
+                print("num_in: ", num_in)
             else:
                 shift.append("")
 
@@ -184,9 +187,93 @@ class HPV(LoginRequiredMixin, TemplateView):
         # # HPV - by department and plant wide, by day and shift
         # plant_hpv = RawPlantActivity.get_hpv_at_slice(datetime.combine(today, dt.time(0)), NOW)[0]
         # Claims - by day and shift
+        #
+        #
+        # context.update({'plant_attendance': plant_attendance, 'plant_hpv':plant_hpv, 'NOW': NOW})
 
 
-        # context.update({'plant_attendance': plant_attendance, 'plant_hpv':plant_hpv})
+
+
+
+        # All day info
+        current = HPVATM.objects.latest('timestamp')
+        # while current:
+        CIW_d_hpv = current.CIW_d_hpv
+        FCB_d_hpv = current.FCB_d_hpv
+        PNT_d_hpv = current.PNT_d_hpv
+        PCH_d_hpv = current.PCH_d_hpv
+        FCH_d_hpv = current.FCH_d_hpv
+        DAC_d_hpv = current.DAC_d_hpv
+        MAINT_d_hpv = current.MAINT_d_hpv
+        QA_d_hpv = current.QA_d_hpv
+        MAT_d_hpv = current.MAT_d_hpv
+        PLANT_d_hpv = current.PLANT_d_hpv
+        day_total = current.claims_d
+        context.update({'day_total': day_total, 'CIW_d_hpv': CIW_d_hpv,
+                        'FCB_d_hpv': FCB_d_hpv, 'PNT_d_hpv': PNT_d_hpv,
+                        'PCH_d_hpv': PCH_d_hpv, 'FCH_d_hpv': FCH_d_hpv,
+                        'DAC_d_hpv': DAC_d_hpv, 'MAINT_d_hpv': MAINT_d_hpv,
+                        'QA_d_hpv': QA_d_hpv, 'MAT_d_hpv': MAT_d_hpv,
+                        'PLANT_d_hpv': PLANT_d_hpv})
+
+        if current.shift == 1:
+            shift1_total = current.claims_s
+            CIW_s1_hpv = current.CIW_s_hpv
+            FCB_s1_hpv = current.FCB_s_hpv
+            PNT_s1_hpv = current.PNT_s_hpv
+            PCH_s1_hpv = current.PCH_s_hpv
+            FCH_s1_hpv = current.FCH_s_hpv
+            DAC_s1_hpv = current.DAC_s_hpv
+            MAINT_s1_hpv = current.MAINT_s_hpv
+            QA_s1_hpv = current.QA_s_hpv
+            MAT_s1_hpv = current.MAT_s_hpv
+            PLANT_s1_hpv = current.PLANT_s_hpv
+            context.update({ 'shift1_total': shift1_total, 'CIW_s1_hpv': CIW_s1_hpv,
+                             'FCB_s1_hpv': FCB_s1_hpv, 'PNT_s1_hpv': PNT_s1_hpv,
+                             'PCH_s1_hpv': PCH_s1_hpv, 'FCH_s1_hpv': FCH_s1_hpv,
+                             'DAC_s1_hpv': DAC_s1_hpv, 'MAINT_s1_hpv': MAINT_s1_hpv,
+                             'QA_s1_hpv': QA_s1_hpv, 'MAT_s1_hpv': MAT_s1_hpv,
+                             'PLANT_s1_hpv': PLANT_s1_hpv})
+        if current.shift == 2:
+            shift2_total = current.claims_s
+            CIW_s2_hpv = current.CIW_s_hpv
+            FCB_s2_hpv = current.FCB_s_hpv
+            PNT_s2_hpv = current.PNT_s_hpv
+            PCH_s2_hpv = current.PCH_s_hpv
+            FCH_s2_hpv = current.FCH_s_hpv
+            DAC_s2_hpv = current.DAC_s_hpv
+            MAINT_s2_hpv = current.MAINT_s_hpv
+            QA_s2_hpv = current.QA_s_hpv
+            MAT_s2_hpv = current.MAT_s_hpv
+            PLANT_s2_hpv = current.PLANT_s_hpv
+            context.update({ 'shift2_total': shift2_total, 'CIW_s2_hpv': CIW_s2_hpv,
+                             'FCB_s2_hpv': FCB_s2_hpv, 'PNT_s2_hpv': PNT_s2_hpv,
+                             'PCH_s2_hpv': PCH_s2_hpv, 'FCH_s2_hpv': FCH_s2_hpv,
+                             'DAC_s2_hpv': DAC_s2_hpv, 'MAINT_s2_hpv': MAINT_s2_hpv,
+                             'QA_s2_hpv': QA_s2_hpv, 'MAT_s2_hpv': MAT_s2_hpv,
+                             'PLANT_s2_hpv': PLANT_s2_hpv})
+        if current.shift == 3:
+            shift_3 = True
+            shift3_total = current.claims_s
+            CIW_s3_hpv = current.CIW_s_hpv
+            FCB_s3_hpv = current.FCB_s_hpv
+            PNT_s3_hpv = current.PNT_s_hpv
+            PCH_s3_hpv = current.PCH_s_hpv
+            FCH_s3_hpv = current.FCH_s_hpv
+            DAC_s3_hpv = current.DAC_s_hpv
+            MAINT_s3_hpv = current.MAINT_s_hpv
+            QA_s3_hpv = current.QA_s_hpv
+            MAT_s3_hpv = current.MAT_s_hpv
+            PLANT_s3_hpv = current.PLANT_s_hpv
+            context.update({ 'shift3_total': shift3_total, 'CIW_s3_hpv': CIW_s3_hpv,
+                             'FCB_s3_hpv': FCB_s3_hpv, 'PNT_s3_hpv': PNT_s3_hpv,
+                             'PCH_s3_hpv': PCH_s3_hpv, 'FCH_s3_hpv': FCH_s3_hpv,
+                             'DAC_s3_hpv': DAC_s3_hpv, 'MAINT_s3_hpv': MAINT_s3_hpv,
+                             'QA_s3_hpv': QA_s3_hpv, 'MAT_s3_hpv': MAT_s3_hpv,
+                             'PLANT_s3_hpv': PLANT_s3_hpv, 'shift_3': shift_3})
+        else:
+            shift_3 = False
+            context.update({'shift_3': shift_3})
 
 
         # today = datetime.today().date()

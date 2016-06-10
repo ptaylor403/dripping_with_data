@@ -1,11 +1,15 @@
-from get_data.models import RawPlantActivity, RawClockData
 from datetime import datetime, timedelta
 from django.utils import timezone
 
 from .claims_calculations import get_range_of_claims
-from .man_hours_calculations import get_emp_man_hours, get_emp_dept
+from .man_hours_calculations import get_emp_man_hours, get_emp_dept, get_clocked_in
 from .hpv_calcuations import get_hpv
 
+from generic_dripper.views import the_dripper
+
+
+def get_now():
+    return the_dripper.simulated_time
 
 def get_master_by_dept_dict():
     """
@@ -79,23 +83,30 @@ def get_master_by_dept_dict():
     return master_by_dept_dict
 
 
-def main(start):
+def main(start, stop):
     """
     Main function that queries the DB to return HPV by dept.
     :param start: DATETIME TIMEZONE AWARE object
     :param shift: Which shift, string
     :return: completed_by_dept_dict that is based on master by dept dict fully calculated.
     """
-    stop = timezone.now() - timedelta(days=7, hours=18)
+    print("/"*50)
+    print("PROCESS DATA MAIN FUNCTION")
+    print("/"*50)
 
-    print("Stop: ", stop)
+    # stop = timezone.now()
+    # stop = get_now()
+    print("START= ",start,"STOP =", stop)
+
+
     # create instance of master dept dict
     by_dept_dict = get_master_by_dept_dict()
     # populate claims for range
     by_dept_dict['claims_for_range'] = get_range_of_claims(start, stop)
-    print("claims_for_range: ", by_dept_dict['claims_for_range'])
-    currently_clocked_in = RawClockData.get_clocked_in(start)
+    print("CLAIMS FOR RANGE: ", by_dept_dict['claims_for_range'])
+    currently_clocked_in = get_clocked_in(start)
 
+    print("CURRENTLY CLOCKED IN ",len(currently_clocked_in))
     for employee in currently_clocked_in:
         # getting emp's department
         emp_dept = get_emp_dept(employee.HM_LBRACCT_FULL_NAM)
@@ -103,7 +114,6 @@ def main(start):
         if emp_dept in by_dept_dict:
             by_dept_dict[emp_dept]['ne'] += 1
             by_dept_dict[emp_dept]['mh'] += get_emp_man_hours(employee, start, stop)
-
 
     completed_by_dept_dict = get_hpv(by_dept_dict)
 

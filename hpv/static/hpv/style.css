@@ -50,19 +50,8 @@ p {
 }
 /*Table*/
 
-#claim_day{
-  position: absolute;
-  top: 80px 250px;
-  width: 100px;
-}
-
-#claim_hour{
-  position: absolute;
-  top: 80px 400px;
-  width: 100px;
-}
-
 td, th {
+  font-size: 18px;
   width: 4rem;
   height: 2rem;
   border: 1px solid #ccc;
@@ -93,6 +82,7 @@ td {
   background: lightblue;
   border-color: white;
 }
+<<<<<<< HEAD
 
 #claim_title {
   position: absolute;

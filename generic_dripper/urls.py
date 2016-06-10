@@ -8,7 +8,7 @@ urlpatterns = [
     url(r'^load/', views.load, name="load"),
     url(r'^run/', views.run, name='run'),
     # url(r'^stop/', views.stop, name='stop'),
-    url(r'^restart/', views.restart, name='restart'),
+    url(r'^reset/', views.reset, name='reset'),
     url(r'^flush_targets/', views.flush_targets, name='flush_targets'),
     url(r'^flush_drippers/', views.flush_drippers, name='flush_drippers'),
 ]

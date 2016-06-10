@@ -13,44 +13,119 @@
     {{dripper_time}}
   </p>
 
-  <table>
-  {% for item in plant_attendance %}
-  <tr>
-      <td>Hour {{forloop.counter}}</td>
-      <td>{{item}}</td>
-  </tr>
-  {% endfor %}
-  </table>
-
-  Plant HPV
-  {{plant_hpv}}
 
   <div class="row">
     <div class="col-sm-12 col-md-5">
       <h3>HPV</h3>
       <table id=hpv>
         <tr class=head>
-          <td class=head><b>Department</b></td>
-          <td class=head><b>Day</b></td>
-          <td class=head><b>Shift 1</b></td>
-          <td class=head><b>Shift 2</b></td>
-        </tr>
-      {% for department in hpv_data %}
-      <tr>
-        {% for entry in department %}
-        <td {% if forloop.first %} class="dept">{{entry}}{% else %}>
-          {{entry|floatformat}}
+          <th class=head>Department</th>
+          {% if shift_3 %}
+          <th class=head>Shift 3</th>
           {% endif %}
-        </td>
-        {% endfor %}
-      </tr>
-      {% endfor %}
-      <tr>
-        <td><b>trucks</b></td>
-        <td>{{ day_total }}</td>
-        <td>{{ shift1_total }}</td>
-        <td>{{ shift2_total }}</td>
-      </tr>
+          <th class=head>Shift 1</th>
+          <th class=head>Shift 2</th>
+          <th class=head>Day</th>
+        </tr>
+        <tr>
+          <td class="dept">CIW</td>
+          {% if shift_3 %}
+          <td>{{ CIW_s3_hpv }}</td>
+          {% endif %}
+          <td>{{ CIW_s1_hpv }}</td>
+          <td>{{ CIW_s2_hpv }}</td>
+          <td>{{ CIW_d_hpv }}</td>
+        </tr>
+        <tr>
+          <td class="dept">FCB</td>
+          {% if shift_3 %}
+          <td>{{ FCB_s3_hpv }}</td>
+          {% endif %}
+          <td>{{ FCB_s1_hpv }}</td>
+          <td>{{ FCB_s2_hpv }}</td>
+          <td>{{ FCB_d_hpv }}</td>
+        </tr>
+        <tr>
+          <td class="dept">PNT</td>
+          {% if shift_3 %}
+          <td>{{ PNT_s3_hpv }}</td>
+          {% endif %}
+          <td>{{ PNT_s1_hpv }}</td>
+          <td>{{ PNT_s2_hpv }}</td>
+          <td>{{ PNT_d_hpv }}</td>
+        </tr>
+        <tr>
+          <td class="dept">PCH</td>
+          {% if shift_3 %}
+          <td>{{ PCH_s3_hpv }}</td>
+          {% endif %}
+          <td>{{ PCH_s1_hpv }}</td>
+          <td>{{ PCH_s2_hpv }}</td>
+          <td>{{ PCH_d_hpv }}</td>
+        </tr>
+        <tr>
+          <td class="dept">FCH</td>
+          {% if shift_3 %}
+          <td>{{ FCH_s3_hpv }}</td>
+          {% endif %}
+          <td>{{ FCH_s1_hpv }}</td>
+          <td>{{ FCH_s2_hpv }}</td>
+          <td>{{ FCH_d_hpv }}</td>
+        </tr>
+        <tr>
+          <td class="dept">DAC</td>
+          {% if shift_3 %}
+          <td>{{ DAC_s3_hpv }}</td>
+          {% endif %}
+          <td>{{ DAC_s1_hpv }}</td>
+          <td>{{ DAC_s2_hpv }}</td>
+          <td>{{ DAC_d_hpv }}</td>
+        </tr>
+        <tr>
+          <td class="dept">MAINT</td>
+          {% if shift_3 %}
+          <td>{{ MAINT_s3_hpv }}</td>
+          {% endif %}
+          <td>{{ MAINT_s1_hpv }}</td>
+          <td>{{ MAINT_s2_hpv }}</td>
+          <td>{{ MAINT_d_hpv }}</td>
+        </tr>
+        <tr>
+          <td class="dept">QA</td>
+          {% if shift_3 %}
+          <td>{{ QA_s3_hpv }}</td>
+          {% endif %}
+          <td>{{ QA_s1_hpv }}</td>
+          <td>{{ QA_s2_hpv }}</td>
+          <td>{{ QA_d_hpv }}</td>
+        </tr>
+        <tr>
+          <td class="dept">MAT</td>
+          {% if shift_3 %}
+          <td>{{ MAT_s3_hpv }}</td>
+          {% endif %}
+          <td>{{ MAT_s1_hpv }}</td>
+          <td>{{ MAT_s2_hpv }}</td>
+          <td>{{ MAT_d_hpv }}</td>
+        </tr>
+        <tr>
+          <td class="dept">Plant</td>
+          {% if shift_3 %}
+          <td>{{ plant_s3_hpv }}</td>
+          {% endif %}
+          <td>{{ PLANT_s1_hpv }}</td>
+          <td>{{ PLANT_s2_hpv }}</td>
+          <td>{{ PLANT_d_hpv|floatformat }}</td>
+        </tr>
+        <tr>
+          <td class='dept'>Claims</td>
+          {% if shift_3 %}
+          <td>{{ shift3_total }}</td>
+          {% endif %}
+          <td>{{ shift1_total }}</td>
+          <td>{{ shift2_total }}</td>
+          <td>{{ day_total }}</td>
+        </tr>
       </table>
     </div>
 
@@ -67,9 +142,103 @@
     </div>
   </div>
 
-  <div class="row">
+  <!-- <div class="row">
+    {% if shift_3 %}
+    <div class="col-xs-4 col-md-4">
+    {% else %}
     <div class="col-xs-12 col-md-6">
-      <h3 id=shift1_title>Shift 1</h3>
+    {% endif %}
+      <h3>Shift 1 Attendance</h3>
+      <table id=hpv>
+        <tr class=head>
+          <th class=head>Department</td>
+          <th class=head>Hr 1</th>
+          <th class=head>Hr 2</th>
+          <th class=head>Hr 3</th>
+          <th class=head>Hr 4</th>
+          <th class=head>Hr 5</th>
+          <th class=head>Hr 6</th>
+          <th class=head>Hr 7</th>
+          <th class=head>Hr 8</th>
+        </tr>
+      {% for department in shift1_attendance %}
+      <tr>
+        {% for entry in department %}
+        <td {% if forloop.first %} class="dept">{{ entry }}{% else %}>
+          {{ entry|floatformat }}
+          {% endif %}
+        </td>
+        {% endfor %}
+      </tr>
+      {% endfor %}
+      </table>
+    </div>
+
+      {% if shift_3 %}
+      <div class="col-xs-4 col-md-4">
+      {% else %}
+      <div class="col-xs-12 col-md-6">
+      {% endif %}
+        <h3>Shift 2 Attendance</h3>
+        <table id=hpv>
+          <tr class=head>
+            <th class=head>Department</th>
+            <th class=head>Hr 1</th>
+            <th class=head>Hr 2</th>
+            <th class=head>Hr 3</th>
+            <th class=head>Hr 4</th>
+            <th class=head>Hr 5</th>
+            <th class=head>Hr 6</th>
+            <th class=head>Hr 7</th>
+            <th class=head>Hr 8</th>
+          </tr>
+        {% for department in shift2_attendance %}
+        <tr>
+          {% for entry in department %}
+          <td {% if forloop.first %} class="dept">{{ entry }}{% else %}>
+            {{ entry|floatformat }}
+            {% endif %}
+          </td>
+          {% endfor %}
+        </tr>
+        {% endfor %}
+        </table>
+      </div>
+
+
+        {% if shift_3 %}
+        <div class="col-xs-4 col-md-4">
+          <h3>Shift 3 Attendance</h3>
+          <table id=hpv>
+            <tr class=head>
+              <th class=head>Department</th>
+              <th class=head>Hr 1</th>
+              <th class=head>Hr 2</th>
+              <th class=head>Hr 3</th>
+              <th class=head>Hr 4</th>
+              <th class=head>Hr 5</th>
+              <th class=head>Hr 6</th>
+              <th class=head>Hr 7</th>
+              <th class=head>Hr 8</th>
+            </tr>
+          {% for department in shift3_attendance %}
+          <tr>
+            {% for entry in department %}
+            <td {% if forloop.first %} class="dept">{{ entry }}{% else %}>
+              {{ entry|floatformat }}
+              {% endif %}
+            </td>
+            {% endfor %}
+          </tr>
+          {% endfor %}
+          </table>
+        </div>
+        {% endif %} -->
+
+
+  <!-- <div class="row">
+    <div class="col-xs-12 col-md-6"> -->
+      <!-- <h3 id=shift1_title>Shift 1</h3>
       <table id=shift1_attendance>
         <tr class=head>
           <td class=head><b>Department</b></td>
@@ -91,11 +260,11 @@
             {% endfor %}
           </tr>
         {% endfor %}
-      </table>
-    </div>
+      </table> -->
+    <!-- </div>
 
-    <div class="col-xs-12 col-md-6">
-      <h3 id=shift2_title>Shift 2</h3>
+    <div class="col-xs-12 col-md-6"> -->
+      <!-- <h3 id=shift2_title>Shift 2</h3>
       <table id=shift2_attendance>
       <tr class=head>
         <td class=head><b>Department</b></td>
@@ -117,13 +286,13 @@
           {% endfor %}
         </tr>
       {% endfor %}
-      </table>
-    </div>
-  </div>
+      </table> -->
+    <!-- </div>
+  </div> -->
   <div class="row">
     <div class="col-xs-12">
       <center>
-      <h3>Current Total: {{ hour_total }} | Total Count: {{ day_total }} |  Total HPV: {{day_HPV|floatformat}}</h3>
+      <h3> Total Count: {{ day_total }} |  Total HPV: {{ PLANT_d_hpv|floatformat }}</h3>
       </center>
     </div>
   </div>

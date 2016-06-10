@@ -1,6 +1,6 @@
 from django.shortcuts import render
 from django.views.generic.base import TemplateView
-from .models import RawClockData, RawDirectRunData, RawCrysData, RawPlantActivity, OrgUnits
+from .models import RawClockData, RawPlantActivity, OrgUnits
 from django.contrib.auth.mixins import LoginRequiredMixin
 import datetime as dt
 import pytz
@@ -17,8 +17,6 @@ class Clone(TemplateView):
         done = False
         if request.GET.get('clone'):
             RawClockData.load_raw_data()
-            RawDirectRunData.load_raw_data()
-            RawCrysData.load_raw_data()
             RawPlantActivity.load_raw_data()
             OrgUnits.load_raw_data()
             done=True

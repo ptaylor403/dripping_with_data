@@ -1,5 +1,5 @@
 from api.models import HPVATM
-from get_data.models import RawDirectRunData
+from get_data.models import RawPlantActivity
 from plantsettings.models import PlantSetting
 import datetime as dt
 from django.utils import timezone
@@ -15,37 +15,48 @@ Returns: Nothing
 """
 
 def get_new_hpv_data():
+    #TODO take out the delta
+    with timezone.override("US/Eastern"):
+        now = timezone.localtime(PlantSetting.objects.last().dripper_start)
+    print("/"*50)
+    print("GET NEW HPV DATA")
+    print("/"*50)
+    print("NOW TIME = ", now)
+    print("TZ: ", now.tzinfo)
+
     # Is there a claim in the database? Errors could be: Server locked, no matching result for the query. Errors cause function escape.
     try:
-        last_claim = RawDirectRunData.objects.latest('TS_LOAD')
+        last_claim = RawPlantActivity.objects.latest('TS_LOAD')
+
+        print("LAST_CLAIM=", last_claim.VEH_SER_NO)
     # TODO "server busy" is a placeholder and will need to change when we know the real error message
     # except "ServerBusy":
     #     return print("Server busy. Checking again in 5 minutes.")
     except ObjectDoesNotExist:
-        return print("No claims in the database.")
+        print("No claims in the database.")
+        return
 
     # Check for the last entry to the processed data table. Escape if no new claim since last entry. Errors include: No objects for the query - continues to writing logic.
     try:
+        print("GOING TO API TABLE TO GET LATEST API OBJECT")
         last_api_write = HPVATM.objects.latest('timestamp')
-        if last_claim <= last_api_write:
-            return print("No new data at this time. Checking again in 5 minutes.")
-    except:
-        print("No objects in processed table. Writing.")
-
-    #TODO take out the delta
-    with timezone.override("US/Eastern"):
-        now = timezone.localtime(PlantSetting.objects.last().dripper_start)
-    print("TZ: ", now.tzinfo)
+        print("THIS IS WHAT WAS FOUND IN API TABLE TIMESTAMP ", last_api_write.timestamp)
+        if last_claim.TS_LOAD <= last_api_write.timestamp:
+            print("No new data in API TABLE. Checking again in 5 minutes.")
+            return
+    except Exception as e:
+        print("No objects in processed table. Writing.  ", e)
 
     # Call function to calc hpv by dept for the current shift.
     hpv_dict = get_hpv_snap(now)
-    print("-" * 50)
-    print("HPV Dict: ", hpv_dict)
-    print("-" * 50)
+    if hpv_dict is None:
+        return
+
+    print("COMPLETED HPV DICT FROM FORMULAS: ", hpv_dict)
 
     hpv_dict_with_day = get_day_hpv_dict(hpv_dict, now)
 
-    write_data(hpv_dict_with_day, now)
+    write_data(hpv_dict_with_day)
 
 
 def get_shift_end(shift):
@@ -62,17 +73,21 @@ Returns: Dictionary of department keys containing a dictionary of manhours, numb
 """
 
 def get_hpv_snap(now):
+    print("/"*50)
+    print("GET HPV SNAP")
+    print("/"*50)
     settings = PlantSetting.objects.latest('timestamp')
-
+    # print("SETINGS",settings.timestamp)
+    print("NOW,",now)
+    # preventing processing data before start of defined shift
     start, shift = get_shift_info(settings, now)
-
     print("Start: ", start)
     print("Shift: ", shift)
-    print("-" * 50)
 
-
-
-    hpv_dict = main(start)
+    if start > now:
+        print("NOT IN SHIFT")
+        return
+    hpv_dict = main(start, now)
     hpv_dict['shift'] = shift
 
     return hpv_dict
@@ -86,42 +101,60 @@ Returns: shift number and start of shift datetime object
 
 @timezone.override("US/Eastern")
 def get_shift_info(settings, now):
-    print("-" * 50)
+    #TODO Start of the day is the last time a shift ended yesterday or midnight, > earlier
+    print("/"*50)
+    print("GET SHIFT INFO")
+    print("/"*50)
     print('settings num of shifts: ', settings.num_of_shifts)
     print('now: ', now)
     print("First_shift: ", settings.first_shift)
     print("Second shift: ", settings.second_shift)
 
+    #SHIFT 1 SET UP
     now = timezone.localtime(now)
+    shift = 1
+    start = dt.datetime.combine(now.date(), settings.first_shift)
+    start = timezone.make_aware(start)
+    print("MADE LOCAL timezone AWARE START")
+
     # Catch time before first shift if there are 3 shifts. Shift will have started the day before.
     if now.time() < settings.first_shift and settings.num_of_shifts == 3:
+        print("SHIFTS=3")
         shift = 3
         yesterday = (now.date() - dt.timedelta(days=1)).date()
         start = dt.datetime.combine(yesterday, settings.third_shift)
         start = timezone.make_aware(start)
+        print("START TIME FOR 3 SHIFTS = ", start)
     # Catch anything after first shift.
     elif now.time() >= settings.first_shift:
         # If more than 1 shift, check if time is in those shift(s).
         if settings.num_of_shifts >= 2:
+            print("2 or MORE SHIFTS ACTIVATED")
             if now.time() >= settings.second_shift:
+                print("2nd 3 SHIFT CHECK")
                 # If 3 shifts, check if time is in that shift.
                 if settings.num_of_shifts == 3:
                     if now.time() >= settings.third_shift:
                         shift = 3
                         start = dt.datetime.combine(now.date, settings.third_shift)
                         start = timezone.make_aware(start)
-                        return start, shift
-                shift = 2
-                start = dt.datetime.combine(now.date(), settings.second_shift)
-                start = timezone.make_aware(start)
-                return start, shift
-        shift = 1
-        start = dt.datetime.combine(now.date(), settings.first_shift)
-        start = timezone.make_aware(start)
-        return start, shift
+                else:
+                    shift = 2
+                    start = dt.datetime.combine(now.date(), settings.second_shift)
+                    start = timezone.make_aware(start)
+
+
+    print('START: ', start)
+    print('SHIFT: ', shift)
+
+    return start, shift
 
 
 def get_day_hpv_dict(hpv_dict, now):
+    print("/"*50)
+    print("GET DAY HPV DICT FUNCTION")
+    print("/"*50)
+
     dept_list = ['CIW', 'FCB', 'PNT', 'PCH', 'FCH', 'DAC', 'MAINT', 'QA', 'MAT', 'OTHER']
 
     plant_s_hpv = 0
@@ -139,19 +172,19 @@ def get_day_hpv_dict(hpv_dict, now):
 
         dept_values.append(get_dept_day_stats(hpv_dict, now, dept))
 
-    print(dept_values)
+    print("DEPT_VALUES ",dept_values)
+
     shift_dict = {
         'plant_hpv': plant_s_hpv,
         'plant_mh': plant_s_mh,
         'plant_ne': plant_s_ne,
     }
 
-
     hpv_dict.update(shift_dict)
     full_dict.update(shift_dict)
-    print('Full dict:', full_dict)
+    print('FULL DICT:', full_dict)
     plant_d_hpv, plant_d_mh, claims_d = get_day_stats(hpv_dict, now)
-
+    print("plant_d_hpv, plant_d_mh, claims_d= ", plant_d_hpv, plant_d_mh, claims_d)
 
     full_hpv_dict = {
         'CIW_s_hpv': hpv_dict['CIW']['hpv'],
@@ -216,7 +249,7 @@ def get_day_hpv_dict(hpv_dict, now):
         'shift': hpv_dict['shift'],
         'timestamp': now,
     }
-
+    print("FULL DICT ", full_hpv_dict)
     return full_hpv_dict
 
 
@@ -268,6 +301,11 @@ def get_dept_day_stats(hpv_dict, now, dept):
 
 
 def get_day_stats(hpv_dict, now):
+    print("/"*50)
+    print("GET DAY STATS FUNCTION")
+    print("/"*50)
+    print("NOW ", now)
+
     settings = PlantSetting.objects.latest('timestamp')
     day_start = get_day_start(settings, now)
 
@@ -319,5 +357,5 @@ def get_day_start(settings, now):
         return dt.datetime.combine(now.date(), settings.first_shift)
 
 
-def write_data(full_hpv_dict, now):
+def write_data(full_hpv_dict):
     new = HPVATM.objects.create(**full_hpv_dict)
