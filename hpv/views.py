@@ -197,6 +197,9 @@ class HPV(LoginRequiredMixin, TemplateView):
 
         # All day info
         current = HPVATM.objects.latest('timestamp')
+        shift1 = HPVATM.objects.filter(shift=1)
+        shift2 = HPVATM.objects.filter(shift=2)
+        shift3 = HPVATM.objects.filter(shift=3)
         # while current:
         CIW_d_hpv = current.CIW_d_hpv
         FCB_d_hpv = current.FCB_d_hpv
@@ -216,61 +219,65 @@ class HPV(LoginRequiredMixin, TemplateView):
                         'QA_d_hpv': QA_d_hpv, 'MAT_d_hpv': MAT_d_hpv,
                         'PLANT_d_hpv': PLANT_d_hpv})
 
-        if current.shift == 1:
-            shift1_total = current.claims_s
-            CIW_s1_hpv = current.CIW_s_hpv
-            FCB_s1_hpv = current.FCB_s_hpv
-            PNT_s1_hpv = current.PNT_s_hpv
-            PCH_s1_hpv = current.PCH_s_hpv
-            FCH_s1_hpv = current.FCH_s_hpv
-            DAC_s1_hpv = current.DAC_s_hpv
-            MAINT_s1_hpv = current.MAINT_s_hpv
-            QA_s1_hpv = current.QA_s_hpv
-            MAT_s1_hpv = current.MAT_s_hpv
-            PLANT_s1_hpv = current.PLANT_s_hpv
+        if shift1:
+            shift1 = shift1.latest('timestamp')
+            shift1_total = shift1.claims_s
+            CIW_s1_hpv = shift1.CIW_s_hpv
+            FCB_s1_hpv = shift1.FCB_s_hpv
+            PNT_s1_hpv = shift1.PNT_s_hpv
+            PCH_s1_hpv = shift1.PCH_s_hpv
+            FCH_s1_hpv = shift1.FCH_s_hpv
+            DAC_s1_hpv = shift1.DAC_s_hpv
+            MAINT_s1_hpv = shift1.MAINT_s_hpv
+            QA_s1_hpv = shift1.QA_s_hpv
+            MAT_s1_hpv = shift1.MAT_s_hpv
+            PLANT_s1_hpv = shift1.PLANT_s_hpv
             context.update({ 'shift1_total': shift1_total, 'CIW_s1_hpv': CIW_s1_hpv,
                              'FCB_s1_hpv': FCB_s1_hpv, 'PNT_s1_hpv': PNT_s1_hpv,
                              'PCH_s1_hpv': PCH_s1_hpv, 'FCH_s1_hpv': FCH_s1_hpv,
                              'DAC_s1_hpv': DAC_s1_hpv, 'MAINT_s1_hpv': MAINT_s1_hpv,
                              'QA_s1_hpv': QA_s1_hpv, 'MAT_s1_hpv': MAT_s1_hpv,
                              'PLANT_s1_hpv': PLANT_s1_hpv})
-        if current.shift == 2:
-            shift2_total = current.claims_s
-            CIW_s2_hpv = current.CIW_s_hpv
-            FCB_s2_hpv = current.FCB_s_hpv
-            PNT_s2_hpv = current.PNT_s_hpv
-            PCH_s2_hpv = current.PCH_s_hpv
-            FCH_s2_hpv = current.FCH_s_hpv
-            DAC_s2_hpv = current.DAC_s_hpv
-            MAINT_s2_hpv = current.MAINT_s_hpv
-            QA_s2_hpv = current.QA_s_hpv
-            MAT_s2_hpv = current.MAT_s_hpv
-            PLANT_s2_hpv = current.PLANT_s_hpv
+        if shift2:
+            shift2 = shift2.latest('timestamp')
+            shift2_total = shift2.claims_s
+            CIW_s2_hpv = shift2.CIW_s_hpv
+            FCB_s2_hpv = shift2.FCB_s_hpv
+            PNT_s2_hpv = shift2.PNT_s_hpv
+            PCH_s2_hpv = shift2.PCH_s_hpv
+            FCH_s2_hpv = shift2.FCH_s_hpv
+            DAC_s2_hpv = shift2.DAC_s_hpv
+            MAINT_s2_hpv = shift2.MAINT_s_hpv
+            QA_s2_hpv = shift2.QA_s_hpv
+            MAT_s2_hpv = shift2.MAT_s_hpv
+            PLANT_s2_hpv = shift2.PLANT_s_hpv
             context.update({ 'shift2_total': shift2_total, 'CIW_s2_hpv': CIW_s2_hpv,
                              'FCB_s2_hpv': FCB_s2_hpv, 'PNT_s2_hpv': PNT_s2_hpv,
                              'PCH_s2_hpv': PCH_s2_hpv, 'FCH_s2_hpv': FCH_s2_hpv,
                              'DAC_s2_hpv': DAC_s2_hpv, 'MAINT_s2_hpv': MAINT_s2_hpv,
                              'QA_s2_hpv': QA_s2_hpv, 'MAT_s2_hpv': MAT_s2_hpv,
                              'PLANT_s2_hpv': PLANT_s2_hpv})
-        if current.shift == 3:
-            shift_3 = True
-            shift3_total = current.claims_s
-            CIW_s3_hpv = current.CIW_s_hpv
-            FCB_s3_hpv = current.FCB_s_hpv
-            PNT_s3_hpv = current.PNT_s_hpv
-            PCH_s3_hpv = current.PCH_s_hpv
-            FCH_s3_hpv = current.FCH_s_hpv
-            DAC_s3_hpv = current.DAC_s_hpv
-            MAINT_s3_hpv = current.MAINT_s_hpv
-            QA_s3_hpv = current.QA_s_hpv
-            MAT_s3_hpv = current.MAT_s_hpv
-            PLANT_s3_hpv = current.PLANT_s_hpv
-            context.update({ 'shift3_total': shift3_total, 'CIW_s3_hpv': CIW_s3_hpv,
-                             'FCB_s3_hpv': FCB_s3_hpv, 'PNT_s3_hpv': PNT_s3_hpv,
-                             'PCH_s3_hpv': PCH_s3_hpv, 'FCH_s3_hpv': FCH_s3_hpv,
-                             'DAC_s3_hpv': DAC_s3_hpv, 'MAINT_s3_hpv': MAINT_s3_hpv,
-                             'QA_s3_hpv': QA_s3_hpv, 'MAT_s3_hpv': MAT_s3_hpv,
-                             'PLANT_s3_hpv': PLANT_s3_hpv, 'shift_3': shift_3})
+        if shift3:
+            shift3 = shift3.latest('timestamp')
+            if shift3.timestamp >= current.timestamp - dt.timedelta(days=1)
+                shift_3 = True
+                shift3_total = current.claims_s
+                CIW_s3_hpv = current.CIW_s_hpv
+                FCB_s3_hpv = current.FCB_s_hpv
+                PNT_s3_hpv = current.PNT_s_hpv
+                PCH_s3_hpv = current.PCH_s_hpv
+                FCH_s3_hpv = current.FCH_s_hpv
+                DAC_s3_hpv = current.DAC_s_hpv
+                MAINT_s3_hpv = current.MAINT_s_hpv
+                QA_s3_hpv = current.QA_s_hpv
+                MAT_s3_hpv = current.MAT_s_hpv
+                PLANT_s3_hpv = current.PLANT_s_hpv
+                context.update({ 'shift3_total': shift3_total, 'CIW_s3_hpv': CIW_s3_hpv,
+                                 'FCB_s3_hpv': FCB_s3_hpv, 'PNT_s3_hpv': PNT_s3_hpv,
+                                 'PCH_s3_hpv': PCH_s3_hpv, 'FCH_s3_hpv': FCH_s3_hpv,
+                                 'DAC_s3_hpv': DAC_s3_hpv, 'MAINT_s3_hpv': MAINT_s3_hpv,
+                                 'QA_s3_hpv': QA_s3_hpv, 'MAT_s3_hpv': MAT_s3_hpv,
+                                 'PLANT_s3_hpv': PLANT_s3_hpv, 'shift_3': shift_3})
         else:
             shift_3 = False
             context.update({'shift_3': shift_3})
