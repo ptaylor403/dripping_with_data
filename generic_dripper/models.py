@@ -1,4 +1,4 @@
-from django.db import models
+from django.db import models, transaction
 from hpv.models import Attendance, Complete
 import datetime as dt
 from django.utils import timezone
@@ -235,6 +235,7 @@ class CombinedDripper:
         new_time = self.simulated_time + time_step
         self.update_to(new_time)
 
+    @transaction.atomic()
     def update(self):
         self.update_by(self.time_step)
 
