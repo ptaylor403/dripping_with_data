@@ -242,6 +242,7 @@ def get_day_hpv_dict(hpv_dict, now):
         'PLANT_d_mh': plant_d_mh,
         'PLANT_s_hpv': plant_s_hpv,
         'PLANT_s_ne': plant_s_ne,
+        'PLANT_s_mh': plant_s_mh,
 
         'claims_s': hpv_dict['claims_for_range'],
         'claims_d': claims_d,
@@ -341,7 +342,7 @@ def get_day_stats(hpv_dict, now):
                 mh = cur_mh
                 claims = cur_claims
             else:
-                mh = last_shift.PLANT_s_mh + cur_mh
+                mh = float(last_shift.PLANT_s_mh) + cur_mh
                 claims = last_shift.claims_s + cur_claims
                 hpv = mh/claims
             return hpv, mh, claims

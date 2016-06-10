@@ -27,105 +27,17 @@
           <th class=head>Shift 2</th>
           <th class=head>Day</th>
         </tr>
+        {% for name, dept in depts.items %}
         <tr>
-          <td class="dept">CIW</td>
+          <td class="dept">{{ name }}</td>
           {% if shift_3 %}
-          <td>{{ CIW_s3_hpv }}</td>
+          <td>{{ dept.s3_hpv }}</td>
           {% endif %}
-          <td>{{ CIW_s1_hpv }}</td>
-          <td>{{ CIW_s2_hpv }}</td>
-          <td>{{ CIW_d_hpv }}</td>
+          <td>{{ dept.s1_hpv }}</td>
+          <td>{{ dept.s2_hpv }}</td>
+          <td>{{ dept.d_hpv }}</td>
         </tr>
-        <tr>
-          <td class="dept">FCB</td>
-          {% if shift_3 %}
-          <td>{{ FCB_s3_hpv }}</td>
-          {% endif %}
-          <td>{{ FCB_s1_hpv }}</td>
-          <td>{{ FCB_s2_hpv }}</td>
-          <td>{{ FCB_d_hpv }}</td>
-        </tr>
-        <tr>
-          <td class="dept">PNT</td>
-          {% if shift_3 %}
-          <td>{{ PNT_s3_hpv }}</td>
-          {% endif %}
-          <td>{{ PNT_s1_hpv }}</td>
-          <td>{{ PNT_s2_hpv }}</td>
-          <td>{{ PNT_d_hpv }}</td>
-        </tr>
-        <tr>
-          <td class="dept">PCH</td>
-          {% if shift_3 %}
-          <td>{{ PCH_s3_hpv }}</td>
-          {% endif %}
-          <td>{{ PCH_s1_hpv }}</td>
-          <td>{{ PCH_s2_hpv }}</td>
-          <td>{{ PCH_d_hpv }}</td>
-        </tr>
-        <tr>
-          <td class="dept">FCH</td>
-          {% if shift_3 %}
-          <td>{{ FCH_s3_hpv }}</td>
-          {% endif %}
-          <td>{{ FCH_s1_hpv }}</td>
-          <td>{{ FCH_s2_hpv }}</td>
-          <td>{{ FCH_d_hpv }}</td>
-        </tr>
-        <tr>
-          <td class="dept">DAC</td>
-          {% if shift_3 %}
-          <td>{{ DAC_s3_hpv }}</td>
-          {% endif %}
-          <td>{{ DAC_s1_hpv }}</td>
-          <td>{{ DAC_s2_hpv }}</td>
-          <td>{{ DAC_d_hpv }}</td>
-        </tr>
-        <tr>
-          <td class="dept">MAINT</td>
-          {% if shift_3 %}
-          <td>{{ MAINT_s3_hpv }}</td>
-          {% endif %}
-          <td>{{ MAINT_s1_hpv }}</td>
-          <td>{{ MAINT_s2_hpv }}</td>
-          <td>{{ MAINT_d_hpv }}</td>
-        </tr>
-        <tr>
-          <td class="dept">QA</td>
-          {% if shift_3 %}
-          <td>{{ QA_s3_hpv }}</td>
-          {% endif %}
-          <td>{{ QA_s1_hpv }}</td>
-          <td>{{ QA_s2_hpv }}</td>
-          <td>{{ QA_d_hpv }}</td>
-        </tr>
-        <tr>
-          <td class="dept">MAT</td>
-          {% if shift_3 %}
-          <td>{{ MAT_s3_hpv }}</td>
-          {% endif %}
-          <td>{{ MAT_s1_hpv }}</td>
-          <td>{{ MAT_s2_hpv }}</td>
-          <td>{{ MAT_d_hpv }}</td>
-        </tr>
-        <tr>
-          <td class="dept">Plant</td>
-          {% if shift_3 %}
-          <td>{{ plant_s3_hpv }}</td>
-          {% endif %}
-          <td>{{ PLANT_s1_hpv }}</td>
-          <td>{{ PLANT_s2_hpv }}</td>
-          <td>{{ PLANT_d_hpv|floatformat }}</td>
-        </tr>
-        <tr>
-          <td class='dept'>Claims</td>
-          {% if shift_3 %}
-          <td>{{ shift3_total }}</td>
-          {% endif %}
-          <td>{{ shift1_total }}</td>
-          <td>{{ shift2_total }}</td>
-          <td>{{ day_total }}</td>
-        </tr>
+        {% endfor %}
       </table>
     </div>
 
@@ -293,7 +205,7 @@
   <div class="row">
     <div class="col-xs-12">
       <center>
-      <h3> Total Count: {{ day_total }} |  Total HPV: {{ PLANT_d_hpv|floatformat }}</h3>
+      <h3> Total Count: {{ depts.CLAIMS.d_hpv }} |  Total HPV: {{ depts.PLANT.d_hpv|floatformat }}</h3>
       </center>
     </div>
   </div>

@@ -13,6 +13,7 @@ from get_data.models import RawPlantActivity, RawClockData
 from generic_dripper.views import the_dripper
 from api.models import HPVATM
 import sys
+from collections import OrderedDict
 
 # if "runserver" in sys.argv:
 #     NOW = the_dripper.simulated_time.replace(tzinfo=None)
@@ -175,99 +176,120 @@ class HPV(LoginRequiredMixin, TemplateView):
         # When during the hour should we do the headcount?
         context = super().get_context_data(**kwargs)
 
-        try:
-            # All day info
-            current = HPVATM.objects.latest('timestamp')
-            shift1 = HPVATM.objects.filter(shift=1)
-            shift2 = HPVATM.objects.filter(shift=2)
-            shift3 = HPVATM.objects.filter(shift=3)
-            # while current:
-            CIW_d_hpv = current.CIW_d_hpv
-            FCB_d_hpv = current.FCB_d_hpv
-            PNT_d_hpv = current.PNT_d_hpv
-            PCH_d_hpv = current.PCH_d_hpv
-            FCH_d_hpv = current.FCH_d_hpv
-            DAC_d_hpv = current.DAC_d_hpv
-            MAINT_d_hpv = current.MAINT_d_hpv
-            QA_d_hpv = current.QA_d_hpv
-            MAT_d_hpv = current.MAT_d_hpv
-            PLANT_d_hpv = current.PLANT_d_hpv
-            day_total = current.claims_d
-            context.update({'day_total': day_total, 'CIW_d_hpv': CIW_d_hpv,
-                            'FCB_d_hpv': FCB_d_hpv, 'PNT_d_hpv': PNT_d_hpv,
-                            'PCH_d_hpv': PCH_d_hpv, 'FCH_d_hpv': FCH_d_hpv,
-                            'DAC_d_hpv': DAC_d_hpv, 'MAINT_d_hpv': MAINT_d_hpv,
-                            'QA_d_hpv': QA_d_hpv, 'MAT_d_hpv': MAT_d_hpv,
-                            'PLANT_d_hpv': PLANT_d_hpv})
+        if HPVATM.objects.count() == 0:
+            return context
 
-            if shift1:
-                shift1 = shift1.latest('timestamp')
-                if shift1.timestamp >= current.timestamp - dt.timedelta(days=1):
-                    shift1_total = shift1.claims_s
-                    CIW_s1_hpv = shift1.CIW_s_hpv
-                    FCB_s1_hpv = shift1.FCB_s_hpv
-                    PNT_s1_hpv = shift1.PNT_s_hpv
-                    PCH_s1_hpv = shift1.PCH_s_hpv
-                    FCH_s1_hpv = shift1.FCH_s_hpv
-                    DAC_s1_hpv = shift1.DAC_s_hpv
-                    MAINT_s1_hpv = shift1.MAINT_s_hpv
-                    QA_s1_hpv = shift1.QA_s_hpv
-                    MAT_s1_hpv = shift1.MAT_s_hpv
-                    PLANT_s1_hpv = shift1.PLANT_s_hpv
-                    context.update({ 'shift1_total': shift1_total, 'CIW_s1_hpv': CIW_s1_hpv,
-                                     'FCB_s1_hpv': FCB_s1_hpv, 'PNT_s1_hpv': PNT_s1_hpv,
-                                     'PCH_s1_hpv': PCH_s1_hpv, 'FCH_s1_hpv': FCH_s1_hpv,
-                                     'DAC_s1_hpv': DAC_s1_hpv, 'MAINT_s1_hpv': MAINT_s1_hpv,
-                                     'QA_s1_hpv': QA_s1_hpv, 'MAT_s1_hpv': MAT_s1_hpv,
-                                     'PLANT_s1_hpv': PLANT_s1_hpv})
-            if shift2:
-                shift2 = shift2.latest('timestamp')
-                if shift2.timestamp >= current.timestamp - dt.timedelta(days=1):
-                    shift2_total = shift2.claims_s
-                    CIW_s2_hpv = shift2.CIW_s_hpv
-                    FCB_s2_hpv = shift2.FCB_s_hpv
-                    PNT_s2_hpv = shift2.PNT_s_hpv
-                    PCH_s2_hpv = shift2.PCH_s_hpv
-                    FCH_s2_hpv = shift2.FCH_s_hpv
-                    DAC_s2_hpv = shift2.DAC_s_hpv
-                    MAINT_s2_hpv = shift2.MAINT_s_hpv
-                    QA_s2_hpv = shift2.QA_s_hpv
-                    MAT_s2_hpv = shift2.MAT_s_hpv
-                    PLANT_s2_hpv = shift2.PLANT_s_hpv
-                    context.update({ 'shift2_total': shift2_total, 'CIW_s2_hpv': CIW_s2_hpv,
-                                     'FCB_s2_hpv': FCB_s2_hpv, 'PNT_s2_hpv': PNT_s2_hpv,
-                                     'PCH_s2_hpv': PCH_s2_hpv, 'FCH_s2_hpv': FCH_s2_hpv,
-                                     'DAC_s2_hpv': DAC_s2_hpv, 'MAINT_s2_hpv': MAINT_s2_hpv,
-                                     'QA_s2_hpv': QA_s2_hpv, 'MAT_s2_hpv': MAT_s2_hpv,
-                                     'PLANT_s2_hpv': PLANT_s2_hpv})
-            if shift3:
-                shift3 = shift3.latest('timestamp')
-                if shift3.timestamp >= current.timestamp - dt.timedelta(days=1):
-                    shift_3 = True
-                    shift3_total = current.claims_s
-                    CIW_s3_hpv = current.CIW_s_hpv
-                    FCB_s3_hpv = current.FCB_s_hpv
-                    PNT_s3_hpv = current.PNT_s_hpv
-                    PCH_s3_hpv = current.PCH_s_hpv
-                    FCH_s3_hpv = current.FCH_s_hpv
-                    DAC_s3_hpv = current.DAC_s_hpv
-                    MAINT_s3_hpv = current.MAINT_s_hpv
-                    QA_s3_hpv = current.QA_s_hpv
-                    MAT_s3_hpv = current.MAT_s_hpv
-                    PLANT_s3_hpv = current.PLANT_s_hpv
-                    context.update({ 'shift3_total': shift3_total, 'CIW_s3_hpv': CIW_s3_hpv,
-                                     'FCB_s3_hpv': FCB_s3_hpv, 'PNT_s3_hpv': PNT_s3_hpv,
-                                     'PCH_s3_hpv': PCH_s3_hpv, 'FCH_s3_hpv': FCH_s3_hpv,
-                                     'DAC_s3_hpv': DAC_s3_hpv, 'MAINT_s3_hpv': MAINT_s3_hpv,
-                                     'QA_s3_hpv': QA_s3_hpv, 'MAT_s3_hpv': MAT_s3_hpv,
-                                     'PLANT_s3_hpv': PLANT_s3_hpv, 'shift_3': shift_3})
-            else:
-                shift_3 = False
-                context.update({'shift_3': shift_3})
-        except Exception as e:
-            pass
+        # All day info
+        current = HPVATM.objects.latest('timestamp')
+        shift1 = HPVATM.objects.filter(shift=1)
+        shift2 = HPVATM.objects.filter(shift=2)
+        shift3 = HPVATM.objects.filter(shift=3)
+
+        depts = {
+            'CIW': {},
+            'FCB': {},
+            'PNT': {},
+            'PCH': {},
+            'FCH': {},
+            'DAC': {},
+            'MAINT': {},
+            'QA': {},
+            'MAT': {},
+            'PLANT': {},
+            'CLAIMS': {}
+        }
+
+        self.set_day_data(current, context, depts)
+        self.set_shift1_data(current, shift1, context, depts)
+        self.set_shift2_data(current, shift2, context, depts)
+        self.set_shift3_data(current, shift3, context, depts)
+
+        keyorder = ['CIW', 'FCB', 'PNT', 'PCH', 'FCH', 'DAC', 'MAINT', 'QA', 'MAT', 'PLANT', 'CLAIMS']
+        context['depts'] = OrderedDict(sorted(depts.items(), key=lambda i:keyorder.index(i[0])))
 
         return context
+
+    def set_day_data(self, current, context, depts):
+        depts['CIW']['d_hpv'] = current.CIW_d_hpv
+        depts['FCB']['d_hpv'] = current.FCB_d_hpv
+        depts['PNT']['d_hpv'] = current.PNT_d_hpv
+        depts['PCH']['d_hpv'] = current.PCH_d_hpv
+        depts['FCH']['d_hpv'] = current.FCH_d_hpv
+        depts['DAC']['d_hpv'] = current.DAC_d_hpv
+        depts['MAINT']['d_hpv'] = current.MAINT_d_hpv
+        depts['QA']['d_hpv'] = current.QA_d_hpv
+        depts['MAT']['d_hpv'] = current.MAT_d_hpv
+        depts['PLANT']['d_hpv'] = current.PLANT_d_hpv
+        depts['CLAIMS']['d_hpv'] = current.claims_d
+
+
+    def set_shift1_data(self, current, shift1, context, depts):
+        if not shift1:
+            return
+
+        shift1 = shift1.latest('timestamp')
+        if not (shift1.timestamp >= current.timestamp - dt.timedelta(hours=17)):
+            return
+
+        depts['CIW']['s1_hpv'] = shift1.CIW_s_hpv
+        depts['FCB']['s1_hpv'] = shift1.FCB_s_hpv
+        depts['PNT']['s1_hpv'] = shift1.PNT_s_hpv
+        depts['PCH']['s1_hpv'] = shift1.PCH_s_hpv
+        depts['FCH']['s1_hpv'] = shift1.FCH_s_hpv
+        depts['DAC']['s1_hpv'] = shift1.DAC_s_hpv
+        depts['MAINT']['s1_hpv'] = shift1.MAINT_s_hpv
+        depts['QA']['s1_hpv'] = shift1.QA_s_hpv
+        depts['MAT']['s1_hpv'] = shift1.MAT_s_hpv
+        depts['PLANT']['s1_hpv'] = shift1.PLANT_s_hpv
+        depts['CLAIMS']['s1_hpv'] = shift1.claims_s
+
+
+    def set_shift2_data(self, current, shift2, context, depts):
+        if not shift2:
+            return
+
+        shift2 = shift2.latest('timestamp')
+        if not (shift2.timestamp >= current.timestamp - dt.timedelta(hours=17)):
+            return
+
+        depts['CIW']['s2_hpv'] = shift2.CIW_s_hpv
+        depts['FCB']['s2_hpv'] = shift2.FCB_s_hpv
+        depts['PNT']['s2_hpv'] = shift2.PNT_s_hpv
+        depts['PCH']['s2_hpv'] = shift2.PCH_s_hpv
+        depts['FCH']['s2_hpv'] = shift2.FCH_s_hpv
+        depts['DAC']['s2_hpv'] = shift2.DAC_s_hpv
+        depts['MAINT']['s2_hpv'] = shift2.MAINT_s_hpv
+        depts['QA']['s2_hpv'] = shift2.QA_s_hpv
+        depts['MAT']['s2_hpv'] = shift2.MAT_s_hpv
+        depts['PLANT']['s2_hpv'] = shift2.PLANT_s_hpv
+        depts['CLAIMS']['s2_hpv'] = shift2.claims_s
+
+
+    def set_shift3_data(self, current, shift3, context, depts):
+        if not shift3:
+            shift_3 = False
+            context.update({'shift_3': shift_3})
+            return
+
+        shift3 = shift3.latest('timestamp')
+        if not (shift3.timestamp >= current.timestamp - dt.timedelta(hours=17)):
+            return
+
+        depts['CIW']['s3_hpv'] = shift3.CIW_s_hpv
+        depts['FCB']['s3_hpv'] = shift3.FCB_s_hpv
+        depts['PNT']['s3_hpv'] = shift3.PNT_s_hpv
+        depts['PCH']['s3_hpv'] = shift3.PCH_s_hpv
+        depts['FCH']['s3_hpv'] = shift3.FCH_s_hpv
+        depts['DAC']['s3_hpv'] = shift3.DAC_s_hpv
+        depts['MAINT']['s3_hpv'] = shift3.MAINT_s_hpv
+        depts['QA']['s3_hpv'] = shift3.QA_s_hpv
+        depts['MAT']['s3_hpv'] = shift3.MAT_s_hpv
+        depts['PLANT']['s3_hpv'] = shift3.PLANT_s_hpv
+        depts['CLAIMS']['s3_hpv'] = shift3.claims_s
+
+        shift_3 = True
+
+        context.update({ 'shift3_total': shift3_total })
 
 
 class Drip(LoginRequiredMixin, TemplateView):
