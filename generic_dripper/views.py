@@ -1,16 +1,16 @@
 from django.shortcuts import render, redirect
-from .models import RawClockDataDripper, RawDirectRunDataDripper
-from .models import RawCrysDataDripper, RawPlantActivityDripper, CombinedDripper
-from get_data.models import RawClockData, RawDirectRunData, RawCrysData, RawPlantActivity
+from .models import RawClockDataDripper
+from .models import RawPlantActivityDripper, CombinedDripper
+from get_data.models import RawClockData, RawPlantActivity
+from api.models import HPVATM
 from plantsettings.models import PlantSetting
 import datetime as dt
 import sys
+from django.utils import timezone
 
 if "runserver" in sys.argv:
-    all_data_tables = [RawClockData, RawDirectRunData,
-                       RawCrysData, RawPlantActivity]
-    all_drippers = [RawClockDataDripper, RawDirectRunDataDripper,
-                    RawCrysDataDripper, RawPlantActivityDripper]
+    all_data_tables = [RawClockData, RawPlantActivity]
+    all_drippers = [RawClockDataDripper, RawPlantActivityDripper]
     if not PlantSetting.objects.exists():
         PlantSetting().save()
     the_dripper = CombinedDripper(PlantSetting.objects.last().dripper_start,
@@ -55,8 +55,15 @@ def run(request):
     return render(request, 'status.html', context)
 
 
-def restart(request):
-    pass
+def reset(request):
+    with timezone.override("US/Eastern"):
+        the_dripper.simulated_time = timezone.make_aware(dt.datetime(2016, 6, 1, 0, 0))
+    dripper_time = PlantSetting.objects.last()
+    dripper_time.dripper_start = the_dripper.simulated_time
+    dripper_time.save()
+    the_dripper.clear_targets()
+    HPVATM.objects.all().delete()
+    return redirect('dripper:status')
 
 
 def flush_targets(request):

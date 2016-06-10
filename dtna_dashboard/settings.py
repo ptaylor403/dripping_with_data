@@ -41,7 +41,6 @@ INSTALLED_APPS = (
     'django_nose',
     'generic_dripper.apps.GenericDripperConfig',
     'api.apps.ApiConfig',
-    'crys.apps.CrysConfig',
     'get_data.apps.GetDataConfig',
     'hpv.apps.HpvConfig',
     'plantsettings.apps.PlantsettingsConfig',

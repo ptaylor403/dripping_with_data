@@ -2,7 +2,7 @@ from django.db import models
 from hpv.models import Attendance, Complete
 import datetime as dt
 from django.utils import timezone
-from get_data.models import RawClockData, RawDirectRunData, RawCrysData, RawPlantActivity
+from get_data.models import RawClockData, RawPlantActivity
 # Model._meta.get_all_field_names()
 
 
@@ -177,108 +177,10 @@ class RawClockDataDripper(models.Model):
         cls.last_drip = stop
 
 
-class RawDirectRunDataDripper(models.Model):
-    VEH_SER_NO = models.CharField(max_length=6)
-    TS_LOAD = models.DateTimeField()
-    SHIFT = models.IntegerField()
-    QA = models.IntegerField()
-    PAINT = models.IntegerField()
-    SH = models.IntegerField()
-    ENG_SC = models.IntegerField()
-    create_at = models.DateTimeField()
-    target = RawDirectRunData
-    last_drip = timezone.make_aware(dt.datetime(1, 1, 1, 0, 0))
-
-    @classmethod
-    def load_from_target(cls):
-        for entry in cls.target.objects.all():
-            cls.objects.create(VEH_SER_NO=entry.VEH_SER_NO,
-                               TS_LOAD=entry.TS_LOAD,
-                               SHIFT=entry.SHIFT,
-                               QA=entry.QA,
-                               PAINT=entry.PAINT,
-                               SH=entry.SH,
-                               ENG_SC=entry.ENG_SC,
-                               create_at=entry.TS_LOAD
-                               )
-
-    @classmethod
-    def _create_on_target(cls, stop):
-        relevant = cls.objects.filter(create_at__gt=cls.last_drip)
-        relevant = relevant.filter(create_at__lte=stop)
-        for entry in relevant.order_by('pk'):
-            cls.target.objects.create(VEH_SER_NO=entry.VEH_SER_NO,
-                                      TS_LOAD=entry.TS_LOAD,
-                                      SHIFT=entry.SHIFT,
-                                      QA=entry.QA,
-                                      PAINT=entry.PAINT,
-                                      SH=entry.SH,
-                                      ENG_SC=entry.ENG_SC)
-
-    @classmethod
-    def update_target(cls, *args, **kwargs):
-        cls._create_on_target(*args, **kwargs)
-        if "stop" in kwargs:
-            stop = kwargs['stop']
-        else:
-            stop = args[0]
-        cls.last_drip = stop
-
-
-class RawCrysDataDripper(models.Model):
-    QA_ITEM_DSCREP_ID = models.CharField(max_length=255)
-    QA_INSP_ITEM_ID = models.CharField(max_length=255)
-    VEH_SER_NO = models.CharField(max_length=6)
-    FOUND_INSP_TEAM = models.CharField(max_length=3)
-    INSP_DSCREP_DESC = models.CharField(max_length=255)
-    INSP_COMT = models.TextField()
-    TS_LOAD = models.DateTimeField()
-    create_at = models.DateTimeField()
-    target = RawCrysData
-    last_drip = timezone.make_aware(dt.datetime(1, 1, 1, 0, 0))
-
-    @classmethod
-    def load_from_target(cls):
-        for entry in cls.target.objects.all():
-            cls.objects.create(QA_ITEM_DSCREP_ID=entry.QA_ITEM_DSCREP_ID,
-                               QA_INSP_ITEM_ID=entry.QA_INSP_ITEM_ID,
-                               VEH_SER_NO=entry.VEH_SER_NO,
-                               FOUND_INSP_TEAM=entry.FOUND_INSP_TEAM,
-                               INSP_DSCREP_DESC=entry.INSP_DSCREP_DESC,
-                               INSP_COMT=entry.INSP_COMT,
-                               TS_LOAD=entry.TS_LOAD,
-                               create_at=entry.TS_LOAD
-                               )
-
-    @classmethod
-    def _create_on_target(cls, stop):
-        relevant = cls.objects.filter(create_at__gt=cls.last_drip)
-        relevant = relevant.filter(create_at__lte=stop)
-        for entry in relevant.order_by('pk'):
-            cls.target.objects.create(QA_ITEM_DSCREP_ID=entry.QA_ITEM_DSCREP_ID,
-                                      QA_INSP_ITEM_ID=entry.QA_INSP_ITEM_ID,
-                                      VEH_SER_NO=entry.VEH_SER_NO,
-                                      FOUND_INSP_TEAM=entry.FOUND_INSP_TEAM,
-                                      INSP_DSCREP_DESC=entry.INSP_DSCREP_DESC,
-                                      INSP_COMT=entry.INSP_COMT,
-                                      TS_LOAD=entry.TS_LOAD
-                                      )
-
-    @classmethod
-    def update_target(cls, *args, **kwargs):
-        cls._create_on_target(*args, **kwargs)
-        if "stop" in kwargs:
-            stop = kwargs['stop']
-        else:
-            stop = args[0]
-        cls.last_drip = stop
-
-
 class RawPlantActivityDripper(models.Model):
     VEH_SER_NO = models.CharField(max_length=6)
-    POOL_TRIG_TYPE = models.CharField(max_length=255)
+    POOL_CD = models.CharField(max_length=10)
     TS_LOAD = models.DateTimeField()
-    DATE_WORK = models.DateTimeField()
     create_at = models.DateTimeField()
     target = RawPlantActivity
     last_drip = timezone.make_aware(dt.datetime(1, 1, 1, 0, 0))
@@ -287,9 +189,8 @@ class RawPlantActivityDripper(models.Model):
     def load_from_target(cls):
         for entry in cls.target.objects.all():
             cls.objects.create(VEH_SER_NO=entry.VEH_SER_NO,
-                               POOL_TRIG_TYPE=entry.POOL_TRIG_TYPE,
+                               POOL_CD=entry.POOL_CD,
                                TS_LOAD=entry.TS_LOAD,
-                               DATE_WORK=entry.DATE_WORK,
                                create_at=entry.TS_LOAD
                                )
 
@@ -299,21 +200,9 @@ class RawPlantActivityDripper(models.Model):
         relevant = relevant.filter(create_at__lte=stop)
         for entry in relevant.order_by('pk'):
             cls.target.objects.create(VEH_SER_NO=entry.VEH_SER_NO,
-                                      POOL_TRIG_TYPE=entry.POOL_TRIG_TYPE,
+                                      POOL_CD=entry.POOL_CD,
                                       TS_LOAD=entry.TS_LOAD,
-                                      DATE_WORK=entry.DATE_WORK
                                       )
-
-    # @classmethod
-    # def _edit_1_on_target(cls, stop):
-    #     relevant = cls.objects.filter(edit_1_at__gt=cls.last_drip)
-    #     relevant = relevant.filter(edit_1_at__lte=stop)
-    #     for entry in relevant.order_by('pk'):
-    #         cls.target.objects.filter(VEH_SER_NO=entry.VEH_SER_NO,
-    #                                   POOL_TRIG_TYPE=entry.POOL_TRIG_TYPE,
-    #                                   TS_LOAD=entry.TS_LOAD).update(
-    #                                   DATE_WORK=entry.DATE_WORK)
-
     @classmethod
     def update_target(cls, *args, **kwargs):
         cls._create_on_target(*args, **kwargs)
@@ -352,6 +241,7 @@ class CombinedDripper:
     def clear_targets(self):
         for dripper in self.drippers:
             dripper.target.objects.all().delete()
+            dripper.last_drip = timezone.make_aware(dt.datetime(1, 1, 1, 0, 0))
 
     def load_drippers(self):
         for dripper in self.drippers:
@@ -360,3 +250,103 @@ class CombinedDripper:
     def clear_drippers(self):
         for dripper in self.drippers:
             dripper.objects.all().delete()
+
+
+#######################################################
+# Unused models
+#######################################################
+# class RawCrysDataDripper(models.Model):
+#     QA_ITEM_DSCREP_ID = models.CharField(max_length=255)
+#     QA_INSP_ITEM_ID = models.CharField(max_length=255)
+#     VEH_SER_NO = models.CharField(max_length=6)
+#     FOUND_INSP_TEAM = models.CharField(max_length=3)
+#     INSP_DSCREP_DESC = models.CharField(max_length=255)
+#     INSP_COMT = models.TextField()
+#     TS_LOAD = models.DateTimeField()
+#     create_at = models.DateTimeField()
+#     target = RawCrysData
+#     last_drip = timezone.make_aware(dt.datetime(1, 1, 1, 0, 0))
+#
+#     @classmethod
+#     def load_from_target(cls):
+#         for entry in cls.target.objects.all():
+#             cls.objects.create(QA_ITEM_DSCREP_ID=entry.QA_ITEM_DSCREP_ID,
+#                                QA_INSP_ITEM_ID=entry.QA_INSP_ITEM_ID,
+#                                VEH_SER_NO=entry.VEH_SER_NO,
+#                                FOUND_INSP_TEAM=entry.FOUND_INSP_TEAM,
+#                                INSP_DSCREP_DESC=entry.INSP_DSCREP_DESC,
+#                                INSP_COMT=entry.INSP_COMT,
+#                                TS_LOAD=entry.TS_LOAD,
+#                                create_at=entry.TS_LOAD
+#                                )
+#
+#     @classmethod
+#     def _create_on_target(cls, stop):
+#         relevant = cls.objects.filter(create_at__gt=cls.last_drip)
+#         relevant = relevant.filter(create_at__lte=stop)
+#         for entry in relevant.order_by('pk'):
+#             cls.target.objects.create(QA_ITEM_DSCREP_ID=entry.QA_ITEM_DSCREP_ID,
+#                                       QA_INSP_ITEM_ID=entry.QA_INSP_ITEM_ID,
+#                                       VEH_SER_NO=entry.VEH_SER_NO,
+#                                       FOUND_INSP_TEAM=entry.FOUND_INSP_TEAM,
+#                                       INSP_DSCREP_DESC=entry.INSP_DSCREP_DESC,
+#                                       INSP_COMT=entry.INSP_COMT,
+#                                       TS_LOAD=entry.TS_LOAD
+#                                       )
+#
+#     @classmethod
+#     def update_target(cls, *args, **kwargs):
+#         cls._create_on_target(*args, **kwargs)
+#         if "stop" in kwargs:
+#             stop = kwargs['stop']
+#         else:
+#             stop = args[0]
+#         cls.last_drip = stop
+#
+# class RawDirectRunDataDripper(models.Model):
+#     VEH_SER_NO = models.CharField(max_length=6)
+#     TS_LOAD = models.DateTimeField()
+#     SHIFT = models.IntegerField()
+#     QA = models.IntegerField()
+#     PAINT = models.IntegerField()
+#     SH = models.IntegerField()
+#     ENG_SC = models.IntegerField()
+#     create_at = models.DateTimeField()
+#     target = RawDirectRunData
+#     last_drip = timezone.make_aware(dt.datetime(1, 1, 1, 0, 0))
+#
+#     @classmethod
+#     def load_from_target(cls):
+#         for entry in cls.target.objects.all():
+#             cls.objects.create(VEH_SER_NO=entry.VEH_SER_NO,
+#                                TS_LOAD=entry.TS_LOAD,
+#                                SHIFT=entry.SHIFT,
+#                                QA=entry.QA,
+#                                PAINT=entry.PAINT,
+#                                SH=entry.SH,
+#                                ENG_SC=entry.ENG_SC,
+#                                create_at=entry.TS_LOAD
+#                                )
+#
+#     @classmethod
+#     def _create_on_target(cls, stop):
+#         relevant = cls.objects.filter(create_at__gt=cls.last_drip)
+#         relevant = relevant.filter(create_at__lte=stop)
+#         for entry in relevant.order_by('pk'):
+#             cls.target.objects.create(VEH_SER_NO=entry.VEH_SER_NO,
+#                                       TS_LOAD=entry.TS_LOAD,
+#                                       SHIFT=entry.SHIFT,
+#                                       QA=entry.QA,
+#                                       PAINT=entry.PAINT,
+#                                       SH=entry.SH,
+#                                       ENG_SC=entry.ENG_SC)
+#
+#     @classmethod
+#     def update_target(cls, *args, **kwargs):
+#         cls._create_on_target(*args, **kwargs)
+#         if "stop" in kwargs:
+#             stop = kwargs['stop']
+#         else:
+#             stop = args[0]
+#         cls.last_drip = stop
+#
