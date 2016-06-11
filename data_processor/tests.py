@@ -1,17 +1,22 @@
 from django.test import TestCase
-import datetime as dt
 from django.utils import timezone
 from get_data.models import RawClockData, RawPlantActivity
+from plantsettings.models import PlantSetting
+from api.models import HPVATM
+import data_processor.test_files.test_cases as tc
+
+import datetime as dt
 import random
 
 from .functions.man_hours_calculations import get_clocked_in, get_emp_man_hours, get_emp_dept
 from .functions.claims_calculations import get_claimed_objects_in_range, get_range_of_claims
 from .functions.process_data_main import get_hpv
+from .processor import get_new_hpv_data, get_shift_info
 
 
 # Create your tests here.
 class ManHoursTestCase(TestCase):
-    
+
     @timezone.override("US/Eastern")
     def setUp(self):
         #################################################
@@ -331,10 +336,10 @@ class ClaimData(TestCase):
             self.assertIn(claim.VEH_SER_NO, expected_claims)
             self.assertNotIn(claim.VEH_SER_NO, not_expected_claims)
 
+
 class HPVCalculations(TestCase):
     def setUp(self):
         pass
-
 
     def test_get_hpv(self):
         test_dept_dict = {
@@ -387,3 +392,151 @@ class HPVCalculations(TestCase):
         # hpv total
         expected_result = 8
         self.assertEqual(expected_result, result_dict['PLANT']['hpv'])
+
+
+class GetHPVDataNoClaims(TestCase):
+    def setUp(self):
+        PlantSetting.objects.create(timestamp=timezone.make_aware(dt.datetime(2016, 6, 2, 7, 0)),
+                                    plant_code='017',
+                                    plant_target=55,
+                                    num_of_shifts=2,
+                                    first_shift=dt.time(6,30),
+                                    second_shift=dt.time(14,30),
+                                    dripper_start=dt.datetime(2016, 6, 2, 8, 0))
+
+
+    def test_get_new_hpv_data_no_claims(self):
+        self.assertEqual(get_new_hpv_data(), None)
+
+
+class GetHPVDataNoNewClaims(TestCase):
+
+    def setUp(self):
+
+        PlantSetting.objects.create(**tc.default_plant_settings)
+
+        RawPlantActivity.objects.create(
+            VEH_SER_NO='HZ3852',
+            POOL_CD='03',
+            TS_LOAD=timezone.make_aware(dt.datetime(2016, 6, 2, 6, 55)),
+        )
+
+        HPVATM.objects.create(**tc.reg_first_shift_api_entry)
+
+    def test_get_new_hpv_data_no_new_claims(self):
+        self.assertEqual(get_new_hpv_data(), None)
+
+
+class GetShiftInfoThreeShifts(TestCase):
+    def setUp(self):
+        PlantSetting.objects.create(**tc.three_shift_8_am_plant_settings)
+
+    @timezone.override("US/Eastern")
+    def test_get_shift_info_now_early_3rd_shift(self):
+        now = timezone.make_aware(dt.datetime(2016, 6, 2, 3, 0))
+        settings = PlantSetting.objects.latest('timestamp')
+        expected_start = timezone.make_aware(dt.datetime(2016, 6, 1, 22, 30))
+        expected_shift = 3
+
+        self.assertEqual(get_shift_info(settings, now),
+                        (expected_start, expected_shift))
+
+    @timezone.override("US/Eastern")
+    def test_get_shift_info_now_1st_shift(self):
+        now = timezone.make_aware(dt.datetime(2016, 6, 2, 8, 0))
+        settings = PlantSetting.objects.latest('timestamp')
+        expected_start = timezone.make_aware(dt.datetime(2016, 6, 2, 6, 30))
+        expected_shift = 1
+
+        self.assertEqual(get_shift_info(settings, now),
+                        (expected_start, expected_shift))
+
+    @timezone.override("US/Eastern")
+    def test_get_shift_info_now_2nd_shift(self):
+        now = timezone.make_aware(dt.datetime(2016, 6, 2, 15, 0))
+        settings = PlantSetting.objects.latest('timestamp')
+        expected_start = timezone.make_aware(dt.datetime(2016, 6, 2, 14, 30))
+        expected_shift = 2
+
+        self.assertEqual(get_shift_info(settings, now),
+                        (expected_start, expected_shift))
+
+    @timezone.override("US/Eastern")
+    def test_get_shift_info_now_late_3rd_shift(self):
+        now = timezone.make_aware(dt.datetime(2016, 6, 2, 23, 0))
+        settings = PlantSetting.objects.latest('timestamp')
+        expected_start = timezone.make_aware(dt.datetime(2016, 6, 2, 22, 30))
+        expected_shift = 3
+
+        self.assertEqual(get_shift_info(settings, now),
+                        (expected_start, expected_shift))
+
+
+class GetShiftInfoTwoShifts(TestCase):
+    def setUp(self):
+        PlantSetting.objects.create(**tc.two_shift_8_am_plant_settings)
+
+    @timezone.override("US/Eastern")
+    def test_get_shift_info_now_OT_1st_shift(self):
+        now = timezone.make_aware(dt.datetime(2016, 6, 2, 3, 0))
+        settings = PlantSetting.objects.latest('timestamp')
+        expected_start = timezone.make_aware(dt.datetime(2016, 6, 2, 0, 0))
+        expected_shift = 1
+
+        self.assertEqual(get_shift_info(settings, now),
+                        (expected_start, expected_shift))
+
+    @timezone.override("US/Eastern")
+    def test_get_shift_info_now_OT_2nd_shift(self):
+        now = timezone.make_aware(dt.datetime(2016, 6, 2, 2, 0))
+        settings = PlantSetting.objects.latest('timestamp')
+        expected_start = timezone.make_aware(dt.datetime(2016, 6, 1, 14, 30))
+        expected_shift = 2
+
+        self.assertEqual(get_shift_info(settings, now),
+                        (expected_start, expected_shift))
+
+    @timezone.override("US/Eastern")
+    def test_get_shift_info_now_1st_shift(self):
+        now = timezone.make_aware(dt.datetime(2016, 6, 2, 8, 0))
+        settings = PlantSetting.objects.latest('timestamp')
+        expected_start = timezone.make_aware(dt.datetime(2016, 6, 2, 6, 30))
+        expected_shift = 1
+
+        self.assertEqual(get_shift_info(settings, now),
+                        (expected_start, expected_shift))
+
+    @timezone.override("US/Eastern")
+    def test_get_shift_info_now_2nd_shift(self):
+        now = timezone.make_aware(dt.datetime(2016, 6, 2, 15, 0))
+        settings = PlantSetting.objects.latest('timestamp')
+        expected_start = timezone.make_aware(dt.datetime(2016, 6, 2, 14, 30))
+        expected_shift = 2
+
+        self.assertEqual(get_shift_info(settings, now),
+                        (expected_start, expected_shift))
+
+
+class GetShiftInfoOneShift(TestCase):
+    def setUp(self):
+        PlantSetting.objects.create(**tc.one_shift_8_am_plant_settings)
+
+    @timezone.override("US/Eastern")
+    def test_get_shift_info_now_before_first_shift(self):
+        now = timezone.make_aware(dt.datetime(2016, 6, 2, 1, 0))
+        settings = PlantSetting.objects.latest('timestamp')
+        expected_start = timezone.make_aware(dt.datetime(2016, 6, 2, 0, 0))
+        expected_shift = 1
+
+        self.assertEqual(get_shift_info(settings, now),
+                        (expected_start, expected_shift))
+
+    @timezone.override("US/Eastern")
+    def test_get_shift_info_now_1st_shift(self):
+        now = timezone.make_aware(dt.datetime(2016, 6, 2, 8, 0))
+        settings = PlantSetting.objects.latest('timestamp')
+        expected_start = timezone.make_aware(dt.datetime(2016, 6, 2, 6, 30))
+        expected_shift = 1
+
+        self.assertEqual(get_shift_info(settings, now),
+                        (expected_start, expected_shift))
