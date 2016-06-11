@@ -65,7 +65,6 @@ def get_shift_end(shift):
     shift_end = dummy_date + shift_len
     return shift_end.time()
 
-
 """
 Finds the current shift and its start time to pass on to the functions that calculate hpv by department and shift
 
@@ -117,14 +116,25 @@ def get_shift_info(settings, now):
     start = timezone.make_aware(start)
     print("MADE LOCAL timezone AWARE START")
 
+    # OT SET UP
+    first_shift_date = dt.datetime.combine(now.date(), settings.first_shift)
+    first_ot = first_shift_date - dt.timedelta(hours=3, minutes=30)
+    first_ot = first_ot.time()
+
     # Catch time before first shift if there are 3 shifts. Shift will have started the day before.
     if now.time() < settings.first_shift and settings.num_of_shifts == 3:
         print("SHIFTS=3")
         shift = 3
-        yesterday = (now.date() - dt.timedelta(days=1)).date()
+        yesterday = (now.date() - dt.timedelta(days=1))
         start = dt.datetime.combine(yesterday, settings.third_shift)
         start = timezone.make_aware(start)
         print("START TIME FOR 3 SHIFTS = ", start)
+    #Catch OT for 2nd shift from the previous day
+    elif settings.num_of_shifts == 2 and now.time() < first_ot:
+        shift = 2
+        yesterday = (now.date() - dt.timedelta(days=1))
+        start = dt.datetime.combine(yesterday, settings.second_shift)
+        start = timezone.make_aware(start)
     # Catch anything after first shift.
     elif now.time() >= settings.first_shift:
         # If more than 1 shift, check if time is in those shift(s).
@@ -132,16 +142,21 @@ def get_shift_info(settings, now):
             print("2 or MORE SHIFTS ACTIVATED")
             if now.time() >= settings.second_shift:
                 print("2nd 3 SHIFT CHECK")
+                shift = 2
+                start = dt.datetime.combine(now.date(), settings.second_shift)
+                start = timezone.make_aware(start)
                 # If 3 shifts, check if time is in that shift.
+                print("2nd 3 SHIFT CHECK")
                 if settings.num_of_shifts == 3:
                     if now.time() >= settings.third_shift:
                         shift = 3
-                        start = dt.datetime.combine(now.date, settings.third_shift)
+                        start = dt.datetime.combine(now.date(), settings.third_shift)
                         start = timezone.make_aware(start)
-                else:
-                    shift = 2
-                    start = dt.datetime.combine(now.date(), settings.second_shift)
-                    start = timezone.make_aware(start)
+    # Catch OT for before 1st shift begins
+    else:
+        shift = 1
+        start = dt.datetime.combine(now.date(), dt.time(0, 0))
+        start = timezone.make_aware(start)
 
 
     print('START: ', start)
@@ -242,6 +257,7 @@ def get_day_hpv_dict(hpv_dict, now):
         'PLANT_d_mh': plant_d_mh,
         'PLANT_s_hpv': plant_s_hpv,
         'PLANT_s_ne': plant_s_ne,
+        'PLANT_s_mh': plant_s_mh,
 
         'claims_s': hpv_dict['claims_for_range'],
         'claims_d': claims_d,
@@ -341,7 +357,7 @@ def get_day_stats(hpv_dict, now):
                 mh = cur_mh
                 claims = cur_claims
             else:
-                mh = last_shift.PLANT_s_mh + cur_mh
+                mh = float(last_shift.PLANT_s_mh) + cur_mh
                 claims = last_shift.claims_s + cur_claims
                 hpv = mh/claims
             return hpv, mh, claims
@@ -352,9 +368,10 @@ def get_day_stats(hpv_dict, now):
 def get_day_start(settings, now):
     if settings.num_of_shifts == 3:
         yesterday = (now - dt.timedelta(days=1)).date()
-        return dt.datetime.combine(yesterday, settings.third_shift)
+        day_start = dt.datetime.combine(yesterday, settings.third_shift)
     else:
-        return dt.datetime.combine(now.date(), settings.first_shift)
+        day_start = dt.datetime.combine(now.date(), settings.first_shift)
+    return timezone.localtime(timezone.make_aware(day_start))
 
 
 def write_data(full_hpv_dict):
