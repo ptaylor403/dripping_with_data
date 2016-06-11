@@ -59,7 +59,6 @@ def get_new_hpv_data():
     write_data(hpv_dict_with_day)
 
 
-<<<<<<< HEAD
 def get_shift_end(shift):
     dummy_date = dt.combine(dt.date.today(), shift)
     shift_len = dt.timedelta(hours=8)
@@ -67,8 +66,7 @@ def get_shift_end(shift):
     return shift_end.time()
 
 
-=======
->>>>>>> 5e304327646a968fdb28e1ceea7f82ddd3e0a7aa
+
 """
 Finds the current shift and its start time to pass on to the functions that calculate hpv by department and shift
 
