@@ -4,7 +4,6 @@ import datetime as dt
 """
 API entries
 """
-
 #First shift at 7:45 with normal data.
 reg_first_shift_api_entry = {
     'CIW_s_hpv': 7.3,
@@ -119,6 +118,9 @@ one_shift_8_am_plant_settings = {
     'dripper_start': timezone.make_aware(dt.datetime(2016, 6, 2, 8, 0))
 }
 
+
+
 """
 HPV Dictionaries
 """
+{'MAINT': {'ne': 99, 'hpv': 0, 'mh': 148.5}, 'OTHER': {'ne': 0, 'hpv': 0, 'mh': 0}, 'FCB': {'ne': 183, 'hpv': 0, 'mh': 274.5}, 'claims_for_range': 0, 'FCH': {'ne': 319, 'hpv': 0, 'mh': 478.5}, 'DAC': {'ne': 123, 'hpv': 0, 'mh': 184.5}, 'MAT': {'ne': 235, 'hpv': 0, 'mh': 352.5}, 'PLANT': {'ne': 1784, 'hpv': 0, 'mh': 2676.0}, 'PNT': {'ne': 114, 'hpv': 0, 'mh': 171.0}, 'PCH': {'ne': 393, 'hpv': 0, 'mh': 589.5}, 'CIW': {'ne': 190, 'hpv': 0, 'mh': 285.0}, 'QA': {'ne': 128, 'hpv': 0, 'mh': 192.0}, 'shift': 2}

@@ -404,7 +404,6 @@ class GetHPVDataNoClaims(TestCase):
                                     second_shift=dt.time(14,30),
                                     dripper_start=dt.datetime(2016, 6, 2, 8, 0))
 
-
     def test_get_new_hpv_data_no_claims(self):
         self.assertEqual(get_new_hpv_data(), None)
 
@@ -540,3 +539,7 @@ class GetShiftInfoOneShift(TestCase):
 
         self.assertEqual(get_shift_info(settings, now),
                         (expected_start, expected_shift))
+
+
+class GetDayHpvDict(TestCase):
+    

@@ -15,5 +15,5 @@ class DataProcessorConfig(AppConfig):
         print('Entering get_new_hpv_data')
         # get_new_hpv_data()
         scheduler = BackgroundScheduler()
-        scheduler.add_job(get_new_hpv_data, 'interval', seconds=30)
-        # scheduler.start()
+        scheduler.add_job(get_new_hpv_data, 'interval', seconds=10)
+        scheduler.start()
