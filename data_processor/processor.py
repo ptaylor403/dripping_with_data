@@ -321,14 +321,14 @@ def get_day_stats(hpv_dict, now):
         elif hpv_dict['shift'] == 1:
             last_shift = all_since_start.filter(shift=3).last()
             mh = last_shift.plant_s_mh + cur_mh
-            claims = last_shift.claims + cur_claims
+            claims = last_shift.claims_s + cur_claims
             hpv = mh/claims
             return hpv, mh, claims
         elif hpv_dict['shift'] == 2:
             s3 = all_since_start.filter(shift=3).last()
             s1 = all_since_start.filter(shift=1).last()
             mh = s3.plant_s_mh + s1.plant_s_mh + cur_mh
-            claims = s3.claims_s + s2.claims_s + cur_claims
+            claims = s3.claims_s + s1.claims_s + cur_claims
             hpv = mh/claims
             return hpv, mh, claims
     elif settings.num_of_shifts == 2:
@@ -341,7 +341,6 @@ def get_day_stats(hpv_dict, now):
                 mh = cur_mh
                 claims = cur_claims
             else:
-                print("testsjdhkfjhskdjhflakdsjing")
                 mh = last_shift.PLANT_s_mh + cur_mh
                 claims = last_shift.claims_s + cur_claims
                 hpv = mh/claims

@@ -140,3 +140,18 @@ text.axis-worktime {
 .btn-default {
   margin: 5px;
 }
+
+/*Detail line graph*/
+#line path {
+    stroke: steelblue;
+    stroke-width: 2;
+    fill: none;
+}
+
+#line .axis path,
+#line .axis line {
+    fill: none;
+    stroke: grey;
+    stroke-width: 1;
+    shape-rendering: crispEdges;
+}
