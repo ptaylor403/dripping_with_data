@@ -360,8 +360,11 @@ def get_day_stats(hpv_dict, now):
 
 def get_day_start(settings, now):
     if settings.num_of_shifts == 3:
-        yesterday = (now - dt.timedelta(days=1)).date()
-        day_start = dt.datetime.combine(yesterday, settings.third_shift)
+        if now.time() >= settings.third_shift:
+            day_start = dt.datetime.combine(now.date(), settings.third_shift)
+        else:
+            yesterday = (now - dt.timedelta(days=1)).date()
+            day_start = dt.datetime.combine(yesterday, settings.third_shift)
     else:
         day_start = dt.datetime.combine(now.date(), settings.first_shift)
     return timezone.localtime(timezone.make_aware(day_start))

@@ -552,7 +552,15 @@ class GetShiftInfoOneShift(TestCase):
 
 
 class GetDayStart(TestCase):
-    def test_get_day_start_three_shifts(self):
+    def test_get_day_start_three_shifts_day_of(self):
+        now = timezone.make_aware(dt.datetime(2016, 6, 1, 23, 30))
+        PlantSetting.objects.create(**tc.three_shift_8_am_plant_settings)
+        settings = PlantSetting.objects.latest('timestamp')
+        expected_day_start = timezone.make_aware(dt.datetime(2016, 6, 1, 22, 30))
+
+        self.assertEqual(get_day_start(settings, now), expected_day_start)
+
+    def test_get_day_start_three_shifts_day_after(self):
         now = timezone.make_aware(dt.datetime(2016, 6, 2, 12, 0))
         PlantSetting.objects.create(**tc.three_shift_8_am_plant_settings)
         settings = PlantSetting.objects.latest('timestamp')
@@ -569,6 +577,12 @@ class GetDayStart(TestCase):
         self.assertEqual(get_day_start(settings, now), expected_day_start)
 
 
-class GetDayHpvDictThreeShifts(TestCase):
+class GetDayStatsThreeShifts(TestCase):
     def setUp(self):
         PlantSetting.objects.create(**tc.three_shift_8_am_plant_settings)
+
+
+    def test_get_day_stats_third_shift_early(self):
+        now = timezone.make_aware(dt.datetime(2016, 6, 2, 2, 0))
+        settings = PlantSetting.objects.latest('timestamp')
+        hpv_dict = tc.shift_3_hpv_dict
