@@ -14,7 +14,7 @@ if "runserver" in sys.argv:
     if not PlantSetting.objects.exists():
         PlantSetting().save()
     the_dripper = CombinedDripper(PlantSetting.objects.last().dripper_start,
-                                  dt.timedelta(minutes=240))
+                                  dt.timedelta(minutes=15))
     the_dripper.add_dripper(*all_drippers)
 else:
     the_dripper = None
@@ -57,7 +57,7 @@ def run(request):
 
 def reset(request):
     with timezone.override("US/Eastern"):
-        the_dripper.simulated_time = timezone.make_aware(dt.datetime(2016, 6, 1, 0, 0))
+        the_dripper.simulated_time = timezone.make_aware(dt.datetime(2016, 4, 1, 0, 0))
     dripper_time = PlantSetting.objects.last()
     dripper_time.dripper_start = the_dripper.simulated_time
     dripper_time.save()

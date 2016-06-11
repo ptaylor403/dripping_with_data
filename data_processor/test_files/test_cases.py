@@ -119,8 +119,11 @@ one_shift_8_am_plant_settings = {
 }
 
 
-
 """
 HPV Dictionaries
 """
-{'MAINT': {'ne': 99, 'hpv': 0, 'mh': 148.5}, 'OTHER': {'ne': 0, 'hpv': 0, 'mh': 0}, 'FCB': {'ne': 183, 'hpv': 0, 'mh': 274.5}, 'claims_for_range': 0, 'FCH': {'ne': 319, 'hpv': 0, 'mh': 478.5}, 'DAC': {'ne': 123, 'hpv': 0, 'mh': 184.5}, 'MAT': {'ne': 235, 'hpv': 0, 'mh': 352.5}, 'PLANT': {'ne': 1784, 'hpv': 0, 'mh': 2676.0}, 'PNT': {'ne': 114, 'hpv': 0, 'mh': 171.0}, 'PCH': {'ne': 393, 'hpv': 0, 'mh': 589.5}, 'CIW': {'ne': 190, 'hpv': 0, 'mh': 285.0}, 'QA': {'ne': 128, 'hpv': 0, 'mh': 192.0}, 'shift': 2}
+shift_1_hpv_dict = {'QA': {'ne': 10, 'hpv': 10, 'mh': 10}, 'claims_for_range': 10, 'MAINT': {'ne': 10, 'hpv': 10, 'mh': 10}, 'PNT': {'ne': 10, 'hpv': 10, 'mh': 10}, 'PCH': {'ne': 10, 'hpv': 10, 'mh': 10}, 'PLANT': {'ne': 10, 'hpv': 10, 'mh': 10}, 'shift': 10, 'FCB': {'ne': 10, 'hpv': 10, 'mh': 10}, 'CIW': {'ne': 10, 'hpv': 10, 'mh': 10}, 'DAC': {'ne': 10, 'hpv': 10, 'mh': 10}, 'OTHER': {'ne': 0, 'hpv': 0.0, 'mh': 0}, 'FCH': {'ne': 10, 'hpv': 10, 'mh': 10}, 'MAT': {'ne': 10, 'hpv': 10, 'mh': 10}}
+
+shift_2_hpv_dict = {'QA': {'ne': 100, 'hpv': 100, 'mh': 100}, 'claims_for_range': 100, 'MAINT': {'ne': 100, 'hpv': 100, 'mh': 100}, 'PNT': {'ne': 100, 'hpv': 100, 'mh': 100}, 'PCH': {'ne': 100, 'hpv': 100, 'mh': 100}, 'PLANT': {'ne': 100, 'hpv': 100, 'mh': 100}, 'shift': 100, 'FCB': {'ne': 100, 'hpv': 100, 'mh': 100}, 'CIW': {'ne': 100, 'hpv': 100, 'mh': 100}, 'DAC': {'ne': 100, 'hpv': 100, 'mh': 100}, 'OTHER': {'ne': 0, 'hpv': 0.0, 'mh': 0}, 'FCH': {'ne': 100, 'hpv': 100, 'mh': 100}, 'MAT': {'ne': 100, 'hpv': 100, 'mh': 100}}
+
+shift_3_hpv_dict = {'QA': {'ne': 1, 'hpv': 1, 'mh': 1}, 'claims_for_range': 1, 'MAINT': {'ne': 1, 'hpv': 1, 'mh': 1}, 'PNT': {'ne': 1, 'hpv': 1, 'mh': 1}, 'PCH': {'ne': 1, 'hpv': 1, 'mh': 1}, 'PLANT': {'ne': 1, 'hpv': 1, 'mh': 1}, 'shift': 1, 'FCB': {'ne': 1, 'hpv': 1, 'mh': 1}, 'CIW': {'ne': 1, 'hpv': 1, 'mh': 1}, 'DAC': {'ne': 1, 'hpv': 1, 'mh': 1}, 'OTHER': {'ne': 0, 'hpv': 0.0, 'mh': 0}, 'FCH': {'ne': 1, 'hpv': 1, 'mh': 1}, 'MAT': {'ne': 1, 'hpv': 1, 'mh': 1}}

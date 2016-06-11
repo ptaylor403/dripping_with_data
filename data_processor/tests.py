@@ -11,7 +11,7 @@ import random
 from .functions.man_hours_calculations import get_clocked_in, get_emp_man_hours, get_emp_dept
 from .functions.claims_calculations import get_claimed_objects_in_range, get_range_of_claims
 from .functions.process_data_main import get_hpv
-from .processor import get_new_hpv_data, get_shift_info
+from .processor import get_new_hpv_data, get_shift_info, get_day_start
 
 
 # Create your tests here.
@@ -540,6 +540,35 @@ class GetShiftInfoOneShift(TestCase):
         self.assertEqual(get_shift_info(settings, now),
                         (expected_start, expected_shift))
 
+    @timezone.override("US/Eastern")
+    def test_get_shift_info_now_evening(self):
+        now = timezone.make_aware(dt.datetime(2016, 6, 2, 18, 0))
+        settings = PlantSetting.objects.latest('timestamp')
+        expected_start = timezone.make_aware(dt.datetime(2016, 6, 2, 6, 30))
+        expected_shift = 1
 
-class GetDayHpvDict(TestCase):
-    
+        self.assertEqual(get_shift_info(settings, now),
+                        (expected_start, expected_shift))
+
+
+class GetDayStart(TestCase):
+    def test_get_day_start_three_shifts(self):
+        now = timezone.make_aware(dt.datetime(2016, 6, 2, 12, 0))
+        PlantSetting.objects.create(**tc.three_shift_8_am_plant_settings)
+        settings = PlantSetting.objects.latest('timestamp')
+        expected_day_start = timezone.make_aware(dt.datetime(2016, 6, 1, 22, 30))
+
+        self.assertEqual(get_day_start(settings, now), expected_day_start)
+
+    def test_get_day_start_less_than_three_shifts(self):
+        now = timezone.make_aware(dt.datetime(2016, 6, 2, 12, 0))
+        PlantSetting.objects.create(**tc.two_shift_8_am_plant_settings)
+        settings = PlantSetting.objects.latest('timestamp')
+        expected_day_start = timezone.make_aware(dt.datetime(2016, 6, 2, 6, 30))
+
+        self.assertEqual(get_day_start(settings, now), expected_day_start)
+
+
+class GetDayHpvDictThreeShifts(TestCase):
+    def setUp(self):
+        PlantSetting.objects.create(**tc.three_shift_8_am_plant_settings)
