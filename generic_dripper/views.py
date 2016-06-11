@@ -57,7 +57,7 @@ def run(request):
 
 def reset(request):
     with timezone.override("US/Eastern"):
-        the_dripper.simulated_time = timezone.make_aware(dt.datetime(2016, 6, 1, 0, 0))
+        the_dripper.simulated_time = timezone.make_aware(dt.datetime(2016, 4, 1, 0, 0))
     dripper_time = PlantSetting.objects.last()
     dripper_time.dripper_start = the_dripper.simulated_time
     dripper_time.save()

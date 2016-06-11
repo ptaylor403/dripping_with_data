@@ -13,4 +13,4 @@ class PlantSetting(models.Model):
     second_shift = models.TimeField(default=dt.time(14, 30), null=True, blank=True)
     third_shift = models.TimeField(null=True, blank=True)
     with timezone.override("US/Eastern"):
-        dripper_start = models.DateTimeField(default=timezone.make_aware(dt.datetime(2016, 6, 1, 0, 0)))
+        dripper_start = models.DateTimeField(default=timezone.make_aware(dt.datetime(2016, 4, 1, 0, 0)))
