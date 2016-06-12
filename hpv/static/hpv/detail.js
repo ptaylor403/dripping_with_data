@@ -1,14 +1,29 @@
 jQuery(function($) {
+  // sort on timestamp
+  var timeSort = function(a,b){
+      if (a.timestamp > b.timestamp) {
+          return 1;
+      }
+      if (a.timestamp < b.timestamp) {
+          return -1;
+      }
+      return 0;
+  };
 
+  var datasets = [{key: "PLANT_d_hpv", label: "Plant Day HPV"},
+                  {key: "CIW_d_hpv", label: 'CIW Day HPV'},
+                  {key: "FCB_d_hpv", label: 'FCB Day HPV'}];
+  var detailLevel = [{key: "?format=json&days=1", label: "Day"},
+                     {key: "?format=json&days=7", label: 'Week'},
+                     {key: "?format=json&days=31", label: 'Month'}];
   /*
     Line Graph
   */
   var lineChart = (function() {
       // Set the dimensions of the canvas / graph
-      var margin = {top: 30, right: 20, bottom: 30, left: 50},
-          width = 600 - margin.left - margin.right,
-          height = 300 - margin.top - margin.bottom;
-          datasets = [{key: "PLANT_d_hpv", label: "Plant Day HPV"}, {key: "CIW_d_hpv", label: 'CIW Day HPV'}, {key: "FCB_d_hpv", label: 'FCB Day HPV'}];
+      var margin = {top: 30, right: 50, bottom: 30, left: 50},
+          width = 700 - margin.left - margin.right,
+          height = 270 - margin.top - margin.bottom;
 
       // Set the ranges
       var x = d3.time.scale().range([0, width]);
@@ -19,7 +34,12 @@ jQuery(function($) {
           .orient("bottom").ticks(5);
 
       var yAxis = d3.svg.axis().scale(y)
-          .orient("left").ticks(8);
+          .orient("left").ticks(5);
+
+      // Define the div for the tooltip
+      var div = d3.select("#line").append("div")
+          .attr("class", "tooltip")
+          .style("opacity", 0);
 
       // Adds the svg canvas
       var svg = d3.select("#line")
@@ -34,19 +54,15 @@ jQuery(function($) {
       var lineGraph = function(key) {
         d3.json('/api/hpv?format=json',
         function(error, data) {
-          data.sort(function(a,b){
-            if (a.timestamp > b.timestamp) {
-              return 1;
-            }
-            if (a.timestamp < b.timestamp) {
-              return -1;
-            }
-            return 0;
+
+          // setup and order data
+          data.forEach(function(d){
+              d.timestamp = new Date(d.timestamp);
+              d[key] = +d[key];
           });
 
-          data.forEach(function(d){
-            d.timestamp = new Date(d.timestamp);
-          });
+          // sort timestamp to most recent
+          data.sort(timeSort);
 
           // Define the line
           var valueline = d3.svg.line()
@@ -56,8 +72,9 @@ jQuery(function($) {
 
           // Scale the range of the data
           x.domain(d3.extent(data, function(d) { return d.timestamp; }));
-          // y.domain([0, d3.max(data, function(d) { return d[key]; })]);
-          y.domain(d3.extent(data, function(d) { return d[key]; }));
+          y.domain([0, d3.max(data, function(d) { return d[key]; })]);
+          // var yDomain = d3.extent(data, function(d) { return d[key]; });
+          // y.domain(yDomain);
 
           // Add the valueline path.
           svg.append("path")
@@ -72,10 +89,11 @@ jQuery(function($) {
 
           // Add X Axis Label
           svg.append("text")
-            .attr("x", width / 2)
-            .attr("y", height + margin.bottom)
-            .style("text-anchor", "middle")
-            .text("Date");
+              .classed('xLabel', true)
+              .attr("x", width / 2)
+              .attr("y", height + margin.bottom)
+              .style("text-anchor", "middle")
+              .text("Date");
 
           // Add the Y Axis
           svg.append("g")
@@ -83,29 +101,31 @@ jQuery(function($) {
               .call(yAxis);
 
           // Add Y Axis Label
-          // svg.append("text")
-          //     .attr("transform", "rotate(-90)")
-          //     .attr("y", 0 – margin.left)
-          //     .attr("x", 0 - (height / 2))
-          //     .attr("dy", "1em")
-          //     .style("text-anchor", "middle")
-          //     .text("HPV");
+          svg.append("text")
+              .classed('yLabel', true)
+              .attr("transform", "rotate(-90)")
+              .attr("x", 0 - (height / 2))
+              // .attr("y", 0 – margin.left)
+              .attr("dy", "1em")
+              .style("text-anchor", "middle")
+              .text("HPV");
 
-          // Get title
-          var dataset = datasets.filter(function(dataset) {
-              if (dataset.key == key) {
+          // Get label
+          var getLabel = datasets.filter(function(getLabel) {
+              if (getLabel.key == key) {
                   return true;
               }
           })[0];
 
-          // // Add title
-          // svg.select("text")
-          //     .attr("x", (width / 2))
-          //     .attr("y", 0 - (margin.top / 2))
-          //     .attr("text-anchor", "middle")
-          //     .style("font-size", "16px")
-          //     .style("text-decoration", "underline")
-          //     .text(dataset.label + " vs Date Graph");
+          // Add title
+          svg.append("text")
+              .classed('title', true)
+              .attr("x", (width / 2))
+              .attr("y", 0 - (margin.bottom / 2))
+              // .attr("y", 0 - height)
+              .attr("text-anchor", "middle")
+              .style("font-size", "16px")
+              .text(getLabel.label + " vs Date");
 
           // line transition or animation
           var dateline = d3.select('#line')
@@ -113,25 +133,18 @@ jQuery(function($) {
               .select('.line')
               .duration(750)
               .attr("d", valueline(data));
-
         })
       };
+
       var updateLineData = function(key) {
         d3.json('/api/hpv?format=json',
         function(error, data) {
-          data.sort(function(a,b){
-            if (a.timestamp > b.timestamp) {
-              return 1;
-            }
-            if (a.timestamp < b.timestamp) {
-              return -1;
-            }
-            return 0;
-          });
 
           data.forEach(function(d){
-            d.timestamp = new Date(d.timestamp);
+              d.timestamp = new Date(d.timestamp);
+              d[key] = +d[key];
           });
+          data.sort(timeSort);
 
           // Define the line
           var valueline = d3.svg.line()
@@ -143,49 +156,16 @@ jQuery(function($) {
           x.domain(d3.extent(data, function(d) { return d.timestamp; }));
           y.domain([0, d3.max(data, function(d) { return d[key]; })]);
 
-          // Add the valueline path.
-          svg.select(".line")
-              .attr("d", valueline(data));
-
-          // Add the X Axis
-          svg.select(".x.axis")
-              .call(xAxis);
-
-          // Add X Axis Label
-          svg.select("text")
-            .attr("x", width / 2)
-            .attr("y", height + margin.bottom)
-            .style("text-anchor", "middle")
-            .text("Date");
-
-          // Add the Y Axis
-          svg.select(".y.axis")
-              .call(yAxis);
-
-          // Add Y Axis Label
-          // svg.append("text")
-          //     .attr("transform", "rotate(-90)")
-          //     .attr("y", 0 – margin.left)
-          //     .attr("x", 0 - (height / 2))
-          //     .attr("dy", "1em")
-          //     .style("text-anchor", "middle")
-          //     .text("HPV");
-
-          // Get title
-          var dataset = datasets.filter(function(dataset) {
-              if (dataset.key == key) {
+          // Get dataset
+          var getLabel = datasets.filter(function(getLabel) {
+              if (getLabel.key == key) {
                   return true;
               }
           })[0];
 
-          // // Add title
-          // svg.select("text")
-          //     .attr("x", (width / 2))
-          //     .attr("y", 0 - (margin.top / 2))
-          //     .attr("text-anchor", "middle")
-          //     .style("font-size", "16px")
-          //     .style("text-decoration", "underline")
-          //     .text(dataset.label + " vs Date Graph");
+          // Update title
+          svg.select("text.title")
+              .text(getLabel.label + " vs Date");
 
           var dateline = d3.select('#line')
               .transition()
@@ -193,30 +173,28 @@ jQuery(function($) {
               .duration(750)
               .attr("d", valueline(data));
 
-        })
-      };
-
+        }) // function close
+      }; // updateLineData close
 
       return {
           lineGraph: lineGraph,
           updateLineData: updateLineData
       }
-  })();
+  })(); // linechart close
 
-  /*
+  /********************************
     Heat Map
-  */
+  *********************************/
   var heatMap = (function() {
-    var margin = { top: 90, right: 0, bottom: 100, left: 30 },
+    var margin = { top: 50, right: 0, bottom: 50, left: 30 },
         width = 700 - margin.left - margin.right,
-        height = 400 - margin.top - margin.bottom,
+        height = 300 - margin.top - margin.bottom,
         gridSize = Math.floor(width / 24),
         legendElementWidth = gridSize*2,
         buckets = 9,
         colors = ["#ffffd9","#edf8b1","#c7e9b4","#7fcdbb","#41b6c4","#1d91c0","#225ea8","#253494","#081d58"], // alternatively colorbrewer.YlGnBu[9]
         days = ["Mo", "Tu", "We", "Th", "Fr", "Sa", "Su"],
         times = ["1a", "2a", "3a", "4a", "5a", "6a", "7a", "8a", "9a", "10a", "11a", "12p", "1p", "2p", "3p", "4p", "5p", "6p", "7p", "8p", "9p", "10p", "11p", "12a"];
-        datasets = [{key: "PLANT_d_hpv", label: "Plant Day HPV"}, {key: "CIW_d_hpv", label: 'CIW Day HPV'}, {key: "FCB_d_hpv", label: 'FCB Day HPV'}];
 
     var svg = d3.select("#heatmap").append("svg")
         .attr("width", width + margin.left + margin.right)
@@ -312,10 +290,10 @@ jQuery(function($) {
 
         cards.transition().duration(1000)
             .style("fill", function(d) { return colorScale(d.value); });
-        //
-        // cards.select("title").text(function(d) { return d.value; });
-        //
-        // cards.exit().remove();
+
+        cards.select("title").text(function(d) { return d.value; });
+
+        cards.exit().remove();
 
         var legend = svg.selectAll(".legend")
             .data([0].concat(colorScale.quantiles()), function(d) { return d; });
@@ -353,6 +331,9 @@ jQuery(function($) {
   var datasetpicker = d3.select("#dataset-picker").selectAll(".btn btn-default")
   .data(datasets);
 
+  var detailLevelPicker = d3.select("#detaillevel-picker").selectAll(".btn btn-default")
+  .data(detailLevel);
+
   datasetpicker.enter()
       .append("input")
       .attr("value", function(d){ return d.label })
@@ -362,6 +343,16 @@ jQuery(function($) {
         // update charts with new data
         heatMap.heatmap(d.key);
         lineChart.updateLineData(d.key);
+      });
+
+  detailLevelPicker.enter()
+    .append("input")
+    .attr("value", function(d){ return d.label })
+    .attr("type", "button")
+    .attr("class", "btn btn-default")
+    .on("click", function(d) {
+      // update charts with new data
+      lineChart.updateLineData(d.key);
     });
 
   // reload page every 60 seconds
