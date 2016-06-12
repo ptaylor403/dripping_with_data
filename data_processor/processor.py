@@ -272,12 +272,15 @@ def get_dept_day_stats(hpv_dict, now, dept):
     cur_hpv = hpv_dict[dept]['hpv']
     cur_mh = hpv_dict[dept]['mh']
     cur_claims = hpv_dict['claims_for_range']
+    print("cur_mh: ", cur_mh)
 
     if plant_settings.num_of_shifts == 3:
         if hpv_dict['shift'] == 3:
             return cur_hpv, cur_mh
         elif hpv_dict['shift'] == 1:
             last_shift = all_since_start.filter(shift=3).last()
+            print('last_shift getattr: ', getattr(last_shift, '{}_s_mh'.format(dept)))
+            print(cur_mh)
             mh = getattr(last_shift, '{}_s_mh'.format(dept)) + cur_mh
             claims = last_shift.claims_s + cur_claims
             hpv = mh/claims
@@ -286,7 +289,7 @@ def get_dept_day_stats(hpv_dict, now, dept):
             s3 = all_since_start.filter(shift=3).last()
             s1 = all_since_start.filter(shift=1).last()
             mh = getattr(s3, '{}_s_mh'.format(dept)) + getattr(s1, '{}_s_mh'.format(dept)) + cur_mh
-            claims = s3.claims_s + s2.claims_s + cur_claims
+            claims = s3.claims_s + s1.claims_s + cur_claims
             hpv = mh/claims
             return hpv, mh
     elif plant_settings.num_of_shifts == 2:
