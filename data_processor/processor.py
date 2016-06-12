@@ -26,9 +26,10 @@ def get_new_hpv_data():
 
     # Is there a claim in the database? Errors could be: Server locked, no matching result for the query. Errors cause function escape.
     try:
-        last_claim = RawPlantActivity.objects.latest('TS_LOAD')
+        last_claim = RawPlantActivity.objects.filter(POOL_CD='03')
+        last_claim = last_claim.latest('TS_LOAD')
 
-        print("LAST_CLAIM=", last_claim.VEH_SER_NO)
+        print("LAST_CLAIM=", last_claim.VEH_SER_NO, last_claim.TS_LOAD)
     # TODO "server busy" is a placeholder and will need to change when we know the real error message
     # except "ServerBusy":
     #     return print("Server busy. Checking again in 5 minutes.")
@@ -57,6 +58,9 @@ def get_new_hpv_data():
     hpv_dict_with_day = get_day_hpv_dict(hpv_dict, now)
 
     write_data(hpv_dict_with_day)
+
+
+    return "Wrote to API"
 
 
 """

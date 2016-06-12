@@ -419,6 +419,14 @@ class GetHPVDataNoNewClaims(TestCase):
             TS_LOAD=timezone.make_aware(dt.datetime(2016, 6, 2, 6, 55)),
         )
 
+        # LOAD with timestamp after last write, but wrong pool number for
+        # false-positive
+        RawPlantActivity.objects.create(
+            VEH_SER_NO='HZ3853',
+            POOL_CD='01',
+            TS_LOAD=timezone.make_aware(dt.datetime(2016, 6, 2, 19, 55)),
+        )
+
         HPVATM.objects.create(**tc.two_shifts_first_shift_api_entry)
 
     def test_get_new_hpv_data_no_new_claims(self):
