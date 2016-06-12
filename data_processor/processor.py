@@ -325,8 +325,8 @@ def get_day_stats(hpv_dict, now):
 
     all_since_start = HPVATM.objects.filter(timestamp__gte=day_start)
 
-    cur_hpv = hpv_dict['plant_hpv']
-    cur_mh = hpv_dict['plant_mh']
+    cur_hpv = hpv_dict['plant_s_hpv']
+    cur_mh = hpv_dict['plant_s_mh']
     cur_claims = hpv_dict['claims_for_range']
 
     if plant_settings.num_of_shifts == 3:

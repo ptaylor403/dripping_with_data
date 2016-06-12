@@ -585,8 +585,8 @@ class GetDayStatsThreeShiftsPlant(TestCase):
         settings = PlantSetting.objects.latest('timestamp')
         hpv_dict = tc.shift_3_hpv_dict_with_plant
 
-        expected_hpv = 100
-        expected_mh = 100
+        expected_hpv = 90
+        expected_mh = 90
         expected_claims = 1
 
         self.assertEqual(get_day_stats(hpv_dict, now),
@@ -610,8 +610,8 @@ class GetDayStatsThreeShiftsPlant(TestCase):
         hpv_dict = tc.shift_1_hpv_dict_with_plant
         HPVATM.objects.create(**tc.three_shifts_third_shift_api_entry)
 
-        expected_hpv = 100
-        expected_mh = 900
+        expected_hpv = 90
+        expected_mh = 810
         expected_claims = 9
 
         self.assertEqual(get_day_stats(hpv_dict, now),
@@ -623,8 +623,8 @@ class GetDayStatsThreeShiftsPlant(TestCase):
         hpv_dict = tc.shift_1_hpv_dict_with_plant_0_hpv
         HPVATM.objects.create(**tc.three_shifts_third_shift_api_entry)
 
-        expected_hpv = 100
-        expected_mh = 800
+        expected_hpv = 90
+        expected_mh = 720
         expected_claims = 8
 
         self.assertEqual(get_day_stats(hpv_dict, now),
@@ -637,8 +637,8 @@ class GetDayStatsThreeShiftsPlant(TestCase):
         HPVATM.objects.create(**tc.three_shifts_third_shift_api_entry)
         HPVATM.objects.create(**tc.three_shifts_first_shift_api_entry)
 
-        expected_hpv = 100
-        expected_mh = 1700
+        expected_hpv = 90
+        expected_mh = 1530
         expected_claims = 17
 
         self.assertEqual(get_day_stats(hpv_dict, now),
@@ -651,8 +651,8 @@ class GetDayStatsThreeShiftsPlant(TestCase):
         HPVATM.objects.create(**tc.three_shifts_third_shift_api_entry)
         HPVATM.objects.create(**tc.three_shifts_first_shift_api_entry)
 
-        expected_hpv = 100
-        expected_mh = 1600
+        expected_hpv = 90
+        expected_mh = 1440
         expected_claims = 16
 
         self.assertEqual(get_day_stats(hpv_dict, now),
@@ -669,8 +669,8 @@ class GetDayStatsTwoShiftsPlant(TestCase):
         hpv_dict = tc.shift_1_hpv_dict_with_plant
         HPVATM.objects.create(**tc.three_shifts_third_shift_api_entry)
 
-        expected_hpv = 100
-        expected_mh = 100
+        expected_hpv = 90
+        expected_mh = 90
         expected_claims = 1
 
         self.assertEqual(get_day_stats(hpv_dict, now),
@@ -694,8 +694,8 @@ class GetDayStatsTwoShiftsPlant(TestCase):
         hpv_dict = tc.shift_2_hpv_dict_with_plant
         HPVATM.objects.create(**tc.two_shifts_first_shift_api_entry)
 
-        expected_hpv = 100
-        expected_mh = 900
+        expected_hpv = 90
+        expected_mh = 810
         expected_claims = 9
 
         self.assertEqual(get_day_stats(hpv_dict, now),
@@ -707,8 +707,8 @@ class GetDayStatsTwoShiftsPlant(TestCase):
         hpv_dict = tc.shift_2_hpv_dict_with_plant_0_hpv
         HPVATM.objects.create(**tc.two_shifts_first_shift_api_entry)
 
-        expected_hpv = 100
-        expected_mh = 800
+        expected_hpv = 90
+        expected_mh = 720
         expected_claims = 8
 
         self.assertEqual(get_day_stats(hpv_dict, now),
@@ -724,8 +724,8 @@ class GetDayStatsOneShiftPlant(TestCase):
         settings = PlantSetting.objects.latest('timestamp')
         hpv_dict = tc.shift_1_hpv_dict_with_plant
 
-        expected_hpv = 100
-        expected_mh = 100
+        expected_hpv = 90
+        expected_mh = 90
         expected_claims = 1
 
         self.assertEqual(get_day_stats(hpv_dict, now),

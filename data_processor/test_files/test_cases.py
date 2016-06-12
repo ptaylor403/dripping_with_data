@@ -57,11 +57,11 @@ three_shifts_third_shift_api_entry = {
     'OTHER_d_hpv': 0,
     'OTHER_d_mh': 0,
 
-    'PLANT_d_hpv': 100,
-    'PLANT_d_mh': 800,
-    'PLANT_s_hpv': 100,
-    'PLANT_s_ne': 100,
-    'PLANT_s_mh': 800,
+    'PLANT_d_hpv': 90,
+    'PLANT_d_mh': 720,
+    'PLANT_s_hpv': 90,
+    'PLANT_s_ne': 90,
+    'PLANT_s_mh': 720,
 
     'claims_s': 8,
     'claims_d': 8,
@@ -122,11 +122,11 @@ three_shifts_first_shift_api_entry = {
     'OTHER_d_hpv': 0,
     'OTHER_d_mh': 0,
 
-    'PLANT_d_hpv': 100,
-    'PLANT_d_mh': 1600,
-    'PLANT_s_hpv': 100,
-    'PLANT_s_ne': 100,
-    'PLANT_s_mh': 800,
+    'PLANT_d_hpv': 90,
+    'PLANT_d_mh': 1440,
+    'PLANT_s_hpv': 90,
+    'PLANT_s_ne': 90,
+    'PLANT_s_mh': 720,
 
     'claims_s': 8,
     'claims_d': 16,
@@ -187,11 +187,11 @@ three_shifts_second_shift_api_entry = {
     'OTHER_d_hpv': 0,
     'OTHER_d_mh': 0,
 
-    'PLANT_d_hpv': 100,
-    'PLANT_d_mh': 2400,
-    'PLANT_s_hpv': 100,
-    'PLANT_s_ne': 100,
-    'PLANT_s_mh': 800,
+    'PLANT_d_hpv': 90,
+    'PLANT_d_mh': 2160,
+    'PLANT_s_hpv': 90,
+    'PLANT_s_ne': 90,
+    'PLANT_s_mh': 720,
 
     'claims_s': 8,
     'claims_d': 24,
@@ -252,11 +252,11 @@ two_shifts_first_shift_api_entry = {
     'OTHER_d_hpv': 0,
     'OTHER_d_mh': 0,
 
-    'PLANT_d_hpv': 100,
-    'PLANT_d_mh': 800,
-    'PLANT_s_hpv': 100,
-    'PLANT_s_ne': 100,
-    'PLANT_s_mh': 800,
+    'PLANT_d_hpv': 90,
+    'PLANT_d_mh': 720,
+    'PLANT_s_hpv': 90,
+    'PLANT_s_ne': 90,
+    'PLANT_s_mh': 720,
 
     'claims_s': 8,
     'claims_d': 8,
@@ -317,11 +317,11 @@ two_shifts_second_shift_api_entry = {
     'OTHER_d_hpv': 0,
     'OTHER_d_mh': 0,
 
-    'PLANT_d_hpv': 100,
-    'PLANT_d_mh': 1600,
-    'PLANT_s_hpv': 100,
-    'PLANT_s_ne': 100,
-    'PLANT_s_mh': 800,
+    'PLANT_d_hpv': 90,
+    'PLANT_d_mh': 1440,
+    'PLANT_s_hpv': 90,
+    'PLANT_s_ne': 90,
+    'PLANT_s_mh': 720,
 
     'claims_s': 8,
     'claims_d': 16,
@@ -382,11 +382,11 @@ one_shift_first_shift_api_entry = {
     'OTHER_d_hpv': 0,
     'OTHER_d_mh': 0,
 
-    'PLANT_d_hpv': 100,
-    'PLANT_d_mh': 800,
-    'PLANT_s_hpv': 100,
-    'PLANT_s_ne': 100,
-    'PLANT_s_mh': 800,
+    'PLANT_d_hpv': 90,
+    'PLANT_d_mh': 720,
+    'PLANT_s_hpv': 90,
+    'PLANT_s_ne': 90,
+    'PLANT_s_mh': 720,
 
     'claims_s': 8,
     'claims_d': 8,
@@ -451,25 +451,25 @@ shift_1_hpv_dict = {'QA': {'ne': 10, 'hpv': 10, 'mh': 10}, 'claims_for_range': 1
 
 shift_1_hpv_dict_0_hpv = {'QA': {'ne': 0, 'hpv': 0, 'mh': 0}, 'claims_for_range': 0, 'MAINT': {'ne': 0, 'hpv': 0, 'mh': 0}, 'PNT': {'ne': 0, 'hpv': 0, 'mh': 0}, 'PCH': {'ne': 0, 'hpv': 0, 'mh': 0}, 'PLANT': {'ne': 0, 'hpv': 0, 'mh': 0}, 'shift': 1, 'FCB': {'ne': 0, 'hpv': 0, 'mh': 0}, 'CIW': {'ne': 0, 'hpv': 0, 'mh': 0}, 'DAC': {'ne': 0, 'hpv': 0, 'mh': 0}, 'OTHER': {'ne': 0, 'hpv': 0.0, 'mh': 0}, 'FCH': {'ne': 0, 'hpv': 0, 'mh': 0}, 'MAT': {'ne': 0, 'hpv': 0, 'mh': 0}}
 
-shift_1_hpv_dict_with_plant = {'QA': {'ne': 10, 'hpv': 10, 'mh': 10}, 'claims_for_range': 1, 'MAINT': {'ne': 10, 'hpv': 10, 'mh': 10}, 'PNT': {'ne': 10, 'hpv': 10, 'mh': 10}, 'PCH': {'ne': 10, 'hpv': 10, 'mh': 10}, 'PLANT': {'ne': 10, 'hpv': 10, 'mh': 10}, 'shift': 1, 'FCB': {'ne': 10, 'hpv': 10, 'mh': 10}, 'CIW': {'ne': 10, 'hpv': 10, 'mh': 10}, 'DAC': {'ne': 10, 'hpv': 10, 'mh': 10}, 'OTHER': {'ne': 0, 'hpv': 0, 'mh': 0}, 'FCH': {'ne': 10, 'hpv': 10, 'mh': 10}, 'MAT': {'ne': 10, 'hpv': 10, 'mh': 10}, 'plant_hpv': 100, 'plant_mh': 100,'plant_ne': 100,}
+shift_1_hpv_dict_with_plant = {'QA': {'ne': 10, 'hpv': 10, 'mh': 10}, 'claims_for_range': 1, 'MAINT': {'ne': 10, 'hpv': 10, 'mh': 10}, 'PNT': {'ne': 10, 'hpv': 10, 'mh': 10}, 'PCH': {'ne': 10, 'hpv': 10, 'mh': 10}, 'PLANT': {'ne': 10, 'hpv': 10, 'mh': 10}, 'shift': 1, 'FCB': {'ne': 10, 'hpv': 10, 'mh': 10}, 'CIW': {'ne': 10, 'hpv': 10, 'mh': 10}, 'DAC': {'ne': 10, 'hpv': 10, 'mh': 10}, 'OTHER': {'ne': 0, 'hpv': 0, 'mh': 0}, 'FCH': {'ne': 10, 'hpv': 10, 'mh': 10}, 'MAT': {'ne': 10, 'hpv': 10, 'mh': 10}, 'plant_s_hpv': 90, 'plant_s_mh': 90, 'plant_s_ne': 90}
 
-shift_1_hpv_dict_with_plant_0_hpv = {'QA': {'ne': 0, 'hpv': 0, 'mh': 0}, 'claims_for_range': 0, 'MAINT': {'ne': 0, 'hpv': 0, 'mh': 0}, 'PNT': {'ne': 0, 'hpv': 0, 'mh': 0}, 'PCH': {'ne': 0, 'hpv': 0, 'mh': 0}, 'PLANT': {'ne': 0, 'hpv': 0, 'mh': 0}, 'shift': 1, 'FCB': {'ne': 0, 'hpv': 0, 'mh': 0}, 'CIW': {'ne': 0, 'hpv': 0, 'mh': 0}, 'DAC': {'ne': 0, 'hpv': 0, 'mh': 0}, 'OTHER': {'ne': 0, 'hpv': 0.0, 'mh': 0}, 'FCH': {'ne': 0, 'hpv': 0, 'mh': 0}, 'MAT': {'ne': 0, 'hpv': 0, 'mh': 0}, 'plant_hpv': 0, 'plant_mh': 0, 'plant_ne': 0}
+shift_1_hpv_dict_with_plant_0_hpv = {'QA': {'ne': 0, 'hpv': 0, 'mh': 0}, 'claims_for_range': 0, 'MAINT': {'ne': 0, 'hpv': 0, 'mh': 0}, 'PNT': {'ne': 0, 'hpv': 0, 'mh': 0}, 'PCH': {'ne': 0, 'hpv': 0, 'mh': 0}, 'PLANT': {'ne': 0, 'hpv': 0, 'mh': 0}, 'shift': 1, 'FCB': {'ne': 0, 'hpv': 0, 'mh': 0}, 'CIW': {'ne': 0, 'hpv': 0, 'mh': 0}, 'DAC': {'ne': 0, 'hpv': 0, 'mh': 0}, 'OTHER': {'ne': 0, 'hpv': 0.0, 'mh': 0}, 'FCH': {'ne': 0, 'hpv': 0, 'mh': 0}, 'MAT': {'ne': 0, 'hpv': 0, 'mh': 0}, 'plant_s_hpv': 0, 'plant_s_mh': 0, 'plant_s_ne': 0}
 
 shift_2_hpv_dict = {'QA': {'ne': 10, 'hpv': 10, 'mh': 10}, 'claims_for_range': 1, 'MAINT': {'ne': 10, 'hpv': 10, 'mh': 10}, 'PNT': {'ne': 10, 'hpv': 10, 'mh': 10}, 'PCH': {'ne': 10, 'hpv': 10, 'mh': 10}, 'PLANT': {'ne': 10, 'hpv': 10, 'mh': 10}, 'shift': 2, 'FCB': {'ne': 10, 'hpv': 10, 'mh': 10}, 'CIW': {'ne': 10, 'hpv': 10, 'mh': 10}, 'DAC': {'ne': 10, 'hpv': 10, 'mh': 10}, 'OTHER': {'ne': 0, 'hpv': 0.0, 'mh': 0}, 'FCH': {'ne': 10, 'hpv': 10, 'mh': 10}, 'MAT': {'ne': 10, 'hpv': 10, 'mh': 10}}
 
 shift_2_hpv_dict_0_hpv = {'QA': {'ne': 0, 'hpv': 0, 'mh': 0}, 'claims_for_range': 0, 'MAINT': {'ne': 0, 'hpv': 0, 'mh': 0}, 'PNT': {'ne': 0, 'hpv': 0, 'mh': 0}, 'PCH': {'ne': 0, 'hpv': 0, 'mh': 0}, 'PLANT': {'ne': 0, 'hpv': 0, 'mh': 0}, 'shift': 2, 'FCB': {'ne': 0, 'hpv': 0, 'mh': 0}, 'CIW': {'ne': 0, 'hpv': 0, 'mh': 0}, 'DAC': {'ne': 0, 'hpv': 0, 'mh': 0}, 'OTHER': {'ne': 0, 'hpv': 0.0, 'mh': 0}, 'FCH': {'ne': 0, 'hpv': 0, 'mh': 0}, 'MAT': {'ne': 0, 'hpv': 0, 'mh': 0}}
 
-shift_2_hpv_dict_with_plant = {'QA': {'ne': 10, 'hpv': 10, 'mh': 10}, 'claims_for_range': 1, 'MAINT': {'ne': 10, 'hpv': 10, 'mh': 10}, 'PNT': {'ne': 10, 'hpv': 10, 'mh': 10}, 'PCH': {'ne': 10, 'hpv': 10, 'mh': 10}, 'PLANT': {'ne': 10, 'hpv': 10, 'mh': 10}, 'shift': 2, 'FCB': {'ne': 10, 'hpv': 10, 'mh': 10}, 'CIW': {'ne': 10, 'hpv': 10, 'mh': 10}, 'DAC': {'ne': 10, 'hpv': 10, 'mh': 10}, 'OTHER': {'ne': 0, 'hpv': 0, 'mh': 0}, 'FCH': {'ne': 10, 'hpv': 10, 'mh': 10}, 'MAT': {'ne': 10, 'hpv': 10, 'mh': 10}, 'plant_hpv': 100, 'plant_mh': 100,'plant_ne': 100,}
+shift_2_hpv_dict_with_plant = {'QA': {'ne': 10, 'hpv': 10, 'mh': 10}, 'claims_for_range': 1, 'MAINT': {'ne': 10, 'hpv': 10, 'mh': 10}, 'PNT': {'ne': 10, 'hpv': 10, 'mh': 10}, 'PCH': {'ne': 10, 'hpv': 10, 'mh': 10}, 'PLANT': {'ne': 10, 'hpv': 10, 'mh': 10}, 'shift': 2, 'FCB': {'ne': 10, 'hpv': 10, 'mh': 10}, 'CIW': {'ne': 10, 'hpv': 10, 'mh': 10}, 'DAC': {'ne': 10, 'hpv': 10, 'mh': 10}, 'OTHER': {'ne': 0, 'hpv': 0, 'mh': 0}, 'FCH': {'ne': 10, 'hpv': 10, 'mh': 10}, 'MAT': {'ne': 10, 'hpv': 10, 'mh': 10}, 'plant_s_hpv': 90, 'plant_s_mh': 90,'plant_s_ne': 90,}
 
-shift_2_hpv_dict_with_plant_0_hpv = {'QA': {'ne': 0, 'hpv': 0, 'mh': 0}, 'claims_for_range': 0, 'MAINT': {'ne': 0, 'hpv': 0, 'mh': 0}, 'PNT': {'ne': 0, 'hpv': 0, 'mh': 0}, 'PCH': {'ne': 0, 'hpv': 0, 'mh': 0}, 'PLANT': {'ne': 0, 'hpv': 0, 'mh': 0}, 'shift': 2, 'FCB': {'ne': 0, 'hpv': 0, 'mh': 0}, 'CIW': {'ne': 0, 'hpv': 0, 'mh': 0}, 'DAC': {'ne': 0, 'hpv': 0, 'mh': 0}, 'OTHER': {'ne': 0, 'hpv': 0.0, 'mh': 0}, 'FCH': {'ne': 0, 'hpv': 0, 'mh': 0}, 'MAT': {'ne': 0, 'hpv': 0, 'mh': 0}, 'plant_hpv': 0, 'plant_mh': 0, 'plant_ne': 0}
+shift_2_hpv_dict_with_plant_0_hpv = {'QA': {'ne': 0, 'hpv': 0, 'mh': 0}, 'claims_for_range': 0, 'MAINT': {'ne': 0, 'hpv': 0, 'mh': 0}, 'PNT': {'ne': 0, 'hpv': 0, 'mh': 0}, 'PCH': {'ne': 0, 'hpv': 0, 'mh': 0}, 'PLANT': {'ne': 0, 'hpv': 0, 'mh': 0}, 'shift': 2, 'FCB': {'ne': 0, 'hpv': 0, 'mh': 0}, 'CIW': {'ne': 0, 'hpv': 0, 'mh': 0}, 'DAC': {'ne': 0, 'hpv': 0, 'mh': 0}, 'OTHER': {'ne': 0, 'hpv': 0.0, 'mh': 0}, 'FCH': {'ne': 0, 'hpv': 0, 'mh': 0}, 'MAT': {'ne': 0, 'hpv': 0, 'mh': 0}, 'plant_s_hpv': 0, 'plant_s_mh': 0, 'plant_s_ne': 0}
 
 shift_3_hpv_dict = {'QA': {'ne': 10, 'hpv': 10, 'mh': 10}, 'claims_for_range': 1, 'MAINT': {'ne': 10, 'hpv': 10, 'mh': 10}, 'PNT': {'ne': 10, 'hpv': 10, 'mh': 10}, 'PCH': {'ne': 10, 'hpv': 10, 'mh': 10}, 'PLANT': {'ne': 10, 'hpv': 10, 'mh': 10}, 'shift': 3, 'FCB': {'ne': 10, 'hpv': 10, 'mh': 10}, 'CIW': {'ne': 10, 'hpv': 10, 'mh': 10}, 'DAC': {'ne': 10, 'hpv': 10, 'mh': 10}, 'OTHER': {'ne': 0, 'hpv': 0.0, 'mh': 0}, 'FCH': {'ne': 10, 'hpv': 10, 'mh': 10}, 'MAT': {'ne': 10, 'hpv': 10, 'mh': 10}}
 
 shift_3_hpv_dict_0_hpv = {'QA': {'ne': 0, 'hpv': 0, 'mh': 0}, 'claims_for_range': 0, 'MAINT': {'ne': 0, 'hpv': 0, 'mh': 0}, 'PNT': {'ne': 0, 'hpv': 0, 'mh': 0}, 'PCH': {'ne': 0, 'hpv': 0, 'mh': 0}, 'PLANT': {'ne': 0, 'hpv': 0, 'mh': 0}, 'shift': 3, 'FCB': {'ne': 0, 'hpv': 0, 'mh': 0}, 'CIW': {'ne': 0, 'hpv': 0, 'mh': 0}, 'DAC': {'ne': 0, 'hpv': 0, 'mh': 0}, 'OTHER': {'ne': 0, 'hpv': 0.0, 'mh': 0}, 'FCH': {'ne': 0, 'hpv': 0, 'mh': 0}, 'MAT': {'ne': 0, 'hpv': 0, 'mh': 0}}
 
-shift_3_hpv_dict_with_plant = {'QA': {'ne': 10, 'hpv': 10, 'mh': 10}, 'claims_for_range': 1, 'MAINT': {'ne': 10, 'hpv': 10, 'mh': 10}, 'PNT': {'ne': 10, 'hpv': 10, 'mh': 10}, 'PCH': {'ne': 10, 'hpv': 10, 'mh': 10}, 'PLANT': {'ne': 10, 'hpv': 10, 'mh': 10}, 'shift': 3, 'FCB': {'ne': 10, 'hpv': 10, 'mh': 10}, 'CIW': {'ne': 10, 'hpv': 10, 'mh': 10}, 'DAC': {'ne': 10, 'hpv': 10, 'mh': 10}, 'OTHER': {'ne': 0, 'hpv': 0, 'mh': 0}, 'FCH': {'ne': 10, 'hpv': 10, 'mh': 10}, 'MAT': {'ne': 10, 'hpv': 10, 'mh': 10}, 'plant_hpv': 100, 'plant_mh': 100,'plant_ne': 100}
+shift_3_hpv_dict_with_plant = {'QA': {'ne': 10, 'hpv': 10, 'mh': 10}, 'claims_for_range': 1, 'MAINT': {'ne': 10, 'hpv': 10, 'mh': 10}, 'PNT': {'ne': 10, 'hpv': 10, 'mh': 10}, 'PCH': {'ne': 10, 'hpv': 10, 'mh': 10}, 'PLANT': {'ne': 10, 'hpv': 10, 'mh': 10}, 'shift': 3, 'FCB': {'ne': 10, 'hpv': 10, 'mh': 10}, 'CIW': {'ne': 10, 'hpv': 10, 'mh': 10}, 'DAC': {'ne': 10, 'hpv': 10, 'mh': 10}, 'OTHER': {'ne': 0, 'hpv': 0, 'mh': 0}, 'FCH': {'ne': 10, 'hpv': 10, 'mh': 10}, 'MAT': {'ne': 10, 'hpv': 10, 'mh': 10}, 'plant_s_hpv': 90, 'plant_s_mh': 90, 'plant_s_ne': 90}
 
-shift_3_hpv_dict_with_plant_0_hpv = {'QA': {'ne': 0, 'hpv': 0, 'mh': 0}, 'claims_for_range': 0, 'MAINT': {'ne': 0, 'hpv': 0, 'mh': 0}, 'PNT': {'ne': 0, 'hpv': 0, 'mh': 0}, 'PCH': {'ne': 0, 'hpv': 0, 'mh': 0}, 'PLANT': {'ne': 0, 'hpv': 0, 'mh': 0}, 'shift': 3, 'FCB': {'ne': 0, 'hpv': 0, 'mh': 0}, 'CIW': {'ne': 0, 'hpv': 0, 'mh': 0}, 'DAC': {'ne': 0, 'hpv': 0, 'mh': 0}, 'OTHER': {'ne': 0, 'hpv': 0.0, 'mh': 0}, 'FCH': {'ne': 0, 'hpv': 0, 'mh': 0}, 'MAT': {'ne': 0, 'hpv': 0, 'mh': 0}, 'plant_hpv': 0, 'plant_mh': 0, 'plant_ne': 0}
+shift_3_hpv_dict_with_plant_0_hpv = {'QA': {'ne': 0, 'hpv': 0, 'mh': 0}, 'claims_for_range': 0, 'MAINT': {'ne': 0, 'hpv': 0, 'mh': 0}, 'PNT': {'ne': 0, 'hpv': 0, 'mh': 0}, 'PCH': {'ne': 0, 'hpv': 0, 'mh': 0}, 'PLANT': {'ne': 0, 'hpv': 0, 'mh': 0}, 'shift': 3, 'FCB': {'ne': 0, 'hpv': 0, 'mh': 0}, 'CIW': {'ne': 0, 'hpv': 0, 'mh': 0}, 'DAC': {'ne': 0, 'hpv': 0, 'mh': 0}, 'OTHER': {'ne': 0, 'hpv': 0.0, 'mh': 0}, 'FCH': {'ne': 0, 'hpv': 0, 'mh': 0}, 'MAT': {'ne': 0, 'hpv': 0, 'mh': 0}, 'plant_s_hpv': 0, 'plant_s_mh': 0, 'plant_s_ne': 0}
 
 
 expected_full_hpv_dict = {
@@ -524,8 +524,8 @@ expected_full_hpv_dict = {
     'OTHER_d_hpv': 0,
     'OTHER_d_mh': 0,
 
-    'PLANT_d_hpv': 100.0,
-    'PLANT_d_mh': 900.0,
+    'PLANT_d_hpv': 90.0,
+    'PLANT_d_mh': 810.0,
     'PLANT_s_hpv': 90.0,
     'PLANT_s_ne': 90.0,
     'PLANT_s_mh': 90.0,
