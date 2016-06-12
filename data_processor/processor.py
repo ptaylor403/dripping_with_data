@@ -26,7 +26,8 @@ def get_new_hpv_data():
 
     # Is there a claim in the database? Errors could be: Server locked, no matching result for the query. Errors cause function escape.
     try:
-        last_claim = RawPlantActivity.objects.filter(POOL_CD='03')
+        last_claim = RawPlantActivity.objects.filter(POOL_CD='03',
+                                                     TS_LOAD__lte=now)
         last_claim = last_claim.latest('TS_LOAD')
 
         print("LAST_CLAIM=", last_claim.VEH_SER_NO, last_claim.TS_LOAD)
@@ -40,7 +41,8 @@ def get_new_hpv_data():
     # Check for the last entry to the processed data table. Escape if no new claim since last entry. Errors include: No objects for the query - continues to writing logic.
     try:
         print("GOING TO API TABLE TO GET LATEST API OBJECT")
-        last_api_write = HPVATM.objects.latest('timestamp')
+        last_api_write = HPVATM.objects.filter(timestamp__lte=now)
+        last_api_write = last_api_write.latest('timestamp')
         print("THIS IS WHAT WAS FOUND IN API TABLE TIMESTAMP ", last_api_write.timestamp)
         if last_claim.TS_LOAD <= last_api_write.timestamp:
             print("No new data in API TABLE. Checking again in 5 minutes.")
@@ -50,10 +52,12 @@ def get_new_hpv_data():
 
     # Call function to calc hpv by dept for the current shift.
     hpv_dict = get_hpv_snap(now)
-    if hpv_dict is None:
+    if hpv_dict is None or hpv_dict['claims_for_range'] == 0:
+        print('No HPV_DICT or no claims in dict. Exiting without write.')
         return
 
     print("COMPLETED HPV DICT FROM FORMULAS: ", hpv_dict)
+    print("COMPLETED HPV DICT CLAIMS_FOR_RANGE: ", hpv_dict['claims_for_range'])
 
     hpv_dict_with_day = get_day_hpv_dict(hpv_dict, now)
 
@@ -186,7 +190,10 @@ def get_day_hpv_dict(hpv_dict, now):
 
     print("DEPT_VALUES ",dept_values)
 
-    plant_s_hpv = plant_s_mh / hpv_dict['claims_for_range']
+    if hpv_dict['claims_for_range'] == 0 or hpv_dict is None:
+        plant_s_hpv = 0
+    else:
+        plant_s_hpv = plant_s_mh / hpv_dict['claims_for_range']
 
     shift_dict = {
         'plant_s_hpv': plant_s_hpv,

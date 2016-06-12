@@ -603,7 +603,7 @@ default_plant_settings = {
     'first_shift': dt.time(6,30),
     'second_shift': dt.time(14,30),
     'third_shift': dt.time(22,30),
-    'dripper_start': timezone.make_aware(dt.datetime(2016, 6, 2, 8, 0))
+    'dripper_start': timezone.make_aware(dt.datetime(2016, 6, 2, 20, 30))
 }
 
 three_shift_8_am_plant_settings = {

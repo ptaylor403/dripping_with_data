@@ -13,6 +13,7 @@ class DataProcessorConfig(AppConfig):
         from .processor import get_new_hpv_data
         print("-" * 50)
         print('Entering get_new_hpv_data')
+        # get_new_hpv_data()
         scheduler = BackgroundScheduler()
         scheduler.add_job(get_new_hpv_data, 'interval', seconds=30)
         scheduler.start()
