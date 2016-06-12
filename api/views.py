@@ -31,4 +31,6 @@ class HPVAPI(LoginRequiredMixin, generics.ListCreateAPIView):
                 start_time = end_time - dt.timedelta(days=int(days))
             elif end is None:
                 end_time = start_time + dt.timedelta(days=int(days))
-        return queryset.filter(timestamp__gte=start_time, timestamp__lt=end_time).order_by('timestamp')
+        print(start_time)
+        print(end_time)
+        return queryset.filter(timestamp__gte=start_time, timestamp__lte=end_time).order_by('timestamp')

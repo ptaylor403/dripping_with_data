@@ -13,12 +13,16 @@ jQuery(function($) {
   var datasets = [{key: "PLANT_d_hpv", label: "Plant Day HPV"},
                   {key: "CIW_d_hpv", label: 'CIW Day HPV'},
                   {key: "FCB_d_hpv", label: 'FCB Day HPV'}];
-  var detailLevel = [{key: "?format=json&days=1", label: "Day"},
-                     {key: "?format=json&days=7", label: 'Week'},
-                     {key: "?format=json&days=31", label: 'Month'}];
+  var detailLevel = [{query: "/api/hpv/?days=1&format=json", label: "Day"},
+                     {query: "/api/hpv/?days=7&format=json", label: 'Week'},
+                     {query: "/api/hpv/?days=21&format=json", label: 'Month'}];
+
+  var currentDataName = "PLANT_d_hpv"
+  var currentQuery = "/api/hpv/?days=7&format=json"
   /*
     Line Graph
   */
+
   var lineChart = (function() {
       // Set the dimensions of the canvas / graph
       var margin = {top: 30, right: 50, bottom: 30, left: 50},
@@ -52,7 +56,7 @@ jQuery(function($) {
 
       // Get the data
       var lineGraph = function(key) {
-        d3.json('/api/hpv?format=json',
+        d3.json('/api/hpv/?days=7&format=json',
         function(error, data) {
 
           // setup and order data
@@ -136,8 +140,8 @@ jQuery(function($) {
         })
       };
 
-      var updateLineData = function(key) {
-        d3.json('/api/hpv?format=json',
+      var updateLineData = function(query, key) {
+        d3.json(query,
         function(error, data) {
 
           data.forEach(function(d){
@@ -324,8 +328,8 @@ jQuery(function($) {
   })();
 
   // intialize charts
-  heatMap.heatmap("PLANT_d_hpv");
-  lineChart.lineGraph("PLANT_d_hpv");
+  heatMap.heatmap(currentDataName);
+  lineChart.lineGraph(currentDataName);
 
   // dataset selection
   var datasetpicker = d3.select("#dataset-picker").selectAll(".btn btn-default")
@@ -341,8 +345,9 @@ jQuery(function($) {
       .attr("class", "btn btn-default")
       .on("click", function(d) {
         // update charts with new data
+        currentDataName = d.key
         heatMap.heatmap(d.key);
-        lineChart.updateLineData(d.key);
+        lineChart.updateLineData(currentQuery, d.key);
       });
 
   detailLevelPicker.enter()
@@ -352,7 +357,8 @@ jQuery(function($) {
     .attr("class", "btn btn-default")
     .on("click", function(d) {
       // update charts with new data
-      lineChart.updateLineData(d.key);
+      currentQuery = d.query
+      lineChart.updateLineData(d.query, currentDataName);
     });
 
   // reload page every 60 seconds

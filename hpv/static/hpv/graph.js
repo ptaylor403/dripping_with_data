@@ -5,7 +5,7 @@ jQuery(function($) {
   */
   var lineGraph = (function() {
     var graphData = [];
-    d3.json('/api/hpv?format=json', function(data) {
+    d3.json('/api/hpv/?days=1&format=json', function(data) {
       var graphData = [{
         key: 'Today',
         values: [],
@@ -37,7 +37,7 @@ jQuery(function($) {
         .x(function(d) { return d[0] })
         .y(function(d) { return d[1] })
         ;
-        
+
         chart.xAxis
           .axisLabel('Time')
           .tickFormat(function(d) {
