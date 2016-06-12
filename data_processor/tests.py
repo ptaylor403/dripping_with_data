@@ -408,10 +408,9 @@ class GetHPVDataNoClaims(TestCase):
         self.assertEqual(get_new_hpv_data(), None)
 
 
-class GetHPVDataNoNewClaims(TestCase):
+class GetHPVData(TestCase):
+    @timezone.override("US/Eastern")
     def setUp(self):
-
-        PlantSetting.objects.create(**tc.default_plant_settings)
 
         RawPlantActivity.objects.create(
             VEH_SER_NO='HZ3852',
@@ -427,12 +426,16 @@ class GetHPVDataNoNewClaims(TestCase):
             TS_LOAD=timezone.make_aware(dt.datetime(2016, 6, 2, 19, 55)),
         )
 
+        # API entry is at 14:25
         HPVATM.objects.create(**tc.two_shifts_first_shift_api_entry)
+        # API entry is at 22:25
         HPVATM.objects.create(**tc.three_shifts_second_shift_api_entry)
 
-    def test_get_new_hpv_data_no_new_claims(self):
+    def test_get_new_hpv_data_no_new_claims_recent_entry(self):
+        PlantSetting.objects.create(**tc.default_plant_settings_7_05)
         self.assertEqual(get_new_hpv_data(), None)
 
+    # TODO Add tests for 1) Write if 15 min since last, 2) Write if near shift end, 3) write if no objects in api, 4) No claims in db.
 
 class GetShiftInfoThreeShifts(TestCase):
     def setUp(self):
