@@ -889,6 +889,23 @@ class GetDayStatsThreeShiftsDept(TestCase):
             self.assertEqual(get_dept_day_stats(hpv_dict, now, dept),
                             (expected_hpv, expected_mh))
 
+    def test_get_dept_day_stats_first_shift_no_third_shift_api_entry(self):
+        now = timezone.make_aware(dt.datetime(2016, 6, 2, 7, 30))
+        settings = PlantSetting.objects.latest('timestamp')
+        hpv_dict = tc.shift_1_hpv_dict
+
+        dept_list = ['CIW', 'FCB', 'PNT', 'PCH', 'FCH', 'DAC', 'MAINT', 'QA', 'MAT', 'OTHER']
+
+        expected_hpv = 10
+        expected_mh = 10
+
+        for dept in dept_list:
+            if dept == 'OTHER':
+                expected_hpv = 0
+                expected_mh = 0
+            self.assertEqual(get_dept_day_stats(hpv_dict, now, dept),
+                            (expected_hpv, expected_mh))
+
     def test_get_dept_day_stats_second_shift(self):
         now = timezone.make_aware(dt.datetime(2016, 6, 2, 15, 30))
         settings = PlantSetting.objects.latest('timestamp')
@@ -919,6 +936,23 @@ class GetDayStatsThreeShiftsDept(TestCase):
 
         expected_hpv = 0
         expected_mh = 160
+
+        for dept in dept_list:
+            if dept == 'OTHER':
+                expected_hpv = 0
+                expected_mh = 0
+            self.assertEqual(get_dept_day_stats(hpv_dict, now, dept),
+                            (expected_hpv, expected_mh))
+
+    def test_get_dept_day_stats_second_shift_no_api_entries(self):
+        now = timezone.make_aware(dt.datetime(2016, 6, 2, 15, 30))
+        settings = PlantSetting.objects.latest('timestamp')
+        hpv_dict = tc.shift_2_hpv_dict
+
+        dept_list = ['CIW', 'FCB', 'PNT', 'PCH', 'FCH', 'DAC', 'MAINT', 'QA', 'MAT', 'OTHER']
+
+        expected_hpv = 10
+        expected_mh = 10
 
         for dept in dept_list:
             if dept == 'OTHER':
@@ -974,6 +1008,22 @@ class GetDayStatsTwoShiftsDept(TestCase):
 
         expected_hpv = 0
         expected_mh = 80
+
+        for dept in dept_list:
+            if dept == 'OTHER':
+                expected_hpv = 0
+                expected_mh = 0
+            self.assertEqual(get_dept_day_stats(hpv_dict, now, dept),
+                            (expected_hpv, expected_mh))
+
+    def test_get_dept_day_stats_second_shift_no_api_entries(self):
+        now = timezone.make_aware(dt.datetime(2016, 6, 2, 15, 30))
+        settings = PlantSetting.objects.latest('timestamp')
+        hpv_dict = tc.shift_2_hpv_dict
+        dept_list = ['CIW', 'FCB', 'PNT', 'PCH', 'FCH', 'DAC', 'MAINT', 'QA', 'MAT', 'OTHER']
+
+        expected_hpv = 10
+        expected_mh = 10
 
         for dept in dept_list:
             if dept == 'OTHER':

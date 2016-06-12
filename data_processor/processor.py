@@ -280,10 +280,12 @@ def get_dept_day_stats(hpv_dict, now, dept):
             return cur_hpv, cur_mh
         elif hpv_dict['shift'] == 1:
             last_shift = all_since_start.filter(shift=3).last()
-            print('last_shift getattr: ', getattr(last_shift, '{}_s_mh'.format(dept)))
-            print(cur_mh)
-            mh = getattr(last_shift, '{}_s_mh'.format(dept)) + cur_mh
-            claims = last_shift.claims_s + cur_claims
+            if last_shift is None:
+                mh = cur_mh
+                claims = cur_claims
+            else:
+                mh = getattr(last_shift, '{}_s_mh'.format(dept)) + cur_mh
+                claims = last_shift.claims_s + cur_claims
             if claims == 0:
                 hpv = 0
             else:
@@ -292,8 +294,24 @@ def get_dept_day_stats(hpv_dict, now, dept):
         elif hpv_dict['shift'] == 2:
             s3 = all_since_start.filter(shift=3).last()
             s1 = all_since_start.filter(shift=1).last()
-            mh = getattr(s3, '{}_s_mh'.format(dept)) + getattr(s1, '{}_s_mh'.format(dept)) + cur_mh
-            claims = s3.claims_s + s1.claims_s + cur_claims
+            if s3 is None:
+                if s1 is None:
+                    hpv = cur_hpv
+                    mh = cur_mh
+                    claims = cur_claims
+                else:
+                    mh = getattr(s3, '{}_s_mh'.format(dept)) + cur_mh
+                    claims = s3.claims_s + cur_claims
+            elif s1 is None:
+                if s3 is None:
+                    mh = cur_mh
+                    claims = cur_claims
+                else:
+                    mh = getattr(s1, '{}_s_mh'.format(dept)) + cur_mh
+                    claims = s1.claims_s + cur_claims
+            else:
+                mh = getattr(s3, '{}_s_mh'.format(dept)) + getattr(s1, '{}_s_mh'.format(dept)) + cur_mh
+                claims = s3.claims_s + s1.claims_s + cur_claims
             if claims == 0:
                 hpv = 0
             else:
@@ -356,7 +374,6 @@ def get_day_stats(hpv_dict, now):
             s3 = all_since_start.filter(shift=3).last()
             s1 = all_since_start.filter(shift=1).last()
             if s3 is None:
-                print("S3 is None.")
                 if s1 is None:
                     mh = cur_mh
                     claims = cur_claims
