@@ -53,9 +53,8 @@ def process_date(date_string):
     if date_string == "NULL":
         return None
     else:
-        with timezone.override(tz_name):
-            date_object = timezone.make_aware(
-                                              datetime.strptime(date_string,
-                                                                csv_dt_format)
-                                              )
+        date_object = timezone.make_aware(
+                                          datetime.strptime(date_string,
+                                                            csv_dt_format)
+                                          )
         return date_object
