@@ -66,6 +66,7 @@ def get_new_hpv_data():
     return "Wrote to API"
 
 
+
 """
 Finds the current shift and its start time to pass on to the functions that calculate hpv by department and shift
 
