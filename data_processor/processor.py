@@ -193,6 +193,7 @@ def get_day_hpv_dict(hpv_dict, now):
     hpv_dict.update(shift_dict)
     full_dict.update(shift_dict)
     print('FULL DICT:', full_dict)
+
     plant_d_hpv, plant_d_mh, claims_d = get_day_stats(hpv_dict, now)
     print("plant_d_hpv, plant_d_mh, claims_d= ", plant_d_hpv, plant_d_mh, claims_d)
 
@@ -272,7 +273,7 @@ def get_dept_day_stats(hpv_dict, now, dept):
     cur_hpv = hpv_dict[dept]['hpv']
     cur_mh = hpv_dict[dept]['mh']
     cur_claims = hpv_dict['claims_for_range']
-    print("cur_mh: ", cur_mh)
+    # print("cur_mh: ", cur_mh)
 
     if plant_settings.num_of_shifts == 3:
         if hpv_dict['shift'] == 3:
