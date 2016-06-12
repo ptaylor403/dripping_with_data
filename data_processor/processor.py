@@ -340,18 +340,39 @@ def get_day_stats(hpv_dict, now):
             return cur_hpv, cur_mh, cur_claims
         elif hpv_dict['shift'] == 1:
             last_shift = all_since_start.filter(shift=3).last()
-            mh = last_shift.PLANT_s_mh + cur_mh
-            claims = last_shift.claims_s + cur_claims
-            if claims == 0:
-                hpv = 0
+            if last_shift is None:
+                hpv = cur_hpv
+                mh = cur_mh
+                claims = cur_claims
             else:
-                hpv = mh/claims
+                mh = last_shift.PLANT_s_mh + cur_mh
+                claims = last_shift.claims_s + cur_claims
+                if claims == 0:
+                    hpv = 0
+                else:
+                    hpv = mh/claims
             return hpv, mh, claims
         elif hpv_dict['shift'] == 2:
             s3 = all_since_start.filter(shift=3).last()
             s1 = all_since_start.filter(shift=1).last()
-            mh = s3.PLANT_s_mh + s1.PLANT_s_mh + cur_mh
-            claims = s3.claims_s + s1.claims_s + cur_claims
+            if s3 is None:
+                print("S3 is None.")
+                if s1 is None:
+                    mh = cur_mh
+                    claims = cur_claims
+                else:
+                    mh = s1.PLANT_s_mh + cur_mh
+                    claims = s1.claims_s + cur_claims
+            elif s1 is None:
+                if s3 is None:
+                    mh = cur_mh
+                    claims = cur_claims
+                else:
+                    mh = s3.PLANT_s_mh + cur_mh
+                    claims = s3.claims_s + cur_claims
+            else:
+                mh = s3.PLANT_s_mh + s1.PLANT_s_mh + cur_mh
+                claims = s3.claims_s + s1.claims_s + cur_claims
             if claims == 0:
                 hpv = 0
             else:
