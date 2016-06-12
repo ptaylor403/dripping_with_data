@@ -284,14 +284,20 @@ def get_dept_day_stats(hpv_dict, now, dept):
             print(cur_mh)
             mh = getattr(last_shift, '{}_s_mh'.format(dept)) + cur_mh
             claims = last_shift.claims_s + cur_claims
-            hpv = mh/claims
+            if claims == 0:
+                hpv = 0
+            else:
+                hpv = mh/claims
             return hpv, mh
         elif hpv_dict['shift'] == 2:
             s3 = all_since_start.filter(shift=3).last()
             s1 = all_since_start.filter(shift=1).last()
             mh = getattr(s3, '{}_s_mh'.format(dept)) + getattr(s1, '{}_s_mh'.format(dept)) + cur_mh
             claims = s3.claims_s + s1.claims_s + cur_claims
-            hpv = mh/claims
+            if claims == 0:
+                hpv = 0
+            else:
+                hpv = mh/claims
             return hpv, mh
     elif plant_settings.num_of_shifts == 2:
         if hpv_dict['shift'] == 1:
@@ -336,14 +342,20 @@ def get_day_stats(hpv_dict, now):
             last_shift = all_since_start.filter(shift=3).last()
             mh = last_shift.PLANT_s_mh + cur_mh
             claims = last_shift.claims_s + cur_claims
-            hpv = mh/claims
+            if claims == 0:
+                hpv = 0
+            else:
+                hpv = mh/claims
             return hpv, mh, claims
         elif hpv_dict['shift'] == 2:
             s3 = all_since_start.filter(shift=3).last()
             s1 = all_since_start.filter(shift=1).last()
             mh = s3.PLANT_s_mh + s1.PLANT_s_mh + cur_mh
             claims = s3.claims_s + s1.claims_s + cur_claims
-            hpv = mh/claims
+            if claims == 0:
+                hpv = 0
+            else:
+                hpv = mh/claims
             return hpv, mh, claims
     elif plant_settings.num_of_shifts == 2:
         if hpv_dict['shift'] == 1:
@@ -357,7 +369,10 @@ def get_day_stats(hpv_dict, now):
             else:
                 mh = float(last_shift.PLANT_s_mh) + cur_mh
                 claims = last_shift.claims_s + cur_claims
-                hpv = mh/claims
+                if claims == 0:
+                    hpv = 0
+                else:
+                    hpv = mh/claims
             return hpv, mh, claims
     else:
         return cur_hpv, cur_mh, cur_claims
