@@ -10,18 +10,27 @@ jQuery(function($) {
       return 0;
   };
 
-  var datasets = [{key: "PLANT_d_hpv", label: "Plant Day HPV"},
-                  {key: "CIW_d_hpv", label: 'CIW Day HPV'},
-                  {key: "FCB_d_hpv", label: 'FCB Day HPV'}];
+  var datasets = [{day: "PLANT_d_hpv", shift: "PLANT_s_hpv", label: "Plant"},
+                  {day: "CIW_d_hpv", shift: "CIW_s_hpv", label: 'CIW'},
+                  {day: "FCB_d_hpv", shift: "FCB_s_hpv",label: 'FCB'},
+                  {day: "PNT_d_hpv", shift: "PNT_s_hpv",label: 'PNT'},
+                  {day: "FCB_d_hpv", shift: "FCB_s_hpv",label: 'FCB'},
+                  {day: "PCH_d_hpv", shift: "PCH_s_hpv",label: 'PCH'},
+                  {day: "FCH_d_hpv", shift: "FCH_s_hpv",label: 'FCH'},
+                  {day: "DAC_d_hpv", shift: "DAC_s_hpv",label: 'DAC'},
+                  {day: "MAINT_d_hpv", shift: "MAINT_s_hpv",label: 'MAINT'},
+                  {day: "QA_d_hpv", shift: "QA_s_hpv",label: 'QA'},
+                  {day: "MAT_d_hpv", shift: "MAT_s_hpv",label: 'MAT'},];
   var detailLevel = [{query: "/api/hpv/?days=1&format=json", label: "Day"},
                      {query: "/api/hpv/?days=7&format=json", label: 'Week'},
                      {query: "/api/hpv/?days=21&format=json", label: 'Month'}];
 
   var currentDataName = "PLANT_d_hpv"
   var currentQuery = "/api/hpv/?days=7&format=json"
-  /*
+
+  /***********************************
     Line Graph
-  */
+  ************************************/
 
   var lineChart = (function() {
       // Set the dimensions of the canvas / graph
@@ -54,36 +63,90 @@ jQuery(function($) {
               .attr("transform",
                     "translate(" + margin.left + "," + margin.top + ")");
 
+      var parseDate = d3.time.format("%Y-%m-%dT%H:%M:%SZ").parse;
+
+      // create x axis grid
+      function make_x_axis() {
+          return d3.svg.axis()
+              .scale(x)
+              .orient("bottom")
+              .ticks(5)
+          }
+
+      // create y axis grid
+      function make_y_axis() {
+          return d3.svg.axis()
+              .scale(y)
+              .orient("left")
+              .ticks(5)
+          }
+
       // Get the data
-      var lineGraph = function(key) {
+      var lineGraph = function(day) {
         d3.json('/api/hpv/?days=7&format=json',
         function(error, data) {
 
-          // setup and order data
+          // Get dataset
+          var dataset = datasets.filter(function(dataset) {
+              if (dataset.day == day) {
+                  return true;
+              }
+          })[0];
+
+          var shift = dataset.shift;
+
+          // Setup data
           data.forEach(function(d){
-              d.timestamp = new Date(d.timestamp);
-              d[key] = +d[key];
+              d.timestamp = parseDate(d.timestamp);
+              d[day] = +d[day];
+              d[shift] = +d[shift];
           });
 
-          // sort timestamp to most recent
+          // Sort timestamp to most recent
           data.sort(timeSort);
 
           // Define the line
           var valueline = d3.svg.line()
-              .interpolate("basis")
               .x(function(d) { return x(d.timestamp); })
-              .y(function(d) { return y(d[key]); });
+              .y(function(d) { return y(d[day]); });
+
+          var valueline2 = d3.svg.line()
+              .x(function(d) { return x(d.timestamp); })
+              .y(function(d) { return y(d[shift]); });
 
           // Scale the range of the data
           x.domain(d3.extent(data, function(d) { return d.timestamp; }));
-          y.domain([0, d3.max(data, function(d) { return d[key]; })]);
+          y.domain([0, d3.max(data, function(d) { return Math.max(d[day], d[shift]); })]);
           // var yDomain = d3.extent(data, function(d) { return d[key]; });
           // y.domain(yDomain);
 
-          // Add the valueline path.
+          // Add the valueline path
           svg.append("path")
               .attr("class", "line")
               .attr("d", valueline(data));
+
+          // Add the valueline2 path
+          svg.append("path")
+              .attr("class", "line")
+              .style("stroke", "orange")
+              .style("stroke-dasharray", ("3, 3"))
+              .attr("d", valueline2(data));
+
+          // create grids for linegraph
+          svg.append("g")
+            .attr("class", "grid")
+            .attr("transform", "translate(0," + height + ")")
+            .call(make_x_axis()
+                .tickSize(-height, 0, 0)
+                .tickFormat("")
+            )
+
+          svg.append("g")
+            .attr("class", "grid")
+            .call(make_y_axis()
+                .tickSize(-width, 0, 0)
+                .tickFormat("")
+            )
 
           // Add the X Axis
           svg.append("g")
@@ -114,13 +177,6 @@ jQuery(function($) {
               .style("text-anchor", "middle")
               .text("HPV");
 
-          // Get label
-          var getLabel = datasets.filter(function(getLabel) {
-              if (getLabel.key == key) {
-                  return true;
-              }
-          })[0];
-
           // Add title
           svg.append("text")
               .classed('title', true)
@@ -129,7 +185,7 @@ jQuery(function($) {
               // .attr("y", 0 - height)
               .attr("text-anchor", "middle")
               .style("font-size", "16px")
-              .text(getLabel.label + " vs Date");
+              .text(dataset.label + " vs Date");
 
           // line transition or animation
           var dateline = d3.select('#line')
@@ -140,42 +196,61 @@ jQuery(function($) {
         })
       };
 
-      var updateLineData = function(query, key) {
+      /*********
+      Update line graph - remove old line and update new information/line
+      **********/
+      var updateLineData = function(query, day) {
         d3.json(query,
         function(error, data) {
 
-          data.forEach(function(d){
-              d.timestamp = new Date(d.timestamp);
-              d[key] = +d[key];
-          });
-          data.sort(timeSort);
-
-          // Define the line
-          var valueline = d3.svg.line()
-              .interpolate("basis")
-              .x(function(d) { return x(d.timestamp); })
-              .y(function(d) { return y(d[key]); });
-
-          // Scale the range of the data
-          x.domain(d3.extent(data, function(d) { return d.timestamp; }));
-          y.domain([0, d3.max(data, function(d) { return d[key]; })]);
-
           // Get dataset
-          var getLabel = datasets.filter(function(getLabel) {
-              if (getLabel.key == key) {
+          var dataset = datasets.filter(function(dataset) {
+              if (dataset.day == day) {
                   return true;
               }
           })[0];
 
+          var shift = dataset.shift;
+
+          data.forEach(function(d){
+              d.timestamp = parseDate(d.timestamp);
+              d[day] = +d[day];
+              d[shift] = +d[shift];
+          });
+
+          data.sort(timeSort);
+
+          // update lines
+          var valueline = d3.svg.line()
+              .x(function(d) { return x(d.timestamp); })
+              .y(function(d) { return y(d[shift]); });
+
+          // var valueline2 = d3.svg.line()
+          //     .x(function(d) { return x(d.timestamp); })
+          //     .y(function(d) { return y(d[shift]); });
+
+          // Scale the range of the data
+          x.domain(d3.extent(data, function(d) { return d.timestamp; }));
+          y.domain([0, d3.max(data, function(d) { return d[day]; })]);
+
+          // Update the x axis
+          svg.select(".x.axis")
+              .call(xAxis);
+
+          // update the y axis
+          svg.select(".y.axis")
+              .call(yAxis);
+
           // Update title
           svg.select("text.title")
-              .text(getLabel.label + " vs Date");
+              .text(dataset.label + " vs Date");
 
-          var dateline = d3.select('#line')
+          d3.select('#line')
               .transition()
               .select('.line')
               .duration(750)
               .attr("d", valueline(data));
+
 
         }) // function close
       }; // updateLineData close
@@ -196,7 +271,7 @@ jQuery(function($) {
         gridSize = Math.floor(width / 24),
         legendElementWidth = gridSize*2,
         buckets = 9,
-        colors = ["#ffffd9","#edf8b1","#c7e9b4","#7fcdbb","#41b6c4","#1d91c0","#225ea8","#253494","#081d58"], // alternatively colorbrewer.YlGnBu[9]
+        colors = ["#ffffd9","#edf8b1","#c7e9b4","#7fcdbb","#41b6c4","#1d91c0","#225ea8","#253494","#081d58"],
         days = ["Mo", "Tu", "We", "Th", "Fr", "Sa", "Su"],
         times = ["1a", "2a", "3a", "4a", "5a", "6a", "7a", "8a", "9a", "10a", "11a", "12p", "1p", "2p", "3p", "4p", "5p", "6p", "7p", "8p", "9p", "10p", "11p", "12a"];
 
@@ -227,7 +302,7 @@ jQuery(function($) {
           .attr("class", function(d, i) { return ((i >= 5 && i <= 12) ? "timeLabel mono axis axis-worktime" : "timeLabel mono axis"); });
 
     // Create heatmap
-    var heatmapChart = function(key) {
+    var heatmapChart = function(day) {
       d3.json('/api/hpv?format=json',
       function(error, data) {
         var heatmapData = {};
@@ -236,13 +311,13 @@ jQuery(function($) {
           var times = new Date(timestamp); // get date object
           var dayOfWeek = times.getDay() + 1; // get day of week 0-7
           var hourOfDay = times.getHours(); // get hour of day
-          if (!heatmapData[dayOfWeek]) { // create day of week if not there
+          if (!heatmapData[dayOfWeek]) { // create day of week if its not there
             heatmapData[dayOfWeek] = {};
           }
           if (!heatmapData[dayOfWeek][hourOfDay]) { // create hour of day if not in dictionary
             heatmapData[dayOfWeek][hourOfDay] = [];
           }
-          heatmapData[dayOfWeek][hourOfDay].push(parseFloat(data[i][key])); // append to dictionary
+          heatmapData[dayOfWeek][hourOfDay].push(parseFloat(data[i][day])); // append to dictionary
         }
 
         // get average of value per hour
@@ -261,7 +336,7 @@ jQuery(function($) {
           }
         }
 
-        // format new dataset
+        // format dataset to
         var newHeatMapData = []
         for (day in heatmapData) {
           for (hour in heatmapData[day]) {
@@ -283,7 +358,7 @@ jQuery(function($) {
         cards.append("title");
 
         cards.enter().append("rect")
-            .attr("x", function(d) { return (d.hour - 1) * gridSize; })
+            .attr("x", function(d) { return (d.hour) * gridSize; })
             .attr("y", function(d) { return (d.day - 1) * gridSize; })
             .attr("rx", 4)
             .attr("ry", 4)
@@ -345,9 +420,9 @@ jQuery(function($) {
       .attr("class", "btn btn-default")
       .on("click", function(d) {
         // update charts with new data
-        currentDataName = d.key
-        heatMap.heatmap(d.key);
-        lineChart.updateLineData(currentQuery, d.key);
+        currentDataName = d.day
+        heatMap.heatmap(d.day);
+        lineChart.updateLineData(currentQuery, d.day);
       });
 
   detailLevelPicker.enter()
