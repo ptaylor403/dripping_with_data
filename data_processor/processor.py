@@ -39,12 +39,6 @@ def get_new_hpv_data():
         print("No claims in the database.")
         return
 
-    need_to_write = now - last_api_write > dt.timedelta(minutes=15)
-    end_first = plant_settings.first_shift + dt.timedelta(hours=8)
-    end_second = plant_settings.second_shift + dt.timedelta(hours=8)
-    end_third = plant_settings.third_shift + dt.timedelta(hours=8)
-    within_5 = dt.timedelta(minutes=time_between)
-    near_shift_end = end_first - now < within_5 or end_second - now < within_5 or end_third - now < within_5
 
     # Check for the last entry to the processed data table. Escape if no new claim since last entry. Errors include: No objects for the query - continues to writing logic.
     try:
@@ -52,6 +46,19 @@ def get_new_hpv_data():
         last_api_write = HPVATM.objects.filter(timestamp__lte=now)
         last_api_write = last_api_write.latest('timestamp')
         print("THIS IS WHAT WAS FOUND IN API TABLE TIMESTAMP ", last_api_write.timestamp)
+        need_to_write = now - last_api_write.timestamp > dt.timedelta(minutes=time_between)
+
+        end_first = dt.datetime.combine(now.date(), plant_settings.first_shift) + dt.timedelta(hours=8)
+        end_first = timezone.make_aware(end_first)
+
+        end_second = dt.datetime.combine(now.date(), plant_settings.second_shift) + dt.timedelta(hours=8)
+        end_second = timezone.make_aware(end_second)
+
+        end_third = dt.datetime.combine(now.date(), plant_settings.third_shift) + dt.timedelta(hours=8)
+        end_third = timezone.make_aware(end_third)
+
+        within_5 = dt.timedelta(minutes=5)
+        near_shift_end = end_first - now < within_5 or end_second - now < within_5 or end_third - now < within_5
         if last_claim.TS_LOAD <= last_api_write.timestamp:
             if need_to_write or near_shift_end:
                 print("It's been a while since an api entry was made or it is near the end of a shift. Recording hpv.")
@@ -60,6 +67,7 @@ def get_new_hpv_data():
                 return
     except Exception as e:
         print("No objects in processed table. Writing.  ", e)
+        need_to_write = True
 
     # Call function to calc hpv by dept for the current shift.
     hpv_dict = get_hpv_snap(now)
@@ -224,71 +232,71 @@ def get_day_hpv_dict(hpv_dict, now):
 
     plant_d_hpv, plant_d_mh, claims_d = get_day_stats(hpv_dict, now)
     print("plant_d_hpv, plant_d_mh, claims_d= ", plant_d_hpv, plant_d_mh, claims_d)
+    with timezone.override("US/Eastern"):
+        full_hpv_dict = {
+            'CIW_s_hpv': hpv_dict['CIW']['hpv'],
+            'CIW_s_mh': hpv_dict['CIW']['mh'],
+            'CIW_s_ne': hpv_dict['CIW']['ne'],
+            'CIW_d_hpv': dept_values[0][0],
+            'CIW_d_mh': dept_values[0][1],
+            'FCB_s_hpv': hpv_dict['FCB']['hpv'],
+            'FCB_s_mh': hpv_dict['FCB']['mh'],
+            'FCB_s_ne': hpv_dict['FCB']['ne'],
+            'FCB_d_hpv': dept_values[1][0],
+            'FCB_d_mh': dept_values[1][1],
+            'PNT_s_hpv': hpv_dict['PNT']['hpv'],
+            'PNT_s_mh': hpv_dict['PNT']['mh'],
+            'PNT_s_ne': hpv_dict['PNT']['ne'],
+            'PNT_d_hpv': dept_values[2][0],
+            'PNT_d_mh': dept_values[2][1],
+            'PCH_s_hpv': hpv_dict['PCH']['hpv'],
+            'PCH_s_mh': hpv_dict['PCH']['mh'],
+            'PCH_s_ne': hpv_dict['PCH']['ne'],
+            'PCH_d_hpv': dept_values[3][0],
+            'PCH_d_mh': dept_values[3][1],
+            'FCH_s_hpv': hpv_dict['FCH']['hpv'],
+            'FCH_s_mh': hpv_dict['FCH']['mh'],
+            'FCH_s_ne': hpv_dict['FCH']['ne'],
+            'FCH_d_hpv': dept_values[4][0],
+            'FCH_d_mh': dept_values[4][1],
+            'DAC_s_hpv': hpv_dict['DAC']['hpv'],
+            'DAC_s_mh': hpv_dict['DAC']['mh'],
+            'DAC_s_ne': hpv_dict['DAC']['ne'],
+            'DAC_d_hpv': dept_values[5][0],
+            'DAC_d_mh': dept_values[5][1],
+            'MAINT_s_hpv': hpv_dict['MAINT']['hpv'],
+            'MAINT_s_mh': hpv_dict['MAINT']['mh'],
+            'MAINT_s_ne': hpv_dict['MAINT']['ne'],
+            'MAINT_d_hpv': dept_values[6][0],
+            'MAINT_d_mh': dept_values[6][1],
+            'QA_s_hpv': hpv_dict['QA']['hpv'],
+            'QA_s_mh': hpv_dict['QA']['mh'],
+            'QA_s_ne': hpv_dict['QA']['ne'],
+            'QA_d_hpv': dept_values[7][0],
+            'QA_d_mh': dept_values[7][1],
+            'MAT_s_hpv': hpv_dict['MAT']['hpv'],
+            'MAT_s_mh': hpv_dict['MAT']['mh'],
+            'MAT_s_ne': hpv_dict['MAT']['ne'],
+            'MAT_d_hpv': dept_values[8][0],
+            'MAT_d_mh': dept_values[8][1],
+            'OTHER_s_hpv': hpv_dict['OTHER']['hpv'],
+            'OTHER_s_mh': hpv_dict['OTHER']['mh'],
+            'OTHER_s_ne': hpv_dict['OTHER']['ne'],
+            'OTHER_d_hpv': dept_values[9][0],
+            'OTHER_d_mh': dept_values[9][1],
 
-    full_hpv_dict = {
-        'CIW_s_hpv': hpv_dict['CIW']['hpv'],
-        'CIW_s_mh': hpv_dict['CIW']['mh'],
-        'CIW_s_ne': hpv_dict['CIW']['ne'],
-        'CIW_d_hpv': dept_values[0][0],
-        'CIW_d_mh': dept_values[0][1],
-        'FCB_s_hpv': hpv_dict['FCB']['hpv'],
-        'FCB_s_mh': hpv_dict['FCB']['mh'],
-        'FCB_s_ne': hpv_dict['FCB']['ne'],
-        'FCB_d_hpv': dept_values[1][0],
-        'FCB_d_mh': dept_values[1][1],
-        'PNT_s_hpv': hpv_dict['PNT']['hpv'],
-        'PNT_s_mh': hpv_dict['PNT']['mh'],
-        'PNT_s_ne': hpv_dict['PNT']['ne'],
-        'PNT_d_hpv': dept_values[2][0],
-        'PNT_d_mh': dept_values[2][1],
-        'PCH_s_hpv': hpv_dict['PCH']['hpv'],
-        'PCH_s_mh': hpv_dict['PCH']['mh'],
-        'PCH_s_ne': hpv_dict['PCH']['ne'],
-        'PCH_d_hpv': dept_values[3][0],
-        'PCH_d_mh': dept_values[3][1],
-        'FCH_s_hpv': hpv_dict['FCH']['hpv'],
-        'FCH_s_mh': hpv_dict['FCH']['mh'],
-        'FCH_s_ne': hpv_dict['FCH']['ne'],
-        'FCH_d_hpv': dept_values[4][0],
-        'FCH_d_mh': dept_values[4][1],
-        'DAC_s_hpv': hpv_dict['DAC']['hpv'],
-        'DAC_s_mh': hpv_dict['DAC']['mh'],
-        'DAC_s_ne': hpv_dict['DAC']['ne'],
-        'DAC_d_hpv': dept_values[5][0],
-        'DAC_d_mh': dept_values[5][1],
-        'MAINT_s_hpv': hpv_dict['MAINT']['hpv'],
-        'MAINT_s_mh': hpv_dict['MAINT']['mh'],
-        'MAINT_s_ne': hpv_dict['MAINT']['ne'],
-        'MAINT_d_hpv': dept_values[6][0],
-        'MAINT_d_mh': dept_values[6][1],
-        'QA_s_hpv': hpv_dict['QA']['hpv'],
-        'QA_s_mh': hpv_dict['QA']['mh'],
-        'QA_s_ne': hpv_dict['QA']['ne'],
-        'QA_d_hpv': dept_values[7][0],
-        'QA_d_mh': dept_values[7][1],
-        'MAT_s_hpv': hpv_dict['MAT']['hpv'],
-        'MAT_s_mh': hpv_dict['MAT']['mh'],
-        'MAT_s_ne': hpv_dict['MAT']['ne'],
-        'MAT_d_hpv': dept_values[8][0],
-        'MAT_d_mh': dept_values[8][1],
-        'OTHER_s_hpv': hpv_dict['OTHER']['hpv'],
-        'OTHER_s_mh': hpv_dict['OTHER']['mh'],
-        'OTHER_s_ne': hpv_dict['OTHER']['ne'],
-        'OTHER_d_hpv': dept_values[9][0],
-        'OTHER_d_mh': dept_values[9][1],
+            'PLANT_d_hpv': plant_d_hpv,
+            'PLANT_d_mh': plant_d_mh,
+            'PLANT_s_hpv': plant_s_hpv,
+            'PLANT_s_ne': plant_s_ne,
+            'PLANT_s_mh': plant_s_mh,
 
-        'PLANT_d_hpv': plant_d_hpv,
-        'PLANT_d_mh': plant_d_mh,
-        'PLANT_s_hpv': plant_s_hpv,
-        'PLANT_s_ne': plant_s_ne,
-        'PLANT_s_mh': plant_s_mh,
+            'claims_s': hpv_dict['claims_for_range'],
+            'claims_d': claims_d,
 
-        'claims_s': hpv_dict['claims_for_range'],
-        'claims_d': claims_d,
-
-        'shift': hpv_dict['shift'],
-        'timestamp': now,
-    }
+            'shift': hpv_dict['shift'],
+            'timestamp': timezone.localtime(now),
+        }
     print("FULL DICT ", full_hpv_dict)
     return full_hpv_dict
 
