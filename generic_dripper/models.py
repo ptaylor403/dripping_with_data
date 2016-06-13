@@ -205,6 +205,7 @@ class RawPlantActivityDripper(models.Model):
                                       )
     @classmethod
     def update_target(cls, *args, **kwargs):
+        # Do I need to update??
         cls._create_on_target(*args, **kwargs)
         if "stop" in kwargs:
             stop = kwargs['stop']

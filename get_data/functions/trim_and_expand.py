@@ -32,9 +32,11 @@ def expand_attendance(in_path, out_path):
     print(len(employees))
     with open(out_path, 'w') as out_file:
         out_file.write(header)
-        for i in range(-61, -3, 2):
+        for i in range(-61, 0, 1):
+            if (i+4) % 7 <= 1:
+                continue
             shift = dt.timedelta(days=i)
-            for j in [dt.date(2016, 5, 31,), dt.date(2016, 6, 1)]:
+            for j in [dt.date(2016, 6, 1)]:
                 to_add = []
                 for key in employees:
                     # print( j.strftime('%Y-%m-%d'), [x.split(',')[1][:10] for x in employees[key]])
