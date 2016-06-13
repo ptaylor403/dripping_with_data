@@ -10,9 +10,6 @@ jQuery(function($) {
         key: 'Today',
         values: [],
         color: '#4252ce'
-      }, {
-        key: 'shift1',
-        values: [],
       }];
       data.sort(function(a,b){
         if (a.timestamp > b.timestamp) {
