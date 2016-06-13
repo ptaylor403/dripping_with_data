@@ -16,9 +16,11 @@ class DataProcessorConfig(AppConfig):
         print('Entering get_new_hpv_data')
         # get_new_hpv_data()
         lock = filelock.FileLock('locker.txt')
-        if lock.is_locked:
+        lock.timeout = 1
+        try:
+            lock.acquire()
+        except:
             return
-        lock.acquire()
         scheduler = BackgroundScheduler()
         scheduler.add_job(get_new_hpv_data, 'interval', seconds=15)
         scheduler.start()
