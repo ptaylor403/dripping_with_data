@@ -46,6 +46,14 @@ def get_new_hpv_data():
         last_api_write = HPVATM.objects.filter(timestamp__lte=now)
         last_api_write = last_api_write.latest('timestamp')
         print("THIS IS WHAT WAS FOUND IN API TABLE TIMESTAMP ", last_api_write.timestamp)
+
+    except Exception as e:
+        print("No objects in processed table. Writing.  ", e)
+        # Set both to true to catch either or in hpv_dict check
+        need_to_write = True
+        near_shift_end = True
+
+    if last_api_write is not None:
         need_to_write = now - last_api_write.timestamp > dt.timedelta(minutes=time_between)
 
         end_first = dt.datetime.combine(now.date(), plant_settings.first_shift) + dt.timedelta(hours=8)
@@ -65,9 +73,7 @@ def get_new_hpv_data():
             else:
                 print("No new data in API TABLE. Checking again in 5 minutes.")
                 return
-    except Exception as e:
-        print("No objects in processed table. Writing.  ", e)
-        need_to_write = True
+
 
     # Call function to calc hpv by dept for the current shift.
     hpv_dict = get_hpv_snap(now)
