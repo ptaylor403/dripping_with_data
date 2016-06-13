@@ -14,7 +14,6 @@ jQuery(function($) {
                   {day: "CIW_d_hpv", shift: "CIW_s_hpv", label: 'CIW'},
                   {day: "FCB_d_hpv", shift: "FCB_s_hpv",label: 'FCB'},
                   {day: "PNT_d_hpv", shift: "PNT_s_hpv",label: 'PNT'},
-                  {day: "FCB_d_hpv", shift: "FCB_s_hpv",label: 'FCB'},
                   {day: "PCH_d_hpv", shift: "PCH_s_hpv",label: 'PCH'},
                   {day: "FCH_d_hpv", shift: "FCH_s_hpv",label: 'FCH'},
                   {day: "DAC_d_hpv", shift: "DAC_s_hpv",label: 'DAC'},
@@ -37,7 +36,8 @@ jQuery(function($) {
       // Set the dimensions of the canvas / graph
       var margin = {top: 30, right: 50, bottom: 30, left: 50},
           width = 700 - margin.left - margin.right,
-          height = 270 - margin.top - margin.bottom;
+          height = 270 - margin.top - margin.bottom,
+          percent = d3.format('%');
 
       // Set the ranges
       var x = d3.time.scale().range([0, width]);
@@ -95,6 +95,7 @@ jQuery(function($) {
           })[0];
 
           var shift = dataset.shift;
+          console.log(dataset)
 
           // Setup data
           data.forEach(function(d){
@@ -172,8 +173,8 @@ jQuery(function($) {
           svg.append("text")
               .classed('yLabel', true)
               .attr("transform", "rotate(-90)")
-              .attr("x", 0 - (height / 2))
-              // .attr("y", 0 – margin.left)
+              .attr("x", 0 - (height / 2) + 100)
+              .attr("y", 0 )
               .attr("dy", "1em")
               .style("text-anchor", "middle")
               .text("HPV");
@@ -193,6 +194,27 @@ jQuery(function($) {
               .select('.line1')
               .duration(750)
               .attr("d", valueline1(data));
+
+          var legend = svg.selectAll('g')
+              .data(dataset)
+              .enter()
+            .append('g')
+              .attr('class', 'legend');
+
+          legend.append('rect')
+              .attr('x', width - 20)
+              .attr('y', function(d, i){ return i *  20;})
+              .attr('width', 10)
+              .attr('height', 10)
+              .style('fill', function(d) {
+                return color(d.name);
+              });
+
+          legend.append('text')
+              .attr('x', width - 8)
+              .attr('y', function(d, i){ return (i *  20) + 9;})
+              .text(function(d){ return d.name; });
+
         })
       };
 
@@ -442,8 +464,6 @@ jQuery(function($) {
         currentDataName = d.day
         heatMap.heatmap(d.day);
         lineChart.updateLineData(currentQuery, d.day);
-        console.log(currentDataName)
-        console.log(currentQuery)
       });
 
   detailLevelPicker.enter()
@@ -457,6 +477,11 @@ jQuery(function($) {
       lineChart.updateLineData(d.query, currentDataName);
     });
 
+  // highlight active infomation shown
+  $('.btn-default').click(function() {
+      $(this).siblings().removeClass('clicked')
+      $(this).toggleClass('clicked');
+  });
   // reload page every 60 seconds
   // setTimeout(function() {location.reload(true);},6000);
 });

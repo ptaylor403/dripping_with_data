@@ -139,11 +139,12 @@ text.axis-worktime {
 .btn-default {
   margin: 5px;
 }
+.btn.clicked {
+  background: #33a6cc;
+}
+
 
 /*Detail line graph*/
-#line {
-
-}
 #line path {
     stroke: steelblue;
     stroke-width: 2;
@@ -176,4 +177,10 @@ div.tooltip {
 }
 .grid path {
       stroke-width: 0;
+}
+
+.legend {
+    font-size: 16px;
+    font-weight: bold;
+    text-anchor: middle;
 }
