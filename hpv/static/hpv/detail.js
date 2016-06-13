@@ -120,9 +120,26 @@ jQuery(function($) {
           x.domain(d3.extent(data, function(d) { return d.timestamp; }));
           y.domain([0, d3.max(data, function(d) { return Math.max(d[day], d[shift]); })]);
 
+          // create grids for linegraph
+          svg.append("g")
+            .attr("class", "x grid")
+            .attr("transform", "translate(0," + height + ")")
+            .call(make_x_axis()
+                .tickSize(-height, 0, 0)
+                .tickFormat("")
+            )
+
+          svg.append("g")
+            .attr("class", "y grid")
+            .call(make_y_axis()
+                .tickSize(-width, 0, 0)
+                .tickFormat("")
+            )
+
           // Add the valueline path
           svg.append("path")
               .attr("class", "line")
+              .style({"stroke-width": "4px"})
               .attr("d", valueline(data));
 
           // Add the valueline1 path
@@ -171,27 +188,6 @@ jQuery(function($) {
               .style("font-size", "16px")
               .text(dataset.label + " vs Date");
 
-          // create grids for linegraph
-          svg.append("g")
-            .attr("class", "grid")
-            .attr("transform", "translate(0," + height + ")")
-            .call(make_x_axis()
-                .tickSize(-height, 0, 0)
-                .tickFormat("")
-            )
-
-          svg.append("g")
-            .attr("class", "grid")
-            .call(make_y_axis()
-                .tickSize(-width, 0, 0)
-                .tickFormat("")
-            )
-          // line transition or animation
-          // var dateline = d3.select('#line')
-          //     .transition()
-          //     .select('.line')
-          //     .duration(750)
-          //     .attr("d", valueline(data));
           var dateline1 = d3.select('#line')
               .transition()
               .select('.line1')
@@ -248,6 +244,19 @@ jQuery(function($) {
           // Update title
           svg.select("text.title")
               .text(dataset.label + " vs Date");
+
+          // update grid for linegraph
+          svg.select(".x.grid")
+            .call(make_x_axis()
+                .tickSize(-height, 0, 0)
+                .tickFormat("")
+            )
+
+          svg.select(".y.grid")
+            .call(make_y_axis()
+                .tickSize(-width, 0, 0)
+                .tickFormat("")
+            )
 
           d3.select('#line')
               .transition()
@@ -425,7 +434,7 @@ jQuery(function($) {
 
   datasetpicker.enter()
       .append("input")
-      .attr("value", function(d){ return d.label })
+      .attr("value", function(d) { return d.label })
       .attr("type", "button")
       .attr("class", "btn btn-default")
       .on("click", function(d) {
@@ -433,6 +442,8 @@ jQuery(function($) {
         currentDataName = d.day
         heatMap.heatmap(d.day);
         lineChart.updateLineData(currentQuery, d.day);
+        console.log(currentDataName)
+        console.log(currentQuery)
       });
 
   detailLevelPicker.enter()
