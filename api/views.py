@@ -3,6 +3,7 @@ from .models import HPVATM
 from .serializers import HPVSerializer
 from rest_framework import generics, renderers, permissions
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.db.models import Max, Min
 import datetime as dt
 
 
@@ -11,34 +12,25 @@ class HPVAPI(LoginRequiredMixin, generics.ListCreateAPIView):
     serializer_class = HPVSerializer
     login_url = '/login/'
 
-
-    # def get_queryset(self):
-    #     queryset = HPVATM.objects.all()
-    #     day = self.request.query_params.get("day", None)
-    #     week = self.request.query_params.get("startdate", "enddate")
-    #     # day = dt.datetime(2016, 6, 1, 0, 1) # change date to reflect current date
-    #     # enddate = startdate + dt.timedelta(days=7)
-    #     if day is not None:
-    #         day = int(day)
-    #         startdate = dt.datetime(2016, 6, 1, day, 1)
-    #         queryset = queryset.filter(timestamp__gte=startdate, timestamp__lt=startdate + dt.timedelta(days=1))
-    #     elif week is not None:
-    #         week = int(week)
-    #         startdate = dt.datetime(2016, 6, 1, week, 1)
-    #         enddate = startdate + dt.timedelta(days=7)
-    #         queryset = self.queryset.filter(timestamp__range=[startdate, enddate])
-    #     return queryset
-
     def get_queryset(self):
         queryset = HPVATM.objects.all()
-        date = self.request.query_params.get("date", None)
-        if date is not None:
-            date = int(date)
-            date = dt.datetime(2016, 6, date, 0, 1)
-            queryset = queryset.filter(timestamp__gte=date, timestamp__lt=date + dt.timedelta(days=1))
-        return queryset
-    # def get_queryset(self):
-    #     startdate = dt.datetime(2016, 6, 1, 0, 1) # change date to reflect current date
-    #     enddate = startdate + dt.timedelta(days=7)
-    #     queryset = self.queryset.filter(timestamp__range=[startdate, enddate])
-    #     return queryset
+
+        days = self.request.query_params.get('days', None)
+        start = self.request.query_params.get('start', None)
+        end = self.request.query_params.get('end', None)
+        start_time = queryset.aggregate(Min('timestamp'))['timestamp__min']
+        print(start_time)
+        end_time = queryset.aggregate(Max('timestamp'))['timestamp__max']
+        print(end_time)
+        if start is not None:
+            start_time = dt.datetime.fromtimestamp(int(start), dt.timezone.utc)
+        if end is not None:
+            end_time = dt.datetime.fromtimestamp(int(end), dt.timezone.utc)
+        if days is not None:
+            if start is None:
+                start_time = end_time - dt.timedelta(days=int(days))
+            elif end is None:
+                end_time = start_time + dt.timedelta(days=int(days))
+        print(start_time)
+        print(end_time)
+        return queryset.filter(timestamp__gte=start_time, timestamp__lte=end_time).order_by('timestamp')
