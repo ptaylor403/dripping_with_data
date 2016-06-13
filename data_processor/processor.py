@@ -8,16 +8,17 @@ from django.core.exceptions import ObjectDoesNotExist
 import pytz
 
 
-"""
-Checks the server for new data and writes a snapshot of current hpv and other key statistics to the processed data table (api app).
-
-Returns: Nothing
-"""
-
 def get_new_hpv_data():
+    """
+    Checks the server for new data and writes a snapshot of current hpv and other key statistics to the processed data table (api app).
+
+    Returns: Confirmation to console of write or reason why it did not write.
+    """
+    plant_settings = PlantSetting.objects.latest('timestamp')
+
     #TODO take out the delta
     with timezone.override("US/Eastern"):
-        now = timezone.localtime(PlantSetting.objects.last().dripper_start)
+        now = timezone.localtime(plant_settings.dripper_start)
     print("/"*50)
     print("GET NEW HPV DATA")
     print("/"*50)
@@ -45,16 +46,28 @@ def get_new_hpv_data():
         last_api_write = last_api_write.latest('timestamp')
         print("THIS IS WHAT WAS FOUND IN API TABLE TIMESTAMP ", last_api_write.timestamp)
         if last_claim.TS_LOAD <= last_api_write.timestamp:
-            print("No new data in API TABLE. Checking again in 5 minutes.")
-            return
+            need_to_write = now - last_api_write > dt.timedelta(minutes=15)
+            end_first = plant_settings.first_shift + dt.timedelta(hours=8)
+            end_second = plant_settings.second_shift + dt.timedelta(hours=8)
+            end_third = plant_settings.third_shift + dt.timedelta(hours=8)
+            within_5 = dt.timedelta(minutes=15)
+            near_shift_end = end_first - now < within_5 or end_second - now < within_5 or end_third - now < within_5
+            if need_to_write or near_shift_end:
+                print("It's been a while since an api entry was made or it is near the end of a shift. Recording hpv.")
+            else:
+                print("No new data in API TABLE. Checking again in 5 minutes.")
+                return
     except Exception as e:
         print("No objects in processed table. Writing.  ", e)
 
     # Call function to calc hpv by dept for the current shift.
     hpv_dict = get_hpv_snap(now)
     if hpv_dict is None or hpv_dict['claims_for_range'] == 0:
-        print('No HPV_DICT or no claims in dict. Exiting without write.')
-        return
+        if need_to_write or near_shift_end:
+            print("Writing 0 claims for range.")
+        else:
+            print('No HPV_DICT or no claims in dict. Exiting without write.')
+            return
 
     print("COMPLETED HPV DICT FROM FORMULAS: ", hpv_dict)
     print("COMPLETED HPV DICT CLAIMS_FOR_RANGE: ", hpv_dict['claims_for_range'])
@@ -67,13 +80,12 @@ def get_new_hpv_data():
 
 
 
-"""
-Finds the current shift and its start time to pass on to the functions that calculate hpv by department and shift
-
-Returns: Dictionary of department keys containing a dictionary of manhours, number clocked in, and hpv for the current shift.
-"""
-
 def get_hpv_snap(now):
+    """
+    Finds the current shift and its start time to pass on to the functions that calculate hpv by department and shift
+
+    Returns: Dictionary of department keys containing a dictionary of manhours, number clocked in, and hpv for the current shift.
+    """
     print("/"*50)
     print("GET HPV SNAP")
     print("/"*50)
@@ -94,14 +106,13 @@ def get_hpv_snap(now):
     return hpv_dict
 
 
-"""
-Gets the current shift and the time it started. Queries the plant settings to decide.
-
-Returns: shift number and start of shift datetime object
-"""
-
 @timezone.override("US/Eastern")
 def get_shift_info(plant_settings, now):
+    """
+    Gets the current shift and the time it started. Queries the plant settings to decide.
+
+    Returns: shift number and start of shift datetime object
+    """
     #TODO Start of the day is the last time a shift ended yesterday or midnight, > earlier
     print("/"*50)
     print("GET SHIFT INFO")
@@ -168,6 +179,11 @@ def get_shift_info(plant_settings, now):
 
 
 def get_day_hpv_dict(hpv_dict, now):
+    """
+    Calculates the day total hpv and manhours based on current values since shift start added to the last recorded value of the any previous shifts if applicable.
+
+    Returns: Dictionary object to be written to the api.
+    """
     print("/"*50)
     print("GET DAY HPV DICT FUNCTION")
     print("/"*50)
