@@ -60,6 +60,7 @@ TEST_RUNNER = 'django_nose.NoseTestSuiteRunner'
 NOSE_ARGS = [
     '--with-coverage',
     '--cover-package=generic_dripper,hpv,api,crys,plantsettings,data_processor',
+    '--cover-html',
 ]
 
 MIDDLEWARE_CLASSES = (

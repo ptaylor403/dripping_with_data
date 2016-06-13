@@ -44,14 +44,15 @@ def get_new_hpv_data():
         last_api_write = HPVATM.objects.filter(timestamp__lte=now)
         last_api_write = last_api_write.latest('timestamp')
         print("THIS IS WHAT WAS FOUND IN API TABLE TIMESTAMP ", last_api_write.timestamp)
-
+        found_entry = True
     except Exception as e:
         print("No objects in processed table. Writing.  ", e)
         # Set both to true to catch either or in hpv_dict check
         need_to_write = True
         near_shift_end = True
+        found_entry = False
 
-    if last_api_write is not None and last_api_write !=:
+    if found_entry:
         need_to_write = now - last_api_write.timestamp > dt.timedelta(minutes=time_between)
 
         end_first = dt.datetime.combine(now.date(), plant_settings.first_shift) + dt.timedelta(hours=8)
@@ -346,15 +347,14 @@ def get_dept_day_stats(hpv_dict, now, dept):
                     mh = cur_mh
                     claims = cur_claims
                 else:
-                    mh = getattr(s3, '{}_s_mh'.format(dept)) + cur_mh
-                    claims = s3.claims_s + cur_claims
+                    mh = getattr(s1, '{}_s_mh'.format(dept)) + cur_mh
+                    claims = s1.claims_s + cur_claims
             elif s1 is None:
+                mh = getattr(s3, '{}_s_mh'.format(dept)) + cur_mh
+                claims = s3.claims_s + cur_claims
                 if s3 is None:
                     mh = cur_mh
                     claims = cur_claims
-                else:
-                    mh = getattr(s1, '{}_s_mh'.format(dept)) + cur_mh
-                    claims = s1.claims_s + cur_claims
             else:
                 mh = getattr(s3, '{}_s_mh'.format(dept)) + getattr(s1, '{}_s_mh'.format(dept)) + cur_mh
                 claims = s3.claims_s + s1.claims_s + cur_claims

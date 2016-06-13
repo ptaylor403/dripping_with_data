@@ -13,7 +13,7 @@ import random
 from .functions.man_hours_calculations import get_clocked_in, get_emp_man_hours, get_emp_dept
 from .functions.claims_calculations import get_claimed_objects_in_range, get_range_of_claims
 from .functions.process_data_main import get_hpv
-from .processor import get_new_hpv_data, get_shift_info, get_day_start, get_day_stats, get_dept_day_stats, get_day_hpv_dict
+from .processor import get_new_hpv_data, get_shift_info, get_day_start, get_day_stats, get_dept_day_stats, get_day_hpv_dict, delete_old_entries
 
 
 # Create your tests here.
@@ -396,22 +396,7 @@ class HPVCalculations(TestCase):
         self.assertEqual(expected_result, result_dict['PLANT']['hpv'])
 
 
-class GetHPVDataNoClaims(TestCase):
-    def setUp(self):
-        PlantSetting.objects.create(timestamp=timezone.make_aware(dt.datetime(2016, 6, 2, 7, 0)),
-                                    plant_code='017',
-                                    plant_target=55,
-                                    num_of_shifts=2,
-                                    first_shift=dt.time(6,30),
-                                    second_shift=dt.time(14,30),
-                                    dripper_start=dt.datetime(2016, 6, 2, 8, 0))
-
-    def test_get_new_hpv_data_no_claims(self):
-        self.assertEqual(get_new_hpv_data(), None)
-
-
 class GetHPVData(TestCase):
-    @timezone.override("US/Eastern")
     def setUp(self):
 
         RawPlantActivity.objects.create(
@@ -427,16 +412,39 @@ class GetHPVData(TestCase):
             TS_LOAD=timezone.make_aware(dt.datetime(2016, 6, 2, 19, 55)),
         )
 
-        # API entry is at 14:25
-        HPVATM.objects.create(**api_tc.two_shifts_first_shift_api_entry)
-        # API entry is at 22:25
-        HPVATM.objects.create(**api_tc.three_shifts_second_shift_api_entry)
-
     def test_get_new_hpv_data_no_new_claims_recent_entry(self):
+        HPVATM.objects.create(**api_tc.two_shifts_first_shift_api_entry_7_am)
         PlantSetting.objects.create(**ps_tc.default_plant_settings_7_05)
+
         self.assertEqual(get_new_hpv_data(), None)
 
-    # TODO Add tests for 1) Write if 15 min since last, 2) Write if near shift end, 3) write if no objects in api, 4) No claims in db.
+    def test_get_new_hpv_data_no_new_claims_15_min_since_write(self):
+        # API 6/2 @ 7:00
+        HPVATM.objects.create(**api_tc.two_shifts_first_shift_api_entry_7_am)
+        # Now/Plant 6/2 @ 8:00
+        PlantSetting.objects.create(**ps_tc.three_shift_8_am_plant_settings)
+
+        self.assertEqual(get_new_hpv_data(), "Wrote to API")
+
+    def test_get_new_hpv_data_no_new_claims_end_shift_recent_entry(self):
+        # API 6/2 @ 14:25
+        HPVATM.objects.create(**api_tc.two_shifts_first_shift_api_entry)
+        # Now/Plant 6/2 @ 14:27
+        PlantSetting.objects.create(**ps_tc.default_plant_settings_14_27)
+
+        self.assertEqual(get_new_hpv_data(), "Wrote to API")
+
+    def test_get_new_hpv_data_no_api_entries(self):
+        PlantSetting.objects.create(**ps_tc.three_shift_8_am_plant_settings)
+
+        self.assertEqual(get_new_hpv_data(), "Wrote to API")
+
+    def test_get_new_hpv_data_no_claims(self):
+        RawPlantActivity.objects.all().delete()
+        PlantSetting.objects.create(**ps_tc.default_plant_settings_7_05)
+
+        self.assertEqual(get_new_hpv_data(), None)
+
 
 class GetShiftInfoThreeShifts(TestCase):
     def setUp(self):
@@ -974,6 +982,42 @@ class GetDayStatsThreeShiftsDept(TestCase):
             self.assertEqual(get_dept_day_stats(hpv_dict, now, dept),
                             (expected_hpv, expected_mh))
 
+    def test_get_dept_day_stats_second_shift_no_third_shift_api_entry(self):
+        now = timezone.make_aware(dt.datetime(2016, 6, 2, 15, 30))
+        settings = PlantSetting.objects.latest('timestamp')
+        hpv_dict = tc.shift_2_hpv_dict
+        HPVATM.objects.create(**api_tc.three_shifts_first_shift_api_entry)
+
+        dept_list = ['CIW', 'FCB', 'PNT', 'PCH', 'FCH', 'DAC', 'MAINT', 'QA', 'MAT', 'OTHER']
+
+        expected_hpv = 10
+        expected_mh = 90
+
+        for dept in dept_list:
+            if dept == 'OTHER':
+                expected_hpv = 0
+                expected_mh = 0
+            self.assertEqual(get_dept_day_stats(hpv_dict, now, dept),
+                            (expected_hpv, expected_mh))
+
+    def test_get_dept_day_stats_second_shift_no_first_shift_api_entry(self):
+        now = timezone.make_aware(dt.datetime(2016, 6, 2, 15, 30))
+        settings = PlantSetting.objects.latest('timestamp')
+        hpv_dict = tc.shift_2_hpv_dict
+        HPVATM.objects.create(**api_tc.three_shifts_third_shift_api_entry)
+
+        dept_list = ['CIW', 'FCB', 'PNT', 'PCH', 'FCH', 'DAC', 'MAINT', 'QA', 'MAT', 'OTHER']
+
+        expected_hpv = 10
+        expected_mh = 90
+
+        for dept in dept_list:
+            if dept == 'OTHER':
+                expected_hpv = 0
+                expected_mh = 0
+            self.assertEqual(get_dept_day_stats(hpv_dict, now, dept),
+                            (expected_hpv, expected_mh))
+
 
 class GetDayStatsTwoShiftsDept(TestCase):
     def setUp(self):
@@ -1081,3 +1125,20 @@ class GetDayHpvDict(TestCase):
 
         self.assertEqual(get_day_hpv_dict(hpv_dict, now),
                          expected_full_hpv_dict)
+
+
+class DeleteOldEntries(TestCase):
+    def setUp(self):
+        # Deletes after 1 day
+        PlantSetting.objects.create(**ps_tc.default_plant_settings_with_del)
+        # API 6/2 @ 7:00
+        HPVATM.objects.create(**api_tc.two_shifts_first_shift_api_entry_7_am)
+        # API 6/2 @ 14:30
+        HPVATM.objects.create(**api_tc.two_shifts_first_shift_api_entry)
+
+    def test_delete_old_entries(self):
+        now = timezone.make_aware(dt.datetime(2016, 6, 3, 12, 30))
+        plant_settings = PlantSetting.objects.latest('timestamp')
+        delete_old_entries(plant_settings, now)
+
+        self.assertEqual(HPVATM.objects.count(), 1)
