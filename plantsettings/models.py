@@ -9,6 +9,7 @@ class PlantSetting(models.Model):
     plant_code = models.CharField(max_length=3, default="017")
     plant_target = models.IntegerField(default=55)
     num_of_shifts = models.IntegerField(default=2)
+    TAKT_Time = models.IntegerField(default=15)
     first_shift = models.TimeField(default=dt.time(6, 30), null=True, blank=True)
     second_shift = models.TimeField(default=dt.time(14, 30), null=True, blank=True)
     third_shift = models.TimeField(default=dt.time(22, 30), null=True, blank=True)
