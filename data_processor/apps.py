@@ -1,6 +1,7 @@
 from django.apps import AppConfig
 from pytz import utc
 from apscheduler.schedulers.background import BackgroundScheduler
+import filelock
 
 
 class DataProcessorConfig(AppConfig):
@@ -14,6 +15,10 @@ class DataProcessorConfig(AppConfig):
         print("-" * 50)
         print('Entering get_new_hpv_data')
         # get_new_hpv_data()
+        lock = filelock.FileLock('locker.txt')
+        if lock.is_locked:
+            return
+        lock.acquire()
         scheduler = BackgroundScheduler()
         scheduler.add_job(get_new_hpv_data, 'interval', seconds=15)
         scheduler.start()
