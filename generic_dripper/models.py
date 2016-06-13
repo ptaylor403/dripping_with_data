@@ -103,7 +103,11 @@ class RawClockDataDripper(models.Model):
     edit_1_at = models.DateTimeField(null=True)
     edit_2_at = models.DateTimeField(null=True)
     target = RawClockData
-    last_drip = timezone.make_aware(dt.datetime(1, 1, 1, 0, 0))
+    if target.objects.exists():
+        last_drip = max(target.objects.filter(PNCHEVNT_IN__isnull=False).latest('PNCHEVNT_IN').PNCHEVNT_IN,
+                        target.objects.filter(PNCHEVNT_OUT__isnull=False).latest('PNCHEVNT_OUT').PNCHEVNT_OUT)
+    else:
+        last_drip = timezone.make_aware(dt.datetime(1, 1, 1, 0, 0))
 
     @classmethod
     def load_from_target(cls):
@@ -183,7 +187,10 @@ class RawPlantActivityDripper(models.Model):
     TS_LOAD = models.DateTimeField()
     create_at = models.DateTimeField()
     target = RawPlantActivity
-    last_drip = timezone.make_aware(dt.datetime(1, 1, 1, 0, 0))
+    if target.objects.exists():
+        last_drip = target.objects.filter(TS_LOAD__isnull=False).latest('TS_LOAD').TS_LOAD
+    else:
+        last_drip = timezone.make_aware(dt.datetime(1, 1, 1, 0, 0))
 
     @classmethod
     def load_from_target(cls):
@@ -205,7 +212,6 @@ class RawPlantActivityDripper(models.Model):
                                       )
     @classmethod
     def update_target(cls, *args, **kwargs):
-        # Do I need to update??
         cls._create_on_target(*args, **kwargs)
         if "stop" in kwargs:
             stop = kwargs['stop']
