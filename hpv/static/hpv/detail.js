@@ -20,7 +20,8 @@ jQuery(function($) {
                   {day: "DAC_d_hpv", shift: "DAC_s_hpv",label: 'DAC'},
                   {day: "MAINT_d_hpv", shift: "MAINT_s_hpv",label: 'MAINT'},
                   {day: "QA_d_hpv", shift: "QA_s_hpv",label: 'QA'},
-                  {day: "MAT_d_hpv", shift: "MAT_s_hpv",label: 'MAT'},];
+                  {day: "MAT_d_hpv", shift: "MAT_s_hpv",label: 'MAT'}];
+
   var detailLevel = [{query: "/api/hpv/?days=1&format=json", label: "Day"},
                      {query: "/api/hpv/?days=7&format=json", label: 'Week'},
                      {query: "/api/hpv/?days=21&format=json", label: 'Month'}];
@@ -105,48 +106,31 @@ jQuery(function($) {
           // Sort timestamp to most recent
           data.sort(timeSort);
 
-          // Define the line
+          // Define line
           var valueline = d3.svg.line()
               .x(function(d) { return x(d.timestamp); })
               .y(function(d) { return y(d[day]); });
 
-          var valueline2 = d3.svg.line()
+          // Define line1
+          var valueline1 = d3.svg.line()
               .x(function(d) { return x(d.timestamp); })
               .y(function(d) { return y(d[shift]); });
 
           // Scale the range of the data
           x.domain(d3.extent(data, function(d) { return d.timestamp; }));
           y.domain([0, d3.max(data, function(d) { return Math.max(d[day], d[shift]); })]);
-          // var yDomain = d3.extent(data, function(d) { return d[key]; });
-          // y.domain(yDomain);
 
           // Add the valueline path
           svg.append("path")
               .attr("class", "line")
               .attr("d", valueline(data));
 
-          // Add the valueline2 path
+          // Add the valueline1 path
           svg.append("path")
-              .attr("class", "line")
+              .attr("class", "line1")
               .style("stroke", "orange")
               .style("stroke-dasharray", ("3, 3"))
-              .attr("d", valueline2(data));
-
-          // create grids for linegraph
-          svg.append("g")
-            .attr("class", "grid")
-            .attr("transform", "translate(0," + height + ")")
-            .call(make_x_axis()
-                .tickSize(-height, 0, 0)
-                .tickFormat("")
-            )
-
-          svg.append("g")
-            .attr("class", "grid")
-            .call(make_y_axis()
-                .tickSize(-width, 0, 0)
-                .tickFormat("")
-            )
+              .attr("d", valueline1(data));
 
           // Add the X Axis
           svg.append("g")
@@ -187,12 +171,32 @@ jQuery(function($) {
               .style("font-size", "16px")
               .text(dataset.label + " vs Date");
 
+          // create grids for linegraph
+          svg.append("g")
+            .attr("class", "grid")
+            .attr("transform", "translate(0," + height + ")")
+            .call(make_x_axis()
+                .tickSize(-height, 0, 0)
+                .tickFormat("")
+            )
+
+          svg.append("g")
+            .attr("class", "grid")
+            .call(make_y_axis()
+                .tickSize(-width, 0, 0)
+                .tickFormat("")
+            )
           // line transition or animation
-          var dateline = d3.select('#line')
+          // var dateline = d3.select('#line')
+          //     .transition()
+          //     .select('.line')
+          //     .duration(750)
+          //     .attr("d", valueline(data));
+          var dateline1 = d3.select('#line')
               .transition()
-              .select('.line')
+              .select('.line1')
               .duration(750)
-              .attr("d", valueline(data));
+              .attr("d", valueline1(data));
         })
       };
 
@@ -214,7 +218,7 @@ jQuery(function($) {
 
           data.forEach(function(d){
               d.timestamp = parseDate(d.timestamp);
-              d[day] = +d[day];
+              // d[day] = +d[day];
               d[shift] = +d[shift];
           });
 
@@ -223,15 +227,15 @@ jQuery(function($) {
           // update lines
           var valueline = d3.svg.line()
               .x(function(d) { return x(d.timestamp); })
-              .y(function(d) { return y(d[shift]); });
+              .y(function(d) { return y(d[day]); });
 
-          // var valueline2 = d3.svg.line()
-          //     .x(function(d) { return x(d.timestamp); })
-          //     .y(function(d) { return y(d[shift]); });
+          var valueline1 = d3.svg.line()
+              .x(function(d) { return x(d.timestamp); })
+              .y(function(d) { return y(d[shift]); });
 
           // Scale the range of the data
           x.domain(d3.extent(data, function(d) { return d.timestamp; }));
-          y.domain([0, d3.max(data, function(d) { return d[day]; })]);
+          y.domain([0, d3.max(data, function(d) { return d[shift]; })]);
 
           // Update the x axis
           svg.select(".x.axis")
@@ -250,6 +254,12 @@ jQuery(function($) {
               .select('.line')
               .duration(750)
               .attr("d", valueline(data));
+
+          d3.select('#line')
+              .transition()
+              .select('.line1')
+              .duration(750)
+              .attr("d", valueline1(data));
 
 
         }) // function close
