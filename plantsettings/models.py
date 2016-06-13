@@ -11,6 +11,7 @@ class PlantSetting(models.Model):
     num_of_shifts = models.IntegerField(default=2)
     TAKT_Time = models.IntegerField(default=15)
     CHK_SRVR = models.IntegerField(default=5)
+    del_after = models.IntegerField(default=45)
     first_shift = models.TimeField(default=dt.time(6, 30), null=True, blank=True)
     second_shift = models.TimeField(default=dt.time(14, 30), null=True, blank=True)
     third_shift = models.TimeField(default=dt.time(22, 30), null=True, blank=True)

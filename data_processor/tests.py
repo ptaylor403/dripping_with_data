@@ -420,8 +420,7 @@ class GetHPVData(TestCase):
             TS_LOAD=timezone.make_aware(dt.datetime(2016, 6, 2, 6, 55)),
         )
 
-        # LOAD with timestamp after last write, but wrong pool number for
-        # false-positive
+        # timestamp after last write, but wrong pool number for false-positives
         RawPlantActivity.objects.create(
             VEH_SER_NO='HZ3853',
             POOL_CD='01',

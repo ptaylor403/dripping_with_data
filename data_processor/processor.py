@@ -5,7 +5,6 @@ import datetime as dt
 from django.utils import timezone
 from .functions.process_data_main import main
 from django.core.exceptions import ObjectDoesNotExist
-import pytz
 
 
 def get_new_hpv_data():
@@ -39,7 +38,6 @@ def get_new_hpv_data():
         print("No claims in the database.")
         return
 
-
     # Check for the last entry to the processed data table. Escape if no new claim since last entry. Errors include: No objects for the query - continues to writing logic.
     try:
         print("GOING TO API TABLE TO GET LATEST API OBJECT")
@@ -53,7 +51,7 @@ def get_new_hpv_data():
         need_to_write = True
         near_shift_end = True
 
-    if last_api_write is not None:
+    if last_api_write is not None and last_api_write !=:
         need_to_write = now - last_api_write.timestamp > dt.timedelta(minutes=time_between)
 
         end_first = dt.datetime.combine(now.date(), plant_settings.first_shift) + dt.timedelta(hours=8)
@@ -89,10 +87,15 @@ def get_new_hpv_data():
 
     hpv_dict_with_day = get_day_hpv_dict(hpv_dict, now)
 
+    delete_old_entries(plant_settings, now)
     write_data(hpv_dict_with_day)
 
     return "Wrote to API"
 
+
+def delete_old_entries(plant_settings, now):
+    del_after_date = now - dt.timedelta(days=plant_settings.del_after)
+    HPVATM.objects.filter(timestamp__lte=del_after_date).delete()
 
 
 def get_hpv_snap(now):
