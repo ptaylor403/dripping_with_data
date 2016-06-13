@@ -103,10 +103,13 @@ class RawClockDataDripper(models.Model):
     edit_1_at = models.DateTimeField(null=True)
     edit_2_at = models.DateTimeField(null=True)
     target = RawClockData
-    if target.objects.exists():
-        last_drip = max(target.objects.filter(PNCHEVNT_IN__isnull=False).latest('PNCHEVNT_IN').PNCHEVNT_IN,
+    try:
+        if target.objects.exists():
+            last_drip = max(target.objects.filter(PNCHEVNT_IN__isnull=False).latest('PNCHEVNT_IN').PNCHEVNT_IN,
                         target.objects.filter(PNCHEVNT_OUT__isnull=False).latest('PNCHEVNT_OUT').PNCHEVNT_OUT)
-    else:
+        else:
+            last_drip = timezone.make_aware(dt.datetime(1, 1, 1, 0, 0))
+    except:
         last_drip = timezone.make_aware(dt.datetime(1, 1, 1, 0, 0))
 
     @classmethod
@@ -187,9 +190,12 @@ class RawPlantActivityDripper(models.Model):
     TS_LOAD = models.DateTimeField()
     create_at = models.DateTimeField()
     target = RawPlantActivity
-    if target.objects.exists():
-        last_drip = target.objects.filter(TS_LOAD__isnull=False).latest('TS_LOAD').TS_LOAD
-    else:
+    try:
+        if target.objects.exists():
+            last_drip = target.objects.filter(TS_LOAD__isnull=False).latest('TS_LOAD').TS_LOAD
+        else:
+            last_drip = timezone.make_aware(dt.datetime(1, 1, 1, 0, 0))
+    except:
         last_drip = timezone.make_aware(dt.datetime(1, 1, 1, 0, 0))
 
     @classmethod
