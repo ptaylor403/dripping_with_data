@@ -7,6 +7,6 @@ urlpatterns = [
     url(r'^load/$', Load.as_view()),
     url(r'^hpv/$', HPV.as_view(), name="hpv"),
     url(r'^drip/$', Drip.as_view()),
-    url(r'^heatmap/$', heatmap),
+    url(r'^heatmap/', heatmap),
     url(r'^logout/$', logout_view),
 ]

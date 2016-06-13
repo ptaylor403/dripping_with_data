@@ -25,8 +25,16 @@ jQuery(function($) {
                      {query: "/api/hpv/?days=7&format=json", label: 'Week'},
                      {query: "/api/hpv/?days=21&format=json", label: 'Month'}];
 
-  var currentDataName = "PLANT_d_hpv"
-  var currentQuery = "/api/hpv/?days=7&format=json"
+  var url_parts = ($(location).attr("href")).split('/')
+  var dept = ''
+  while (dept == ''){
+    dept = url_parts.pop()
+  }
+  
+  if(dept == 'heatmap'){dept='PLANT'}
+
+  var currentDataName = dept+"_d_hpv";
+  var currentQuery = "/api/hpv/?days=7&format=json";
 
   /***********************************
     Line Graph
@@ -86,7 +94,8 @@ jQuery(function($) {
       var lineGraph = function(day) {
         d3.json('/api/hpv/?days=7&format=json',
         function(error, data) {
-
+          console.log("LINE")
+          console.log(error)
           // Get dataset
           var dataset = datasets.filter(function(dataset) {
               if (dataset.day == day) {
@@ -346,6 +355,8 @@ jQuery(function($) {
     var heatmapChart = function(day) {
       d3.json('/api/hpv?format=json',
       function(error, data) {
+        console.log("heatmap")
+        console.log(error);
         var heatmapData = {};
         for (var i = 0; i < data.length; i++) {
           var timestamp = data[i]["timestamp"];
