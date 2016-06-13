@@ -39,12 +39,6 @@ def get_new_hpv_data():
         print("No claims in the database.")
         return
 
-    need_to_write = now - last_api_write > dt.timedelta(minutes=15)
-    end_first = plant_settings.first_shift + dt.timedelta(hours=8)
-    end_second = plant_settings.second_shift + dt.timedelta(hours=8)
-    end_third = plant_settings.third_shift + dt.timedelta(hours=8)
-    within_5 = dt.timedelta(minutes=time_between)
-    near_shift_end = end_first - now < within_5 or end_second - now < within_5 or end_third - now < within_5
 
     # Check for the last entry to the processed data table. Escape if no new claim since last entry. Errors include: No objects for the query - continues to writing logic.
     try:
@@ -52,6 +46,12 @@ def get_new_hpv_data():
         last_api_write = HPVATM.objects.filter(timestamp__lte=now)
         last_api_write = last_api_write.latest('timestamp')
         print("THIS IS WHAT WAS FOUND IN API TABLE TIMESTAMP ", last_api_write.timestamp)
+        need_to_write = now - last_api_write > dt.timedelta(minutes=15)
+        end_first = plant_settings.first_shift + dt.timedelta(hours=8)
+        end_second = plant_settings.second_shift + dt.timedelta(hours=8)
+        end_third = plant_settings.third_shift + dt.timedelta(hours=8)
+        within_5 = dt.timedelta(minutes=time_between)
+        near_shift_end = end_first - now < within_5 or end_second - now < within_5 or end_third - now < within_5
         if last_claim.TS_LOAD <= last_api_write.timestamp:
             if need_to_write or near_shift_end:
                 print("It's been a while since an api entry was made or it is near the end of a shift. Recording hpv.")
@@ -60,6 +60,7 @@ def get_new_hpv_data():
                 return
     except Exception as e:
         print("No objects in processed table. Writing.  ", e)
+        need_to_write = True
 
     # Call function to calc hpv by dept for the current shift.
     hpv_dict = get_hpv_snap(now)
