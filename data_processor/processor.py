@@ -15,8 +15,8 @@ def get_new_hpv_data():
     Returns: Confirmation to console of write or reason why it did not write.
     """
     plant_settings = PlantSetting.objects.latest('timestamp')
+    time_between = plant_settings.TAKT_Time
 
-    #TODO take out the delta
     with timezone.override("US/Eastern"):
         now = timezone.localtime(plant_settings.dripper_start)
     print("/"*50)
@@ -39,6 +39,13 @@ def get_new_hpv_data():
         print("No claims in the database.")
         return
 
+    need_to_write = now - last_api_write > dt.timedelta(minutes=15)
+    end_first = plant_settings.first_shift + dt.timedelta(hours=8)
+    end_second = plant_settings.second_shift + dt.timedelta(hours=8)
+    end_third = plant_settings.third_shift + dt.timedelta(hours=8)
+    within_5 = dt.timedelta(minutes=time_between)
+    near_shift_end = end_first - now < within_5 or end_second - now < within_5 or end_third - now < within_5
+
     # Check for the last entry to the processed data table. Escape if no new claim since last entry. Errors include: No objects for the query - continues to writing logic.
     try:
         print("GOING TO API TABLE TO GET LATEST API OBJECT")
@@ -46,12 +53,6 @@ def get_new_hpv_data():
         last_api_write = last_api_write.latest('timestamp')
         print("THIS IS WHAT WAS FOUND IN API TABLE TIMESTAMP ", last_api_write.timestamp)
         if last_claim.TS_LOAD <= last_api_write.timestamp:
-            need_to_write = now - last_api_write > dt.timedelta(minutes=15)
-            end_first = plant_settings.first_shift + dt.timedelta(hours=8)
-            end_second = plant_settings.second_shift + dt.timedelta(hours=8)
-            end_third = plant_settings.third_shift + dt.timedelta(hours=8)
-            within_5 = dt.timedelta(minutes=15)
-            near_shift_end = end_first - now < within_5 or end_second - now < within_5 or end_third - now < within_5
             if need_to_write or near_shift_end:
                 print("It's been a while since an api entry was made or it is near the end of a shift. Recording hpv.")
             else:
