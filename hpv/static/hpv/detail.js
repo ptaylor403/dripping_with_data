@@ -14,7 +14,6 @@ jQuery(function($) {
                   {day: "CIW_d_hpv", shift: "CIW_s_hpv", label: 'CIW'},
                   {day: "FCB_d_hpv", shift: "FCB_s_hpv",label: 'FCB'},
                   {day: "PNT_d_hpv", shift: "PNT_s_hpv",label: 'PNT'},
-                  {day: "FCB_d_hpv", shift: "FCB_s_hpv",label: 'FCB'},
                   {day: "PCH_d_hpv", shift: "PCH_s_hpv",label: 'PCH'},
                   {day: "FCH_d_hpv", shift: "FCH_s_hpv",label: 'FCH'},
                   {day: "DAC_d_hpv", shift: "DAC_s_hpv",label: 'DAC'},
@@ -26,16 +25,25 @@ jQuery(function($) {
                      {query: "/api/hpv/?days=7&format=json", label: 'Week'},
                      {query: "/api/hpv/?days=31&format=json", label: 'Month'}];
 
-  var url_parts = ($(location).attr("href")).split('/')
-  var dept = ''
-  while (dept == ''){
-    dept = url_parts.pop()
-  }
+ var url_parts = ($(location).attr("href")).split('/');
+ var dept = '';
 
-  if(dept == 'heatmap'){dept='PLANT'}
+ while (dept == ''){
+   dept = url_parts.pop();
+ }
 
-  var currentDataName = dept+"_d_hpv";
-  var currentQuery = "/api/hpv/?days=7&format=json";
+ dept = dept.toUpperCase();
+
+ // create new array of available departments
+ // then check to see if user selection is in them
+ // if not, set to 'PLANT'
+ var depts = datasets.map(function(d) { return d.label; });
+ if (depts.indexOf(dept) == -1){
+   dept='PLANT';
+ }
+
+ var currentDataName = dept + "_d_hpv";
+ var currentQuery = "/api/hpv/?days=7&format=json";
 
   /***********************************
     Line Graph
@@ -43,9 +51,9 @@ jQuery(function($) {
 
   var lineChart = (function() {
       // Set the dimensions of the canvas / graph
-      var margin = {top: 30, right: 50, bottom: 30, left: 50},
-          width = 700 - margin.left - margin.right,
-          height = 270 - margin.top - margin.bottom;
+      var margin = {top: 30, right: 15, bottom: 47, left: 50},
+          width = 670 - margin.left - margin.right,
+          height = 297 - margin.top - margin.bottom;
 
       // Set the ranges
       var x = d3.time.scale().range([0, width]);
@@ -166,7 +174,7 @@ jQuery(function($) {
           svg.append("text")
               .classed('xLabel', true)
               .attr("x", width / 2)
-              .attr("y", height + margin.bottom)
+              .attr("y", (height + margin.bottom)- 10)
               .style("text-anchor", "middle")
               .text("Date");
 
@@ -177,23 +185,23 @@ jQuery(function($) {
 
           // Add Y Axis Label
           svg.append("text")
-              .classed('yLabel', true)
-              .attr("transform", "rotate(-90)")
-              .attr("x", 0 - (height / 2))
-              // .attr("y", 0 – margin.left)
-              .attr("dy", "1em")
-              .style("text-anchor", "middle")
-              .text("HPV");
+            .classed('yLabel', true)
+            .attr("transform", "rotate(-90)")
+            .attr("x", 0 - (height / 2))
+            .attr("y", 0 - (margin.left / 2)- 20)
+            .attr("dy", "1em")
+            .style("text-anchor", "middle")
+            .text("HPV");
 
-          // Add title
-          svg.append("text")
-              .classed('title', true)
-              .attr("x", (width / 2))
-              .attr("y", 0 - (margin.bottom / 2))
-              // .attr("y", 0 - height)
-              .attr("text-anchor", "middle")
-              .style("font-size", "16px")
-              .text(dataset.label + " vs Date");
+          // // Add title
+          // svg.append("text")
+          //     .classed('title', true)
+          //     .attr("x", (width / 2))
+          //     .attr("y", 0 - (margin.bottom / 2))
+          //     // .attr("y", 0 - height)
+          //     .attr("text-anchor", "middle")
+          //     .style("font-size", "16px")
+          //     .text(dataset.label + " vs Date");
 
           var dateline1 = d3.select('#line')
               .transition()
@@ -248,9 +256,9 @@ jQuery(function($) {
           svg.select(".y.axis")
               .call(yAxis);
 
-          // Update title
-          svg.select("text.title")
-              .text(dataset.label + " vs Date");
+          // // Update title
+          // svg.select("text.title")
+          //     .text(dataset.label + " vs Date");
 
           // update grid for linegraph
           svg.select(".x.grid")
@@ -441,12 +449,13 @@ jQuery(function($) {
     var graphData = [{
       key: 'Today',
       values: [],
-      color: '#4252ce'
+      color: 'steelblue'
     },
     {
       key: 'LastWeek',
       values: [],
-      color: '#ff0000'
+      color: '#ff0000',
+      classed: 'dashed'
     }];
     d3.json('/api/hpv?days=1&format=json',function(error, data){
       todayData=data
@@ -467,7 +476,6 @@ jQuery(function($) {
             graphData[1].values.push([time, data[i]["PLANT_d_hpv"]]);
         };
         // previousData=data
-        console.log(previousData.length)
         nv.addGraph(function() {
         var chart = nv.models.lineChart()
           .useInteractiveGuideline(false)
@@ -482,9 +490,11 @@ jQuery(function($) {
               });
 
           chart.yDomain([0, 140])
+
           chart.yAxis
             .axisLabel('HPV')
-            .tickFormat(d3.format(',f'));
+            .tickFormat(d3.format(',f'))
+            .axisLabelDistance(-10);
 
           d3.select('#week_on_week svg')
             .datum(graphData)
@@ -495,18 +505,25 @@ jQuery(function($) {
 
           return chart;
         });
-
-
-
-
-        })
+      })
     })
-});
+  });
+
+  // highlight active infomation
+  var updateButtons = function(label, parent) {
+    parent.find('.btn-default').removeClass('selected');
+    parent.find('.btn-default.' + label).addClass('selected');
+  };
+
+  // prehighlight buttons
+  updateButtons(dept, $('#dataset-picker'));
+  updateButtons('Week', $('#detaillevel-picker'));
 
   // intialize charts
   heatMap.heatmap(currentDataName);
   lineChart.lineGraph(currentDataName);
   weekOnWeek();
+
   // dataset selection
   var datasetpicker = d3.select("#dataset-picker").selectAll(".btn btn-default")
   .data(datasets);
@@ -518,10 +535,11 @@ jQuery(function($) {
       .append("input")
       .attr("value", function(d) { return d.label })
       .attr("type", "button")
-      .attr("class", "btn btn-default")
+      .attr("class", function(d) { return "btn btn-default " + d.label })
       .on("click", function(d) {
         // update charts with new data
         currentDataName = d.day
+        updateButtons(d.label, $(this).parent());
         heatMap.heatmap(d.day);
         lineChart.updateLineData(currentQuery, d.day);
       });
@@ -530,10 +548,11 @@ jQuery(function($) {
     .append("input")
     .attr("value", function(d){ return d.label })
     .attr("type", "button")
-    .attr("class", "btn btn-default")
+    .attr("class", function(d) { return "btn btn-default " + d.label })
     .on("click", function(d) {
       // update charts with new data
       currentQuery = d.query
+      updateButtons(d.label, $(this).parent());
       lineChart.updateLineData(d.query, currentDataName);
     });
 
