@@ -6,6 +6,8 @@ from get_data.models import RawClockData
 from datetime import timedelta
 import re
 from django.utils import timezone
+from decimal import Decimal
+from decimal import getcontext
 
 
 LOCAL_TIME_ZONE = ''
@@ -39,6 +41,34 @@ def get_clocked_in(start):
             PNCHEVNT_IN__day=start.day,
             PNCHEVNT_OUT__exact=None,
         ).exclude(end_rsn_txt__exact='&out')
+
+
+def get_emp_who_left_during_shift(start, stop):
+    """
+    Filters employees who clocked out before the stop
+    :param start: datetime object the start of time that you want to look at
+    :param stop: datetime object the end of time that you want to look at
+    :return: filtered objects within the start and stop range
+    """
+    with timezone.override("US/Eastern"):
+        present_today = RawClockData.objects.filter(
+            PNCHEVNT_IN__year=start.year,
+            PNCHEVNT_IN__month=start.month,
+            PNCHEVNT_IN__day=start.day,
+
+        )
+        went_on_break = present_today.filter(
+            PNCHEVNT_OUT__lte=stop,
+            end_rsn_txt__exact='&break',
+        )
+
+        left_for_day = present_today.filter(
+            PNCHEVNT_OUT__lte=stop,
+            end_rsn_txt__exact='&out',
+        )
+
+        return went_on_break | left_for_day
+
 
 
 def get_emp_shift(dept_string):
@@ -91,23 +121,29 @@ def get_emp_plant_code(dept_string):
 def get_emp_man_hours(employee, start, stop):
     """
     Calculates the employee's man hours from start to stop.
-    :param employee_object:
-    :param start: DATETIME object in UTC from the beginning of the snapshot
-    :param stop: DATETIME object in UTC from the ending of the snapshot
+    :param employee: employee object
+    :param start: DATETIME timezone aware object from the beginning of the snapshot
+    :param stop: DATETIME timezone aware object from the ending of the snapshot
     :return: float of total employee mh
     """
+    begin, end = set_begin_and_end_for_emp(employee, start, stop)
+    emp_man_hours = ((end - begin).total_seconds())/3600
+    return emp_man_hours
 
-    # initializing man_hours
-    man_hours_time_obj = timedelta(hours=0)
-    # print("Punch event: ", employee.PNCHEVNT_IN)
-    # print("Event TZ:", employee.PNCHEVNT_IN.tzinfo)
-
-    # catching if employee came in late or before start.
+def set_begin_and_end_for_emp(employee, start, stop):
+    """
+    takes in the employee and computes when the begin and stop times for
+     the employee should be as employees clock in and out before/during shifts
+    :param employee: employee object
+    :param start: DATETIME timezone aware object from the start
+    :param stop: DATETIME timezone aware object from the ending
+    :return: the begin and ending results as DATETIME timezone aware objects
+    """
     # If before start, then capture start.
     begin = max(employee.PNCHEVNT_IN, start)
-    # print("Begin: ", begin)
-    man_hours_time_obj += stop - begin
-    man_seconds = man_hours_time_obj.total_seconds()
-    total_man_hours = man_seconds / 3600
+    if employee.PNCHEVNT_OUT:
+        end = min(employee.PNCHEVNT_OUT, stop)
+    else:
+        end = stop
+    return begin, end
 
-    return total_man_hours
