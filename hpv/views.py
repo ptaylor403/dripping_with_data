@@ -111,66 +111,6 @@ class HPV(LoginRequiredMixin, TemplateView):
     template_name = "hpv/hpv2.html"
     login_url = '/login/'
 
-    def _get_plant_history(shift_start_time, today):
-        shift = []
-        # for department in departments:
-        #     dpt_data = [department]
-        for i in range(1,17):
-            print('Hour: ', i)
-            this_dt = datetime.combine(today, dt.time(shift_start_time + i))
-            if this_dt <= NOW:  # datetime.now():
-                num_in = RawClockData.get_clocked_in(start=this_dt).filter(PNCHEVNT_IN__gte=this_dt, PNCHEVNT_IN__lt=this_dt + dt.timedelta(i + 1)).count()
-                shift.append(num_in)
-                print("num_in: ", num_in)
-            else:
-                shift.append("")
-
-        return shift
-
-    def _get_shift_manhour_history(departments, shift_start_time, today):
-        shift = []
-        for department in departments:
-            dpt_data = [department]
-            for i in range(1,9):
-                this_dt = datetime.combine(today, dt.time(shift_start_time + i))
-                start_dt = datetime.combine(today, dt.time(shift_start_time))
-                this_dt = pytz.utc.localize(this_dt)
-                start_dt = pytz.utc.localize(start_dt)
-                if this_dt <= pytz.utc.localize(NOW):  # datetime.now():
-                    dpt_data.append(Attendance.get_manhours_during(start=start_dt, stop=this_dt, department=department))
-                else:
-                    dpt_data.append("")
-
-            shift.append(dpt_data)
-        return shift
-
-    def _get_department_hpv(departments, START_TIME1, START_TIME2, NOW):
-        # Get the department
-        # Get the plant total manhours for each department from the start of the day to NOW
-        # Get the manhours for that department from the start of each shift to NOW or end of shift
-        hpv_data = []
-        start_times = [START_TIME1, START_TIME1, START_TIME2]
-        end_times = [NOW, min(NOW, START_TIME2), min(NOW, (START_TIME2 + dt.timedelta(hours=8)))]
-        truck_totals = []
-        for start_time, end_time in zip(start_times, end_times):
-            truck_totals.append(Complete.claims_by_time(end_time) - Complete.claims_by_time(start_time))
-        for department in departments:
-            department_hpv = [department]
-            for start_time, end_time, truck_total in zip(start_times, end_times, truck_totals):
-                this_dt = end_time
-                start_dt = start_time
-                this_dt = pytz.utc.localize(this_dt)
-                start_dt = pytz.utc.localize(start_dt)
-                if this_dt <= pytz.utc.localize(end_time):  # datetime.now():
-                    dept_manhours = Attendance.get_manhours_during(start=start_dt, stop=this_dt, department=department)
-                    try:
-                        department_hpv.append(dept_manhours / truck_total)
-                    except:
-                        department_hpv.append(0)
-                else:
-                    department_hpv.append('')
-            hpv_data.append(department_hpv)
-        return hpv_data
 
     def get_context_data(self, **kwargs):
         # When during the hour should we do the headcount?
@@ -208,6 +148,7 @@ class HPV(LoginRequiredMixin, TemplateView):
         context['depts'] = OrderedDict(sorted(depts.items(), key=lambda i:keyorder.index(i[0])))
 
         return context
+
 
     def set_day_data(self, current, context, depts):
         depts['CIW']['d_hpv'] = current.CIW_d_hpv
@@ -326,6 +267,7 @@ class Drip(LoginRequiredMixin, TemplateView):
 def logout_view(request):
     logout(request)
     return render(request, 'registration/logout.html')
+
 
 def heatmap(request):
     return render(request, 'hpv/heatmap.html')
