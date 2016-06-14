@@ -29,7 +29,6 @@ def get_new_hpv_data():
         last_claim = RawPlantActivity.objects.filter(POOL_CD='03',
                                                      TS_LOAD__lte=now)
         last_claim = last_claim.latest('TS_LOAD')
-
         print("LAST_CLAIM=", last_claim.VEH_SER_NO, last_claim.TS_LOAD)
     # TODO "server busy" is a placeholder and will need to change when we know the real error message
     # except "ServerBusy":
@@ -48,31 +47,12 @@ def get_new_hpv_data():
     except Exception as e:
         print("No objects in processed table. Writing.  ", e)
         # Set both to true to catch either or in hpv_dict check
-        need_to_write = True
-        near_shift_end = True
         found_entry = False
 
     if found_entry:
-        need_to_write = now - last_api_write.timestamp > dt.timedelta(minutes=time_between)
-
-        end_first = dt.datetime.combine(now.date(), plant_settings.first_shift) + dt.timedelta(hours=8)
-        end_first = timezone.make_aware(end_first)
-
-        end_second = dt.datetime.combine(now.date(), plant_settings.second_shift) + dt.timedelta(hours=8)
-        end_second = timezone.make_aware(end_second)
-
-        end_third = dt.datetime.combine(now.date(), plant_settings.third_shift) + dt.timedelta(hours=8)
-        end_third = timezone.make_aware(end_third)
-
-        within_5 = dt.timedelta(minutes=5)
-        near_shift_end = end_first - now < within_5 or end_second - now < within_5 or end_third - now < within_5
-        if last_claim.TS_LOAD <= last_api_write.timestamp:
-            if need_to_write or near_shift_end:
-                print("It's been a while since an api entry was made or it is near the end of a shift. Recording hpv.")
-            else:
-                print("No new data in API TABLE. Checking again in 5 minutes.")
-                return
-
+        does_need_to_write = need_to_write(now, plant_settings, last_api_write, last_claim)
+        if not does_need_to_write:
+            return
 
     # Call function to calc hpv by dept for the current shift.
     hpv_dict = get_hpv_snap(now)
@@ -92,6 +72,35 @@ def get_new_hpv_data():
     write_data(hpv_dict_with_day)
 
     return "Wrote to API"
+
+def need_to_write(now, plant_settings, last_api_write, last_claim):
+    time_between = plant_settings.TAKT_Time
+
+    need_to_write = now - last_api_write.timestamp > dt.timedelta(minutes=time_between)
+
+    near_shift_end = is_near_shift_end(now, plant_settings)
+
+    if last_claim.TS_LOAD <= last_api_write.timestamp:
+        if need_to_write or near_shift_end:
+            print("It's been a while since an api entry was made or it is near the end of a shift. Recording hpv.")
+            return True
+        else:
+            print("No new data in API TABLE. Checking again in 5 minutes.")
+            return False
+
+def is_near_shift_end(now, plant_settings):
+    end_first = dt.datetime.combine(now.date(), plant_settings.first_shift) + dt.timedelta(hours=8)
+    end_first = timezone.make_aware(end_first)
+
+    end_second = dt.datetime.combine(now.date(), plant_settings.second_shift) + dt.timedelta(hours=8)
+    end_second = timezone.make_aware(end_second)
+
+    end_third = dt.datetime.combine(now.date(), plant_settings.third_shift) + dt.timedelta(hours=8)
+    end_third = timezone.make_aware(end_third)
+
+    within_5 = dt.timedelta(minutes=5)
+
+    return end_first - now < within_5 or end_second - now < within_5 or end_third - now < within_5
 
 
 def delete_old_entries(plant_settings, now):

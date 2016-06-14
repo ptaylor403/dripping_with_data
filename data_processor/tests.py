@@ -13,7 +13,7 @@ import random
 from .functions.man_hours_calculations import get_clocked_in, get_emp_man_hours, get_emp_dept
 from .functions.claims_calculations import get_claimed_objects_in_range, get_range_of_claims
 from .functions.process_data_main import get_hpv
-from .processor import get_new_hpv_data, get_shift_info, get_day_start, get_day_stats, get_dept_day_stats, get_day_hpv_dict, delete_old_entries
+from .processor import get_new_hpv_data, get_shift_info, get_day_start, get_day_stats, get_dept_day_stats, get_day_hpv_dict, delete_old_entries, need_to_write
 
 
 # Create your tests here.
@@ -1142,3 +1142,61 @@ class DeleteOldEntries(TestCase):
         delete_old_entries(plant_settings, now)
 
         self.assertEqual(HPVATM.objects.count(), 1)
+
+class NeedToWrite(TestCase):
+    def setUp(self):
+        PlantSetting.objects.create(**ps_tc.default_plant_settings_20_30)
+
+        RawPlantActivity.objects.create(
+            VEH_SER_NO='HZ3852',
+            POOL_CD='03',
+            TS_LOAD=timezone.make_aware(dt.datetime(2016, 6, 2, 6, 55)),
+        )
+
+    def test_need_to_write_true_and_near_end(self):
+        HPVATM.objects.create(**api_tc.two_shifts_first_shift_api_entry_7_am)
+        now = timezone.make_aware(dt.datetime(2016, 6, 2, 14, 27))
+        plant_settings = PlantSetting.objects.latest('timestamp')
+        last_api_write = HPVATM.objects.filter(timestamp__lte=now)
+        last_api_write = last_api_write.latest('timestamp')
+        last_claim = RawPlantActivity.objects.filter(POOL_CD='03',
+                                                     TS_LOAD__lte=now)
+        last_claim = last_claim.latest('TS_LOAD')
+
+        self.assertEqual(need_to_write(now, plant_settings, last_api_write, last_claim), True)
+
+    def test_need_to_write_true_and_not_near_end(self):
+        HPVATM.objects.create(**api_tc.two_shifts_first_shift_api_entry_7_am)
+        now = timezone.make_aware(dt.datetime(2016, 6, 2, 12, 30))
+        plant_settings = PlantSetting.objects.latest('timestamp')
+        last_api_write = HPVATM.objects.filter(timestamp__lte=now)
+        last_api_write = last_api_write.latest('timestamp')
+        last_claim = RawPlantActivity.objects.filter(POOL_CD='03',
+                                                     TS_LOAD__lte=now)
+        last_claim = last_claim.latest('TS_LOAD')
+
+        self.assertEqual(need_to_write(now, plant_settings, last_api_write, last_claim), True)
+
+    def test_need_to_write_false_and_near_end(self):
+        HPVATM.objects.create(**api_tc.two_shifts_first_shift_api_entry)
+        now = timezone.make_aware(dt.datetime(2016, 6, 2, 14, 27))
+        plant_settings = PlantSetting.objects.latest('timestamp')
+        last_api_write = HPVATM.objects.filter(timestamp__lte=now)
+        last_api_write = last_api_write.latest('timestamp')
+        last_claim = RawPlantActivity.objects.filter(POOL_CD='03',
+                                                     TS_LOAD__lte=now)
+        last_claim = last_claim.latest('TS_LOAD')
+
+        self.assertEqual(need_to_write(now, plant_settings, last_api_write, last_claim), True)
+
+    def test_need_to_write_false_and_not_near_end(self):
+        HPVATM.objects.create(**api_tc.two_shifts_first_shift_api_entry_7_am)
+        now = timezone.make_aware(dt.datetime(2016, 6, 2, 7, 5))
+        plant_settings = PlantSetting.objects.latest('timestamp')
+        last_api_write = HPVATM.objects.filter(timestamp__lte=now)
+        last_api_write = last_api_write.latest('timestamp')
+        last_claim = RawPlantActivity.objects.filter(POOL_CD='03',
+                                                     TS_LOAD__lte=now)
+        last_claim = last_claim.latest('TS_LOAD')
+
+        self.assertEqual(need_to_write(now, plant_settings, last_api_write, last_claim), False)
