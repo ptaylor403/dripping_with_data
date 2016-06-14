@@ -44,7 +44,7 @@
         </tr>
         {% for name, dept in depts.items %}
         <tr>
-          <td class="dept">{{ name }}</td>
+          <td class="dept"><a href="/heatmap/{{ name }}" >{{ name }}</a></td>
           {% if shift_3 %}
           <td>{{ dept.s3_hpv }}</td>
           {% endif %}
@@ -53,6 +53,15 @@
           <td>{{ dept.d_hpv }}</td>
         </tr>
         {% endfor %}
+        <tr>
+          <td class="dept">CLAIMS</td>
+          {% if shift_3 %}
+          <td>{{ s3_claims }}</td>
+          {% endif %}
+          <td>{{ s1_claims }}</td>
+          <td>{{ s2_claims }}</td>
+          <td>{{ claims_d }}</td>
+        </tr>
       </table>
     </div>
 
@@ -220,7 +229,7 @@
   <div class="row">
     <div class="col-xs-12">
       <center>
-      <h3> Total Count: {{ depts.CLAIMS.d_hpv }} |  Total HPV: {{ depts.PLANT.d_hpv|floatformat }}</h3>
+      <h3> Total Count: {{ claims_d }} |  Total HPV: {{ depts.PLANT.d_hpv|floatformat }}</h3>
       </center>
     </div>
   </div>

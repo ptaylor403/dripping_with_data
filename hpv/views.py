@@ -135,8 +135,7 @@ class HPV(LoginRequiredMixin, TemplateView):
             'MAINT': {},
             'QA': {},
             'MAT': {},
-            'PLANT': {},
-            'CLAIMS': {}
+            'PLANT': {}
         }
 
         self.set_day_data(current, context, depts)
@@ -144,7 +143,7 @@ class HPV(LoginRequiredMixin, TemplateView):
         self.set_shift2_data(current, shift2, context, depts)
         self.set_shift3_data(current, shift3, context, depts)
 
-        keyorder = ['CIW', 'FCB', 'PNT', 'PCH', 'FCH', 'DAC', 'MAINT', 'QA', 'MAT', 'PLANT', 'CLAIMS']
+        keyorder = ['CIW', 'FCB', 'PNT', 'PCH', 'FCH', 'DAC', 'MAINT', 'QA', 'MAT', 'PLANT']
         context['depts'] = OrderedDict(sorted(depts.items(), key=lambda i:keyorder.index(i[0])))
 
         return context
@@ -161,7 +160,9 @@ class HPV(LoginRequiredMixin, TemplateView):
         depts['QA']['d_hpv'] = current.QA_d_hpv
         depts['MAT']['d_hpv'] = current.MAT_d_hpv
         depts['PLANT']['d_hpv'] = current.PLANT_d_hpv
-        depts['CLAIMS']['d_hpv'] = current.claims_d
+        claims_d = current.claims_d
+
+        context.update({'claims_d': claims_d})
 
 
     def set_shift1_data(self, current, shift1, context, depts):
@@ -182,7 +183,9 @@ class HPV(LoginRequiredMixin, TemplateView):
         depts['QA']['s1_hpv'] = shift1.QA_s_hpv
         depts['MAT']['s1_hpv'] = shift1.MAT_s_hpv
         depts['PLANT']['s1_hpv'] = shift1.PLANT_s_hpv
-        depts['CLAIMS']['s1_hpv'] = shift1.claims_s
+        s1_claims = shift1.claims_s
+
+        context.update({'s1_claims': s1_claims})
 
 
     def set_shift2_data(self, current, shift2, context, depts):
@@ -203,7 +206,9 @@ class HPV(LoginRequiredMixin, TemplateView):
         depts['QA']['s2_hpv'] = shift2.QA_s_hpv
         depts['MAT']['s2_hpv'] = shift2.MAT_s_hpv
         depts['PLANT']['s2_hpv'] = shift2.PLANT_s_hpv
-        depts['CLAIMS']['s2_hpv'] = shift2.claims_s
+        s2_claims = shift2.claims_s
+
+        context.update({'s2_claims': s2_claims})
 
 
     def set_shift3_data(self, current, shift3, context, depts):
@@ -226,11 +231,11 @@ class HPV(LoginRequiredMixin, TemplateView):
         depts['QA']['s3_hpv'] = shift3.QA_s_hpv
         depts['MAT']['s3_hpv'] = shift3.MAT_s_hpv
         depts['PLANT']['s3_hpv'] = shift3.PLANT_s_hpv
-        depts['CLAIMS']['s3_hpv'] = shift3.claims_s
+        s3_claims = shift3.claims_s
 
         shift_3 = True
 
-        context.update({ 'shift3_total': shift3_total })
+        context.update({ 's1_claims': s1_claims, 'shift3_total': shift3_total })
 
 
 class Drip(LoginRequiredMixin, TemplateView):
