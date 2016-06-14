@@ -9,7 +9,7 @@ from django.core.exceptions import ObjectDoesNotExist
 
 def get_new_hpv_data():
     """
-    Checks the server for new data and writes a snapshot of current hpv and other key statistics to the processed data table (api app).
+    Checks the server for new claim data. Checks that claims exist and that there is no.
 
     Returns: Confirmation to console of write or reason why it did not write.
     """
@@ -141,7 +141,6 @@ def get_shift_info(plant_settings, now):
 
     Returns: shift number and start of shift datetime object
     """
-    #TODO Start of the day is the last time a shift ended yesterday or midnight, > earlier
     print("/"*50)
     print("GET SHIFT INFO")
     print("/"*50)
@@ -162,38 +161,18 @@ def get_shift_info(plant_settings, now):
     first_ot = first_shift_date - dt.timedelta(hours=3, minutes=30)
     first_ot = first_ot.time()
 
-    # Catch time before first shift if there are 3 shifts. Shift will have started the day before.
+    # Catch time before first shift if there are 3 shifts. Shift will have
+    # started the day before.
     if now.time() < plant_settings.first_shift and plant_settings.num_of_shifts == 3:
         print("SHIFTS=3")
-        shift = 3
-        yesterday = (now.date() - dt.timedelta(days=1))
-        start = dt.datetime.combine(yesterday, plant_settings.third_shift)
-        start = timezone.make_aware(start)
-        print("START TIME FOR 3 SHIFTS = ", start)
+        shift, start = get_third_shift_start(now, plant_settings)
     #Catch OT for 2nd shift from the previous day
     elif plant_settings.num_of_shifts == 2 and now.time() < first_ot:
-        shift = 2
-        yesterday = (now.date() - dt.timedelta(days=1))
-        start = dt.datetime.combine(yesterday, plant_settings.second_shift)
-        start = timezone.make_aware(start)
+        shift, start = get_second_shift_start(now, plant_settings)
     # Catch anything after first shift.
     elif now.time() >= plant_settings.first_shift:
         # If more than 1 shift, check if time is in those shift(s).
-        if plant_settings.num_of_shifts >= 2:
-            print("2 or MORE SHIFTS ACTIVATED")
-            if now.time() >= plant_settings.second_shift:
-                print("2nd 3 SHIFT CHECK")
-                shift = 2
-                start = dt.datetime.combine(now.date(), plant_settings.second_shift)
-                start = timezone.make_aware(start)
-                # If 3 shifts, check if time is in that shift.
-                print("2nd 3 SHIFT CHECK")
-                if plant_settings.num_of_shifts == 3:
-                    if now.time() >= plant_settings.third_shift:
-                        shift = 3
-                        start = dt.datetime.combine(now.date(), plant_settings.third_shift)
-                        start = timezone.make_aware(start)
-    # Catch OT for before 1st shift begins
+        shift, start = find_shift_after_first(now, plant_settings, shift, start)
     else:
         shift = 1
         start = dt.datetime.combine(now.date(), dt.time(0, 0))
@@ -204,6 +183,42 @@ def get_shift_info(plant_settings, now):
     print('SHIFT: ', shift)
 
     return start, shift
+
+
+def find_shift_after_first(now, plant_settings, shift, start):
+    if plant_settings.num_of_shifts >= 2:
+        print("2 or MORE SHIFTS ACTIVATED")
+        if now.time() >= plant_settings.second_shift:
+            print("2nd 3 SHIFT CHECK")
+            shift = 2
+            start = dt.datetime.combine(now.date(), plant_settings.second_shift)
+            start = timezone.make_aware(start)
+            # If 3 shifts, check if time is in that shift.
+            print("2nd 3 SHIFT CHECK")
+            if plant_settings.num_of_shifts == 3:
+                if now.time() >= plant_settings.third_shift:
+                    shift = 3
+                    start = dt.datetime.combine(now.date(), plant_settings.third_shift)
+                    start = timezone.make_aware(start)
+    return shift, start
+
+
+def get_third_shift_start(now, plant_settings):
+    shift = 3
+    yesterday = (now.date() - dt.timedelta(days=1))
+    start = dt.datetime.combine(yesterday, plant_settings.third_shift)
+    start = timezone.make_aware(start)
+    print("START TIME FOR 3 SHIFTS = ", start)
+
+    return shift, start
+
+def get_second_shift_start(now, plant_settings):
+    shift = 2
+    yesterday = (now.date() - dt.timedelta(days=1))
+    start = dt.datetime.combine(yesterday, plant_settings.second_shift)
+    start = timezone.make_aware(start)
+
+    return shift, start
 
 
 def get_day_hpv_dict(hpv_dict, now):
