@@ -5,18 +5,18 @@ import datetime as dt
 from django.utils import timezone
 from .functions.process_data_main import main
 from django.core.exceptions import ObjectDoesNotExist
-import pytz
 
 
 def get_new_hpv_data():
     """
-    Checks the server for new data and writes a snapshot of current hpv and other key statistics to the processed data table (api app).
+    Checks the server for new claim data. Checks that claims exist and that there is no.
 
     Returns: Confirmation to console of write or reason why it did not write.
     """
     plant_settings = PlantSetting.objects.latest('timestamp')
     time_between = plant_settings.TAKT_Time
 
+    # TODO break get_now a function
     with timezone.override("US/Eastern"):
         now = timezone.localtime(plant_settings.dripper_start)
     print("/"*50)
@@ -25,56 +25,21 @@ def get_new_hpv_data():
     print("NOW TIME = ", now)
     print("TZ: ", now.tzinfo)
 
-    # Is there a claim in the database? Errors could be: Server locked, no matching result for the query. Errors cause function escape.
-    try:
-        last_claim = RawPlantActivity.objects.filter(POOL_CD='03',
-                                                     TS_LOAD__lte=now)
-        last_claim = last_claim.latest('TS_LOAD')
-
-        print("LAST_CLAIM=", last_claim.VEH_SER_NO, last_claim.TS_LOAD)
-    # TODO "server busy" is a placeholder and will need to change when we know the real error message
-    # except "ServerBusy":
-    #     return print("Server busy. Checking again in 5 minutes.")
-    except ObjectDoesNotExist:
-        print("No claims in the database.")
+    last_claim = get_last_claim(now)
+    if last_claim is None:
         return
 
+    last_api_write, found_entry = get_last_api_write(now)
 
-    # Check for the last entry to the processed data table. Escape if no new claim since last entry. Errors include: No objects for the query - continues to writing logic.
-    try:
-        print("GOING TO API TABLE TO GET LATEST API OBJECT")
-        last_api_write = HPVATM.objects.filter(timestamp__lte=now)
-        last_api_write = last_api_write.latest('timestamp')
-        print("THIS IS WHAT WAS FOUND IN API TABLE TIMESTAMP ", last_api_write.timestamp)
-        need_to_write = now - last_api_write.timestamp > dt.timedelta(minutes=time_between)
-
-        end_first = dt.datetime.combine(now.date(), plant_settings.first_shift) + dt.timedelta(hours=8)
-        end_first = timezone.make_aware(end_first)
-
-        end_second = dt.datetime.combine(now.date(), plant_settings.second_shift) + dt.timedelta(hours=8)
-        end_second = timezone.make_aware(end_second)
-
-        end_third = dt.datetime.combine(now.date(), plant_settings.third_shift) + dt.timedelta(hours=8)
-        end_third = timezone.make_aware(end_third)
-
-        within_5 = dt.timedelta(minutes=5)
-        near_shift_end = end_first - now < within_5 or end_second - now < within_5 or end_third - now < within_5
-        if last_claim.TS_LOAD <= last_api_write.timestamp:
-            if need_to_write or near_shift_end:
-                print("It's been a while since an api entry was made or it is near the end of a shift. Recording hpv.")
-            else:
-                print("No new data in API TABLE. Checking again in 5 minutes.")
-                return
-    except Exception as e:
-        print("No objects in processed table. Writing.  ", e)
-        need_to_write = True
+    if found_entry:
+        does_need_to_write = need_to_write(now, plant_settings, last_api_write, last_claim)
+        if not does_need_to_write:
+            return
 
     # Call function to calc hpv by dept for the current shift.
     hpv_dict = get_hpv_snap(now)
-    if hpv_dict is None or hpv_dict['claims_for_range'] == 0:
-        if need_to_write or near_shift_end:
-            print("Writing 0 claims for range.")
-        else:
+    if no_dict_or_no_claims(hpv_dict):
+        if found_entry and not does_need_to_write:
             print('No HPV_DICT or no claims in dict. Exiting without write.')
             return
 
@@ -83,10 +48,82 @@ def get_new_hpv_data():
 
     hpv_dict_with_day = get_day_hpv_dict(hpv_dict, now)
 
+    delete_old_entries(plant_settings, now)
     write_data(hpv_dict_with_day)
 
-    return "Wrote to API"
+    return True
 
+
+def get_last_claim(now):
+    try:
+        last_claim = RawPlantActivity.objects.filter(POOL_CD='03',
+                                                     TS_LOAD__lte=now)
+        last_claim = last_claim.latest('TS_LOAD')
+        print("LAST_CLAIM=", last_claim.VEH_SER_NO, last_claim.TS_LOAD)
+        return last_claim
+    # TODO "server busy" is a placeholder and will need to change when we know the real error message
+    # except "ServerBusy":
+    #     print("Server busy. Checking again in 5 minutes.")
+    #     return None
+    except ObjectDoesNotExist:
+        print("No claims in the database.")
+        last_claim = None
+        return last_claim
+
+
+def get_last_api_write(now):
+    try:
+        print("GOING TO API TABLE TO GET LATEST API OBJECT")
+        last_api_write = HPVATM.objects.filter(timestamp__lte=now)
+        last_api_write = last_api_write.latest('timestamp')
+        print("THIS IS WHAT WAS FOUND IN API TABLE TIMESTAMP ", last_api_write.timestamp)
+        found_entry = True
+    except Exception as e:
+        print("No objects in processed table. Writing.  ", e)
+        # Set both to true to catch either or in hpv_dict check
+        last_api_write = None
+        found_entry = False
+    return last_api_write, found_entry
+
+
+def no_dict_or_no_claims(hpv_dict):
+    return hpv_dict is None or hpv_dict['claims_for_range'] == 0
+
+
+def need_to_write(now, plant_settings, last_api_write, last_claim):
+    time_between = plant_settings.TAKT_Time
+
+    need_to_write = now - last_api_write.timestamp > dt.timedelta(minutes=time_between)
+
+    near_shift_end = is_near_shift_end(now, plant_settings)
+
+    if last_claim.TS_LOAD <= last_api_write.timestamp:
+        if need_to_write or near_shift_end:
+            print("It's been a while since an api entry was made or it is near the end of a shift. Recording hpv.")
+            return True
+        else:
+            print("No new data in API TABLE. Checking again in 5 minutes.")
+            return False
+
+
+def is_near_shift_end(now, plant_settings):
+    end_first = dt.datetime.combine(now.date(), plant_settings.first_shift) + dt.timedelta(hours=8)
+    end_first = timezone.make_aware(end_first)
+
+    end_second = dt.datetime.combine(now.date(), plant_settings.second_shift) + dt.timedelta(hours=8)
+    end_second = timezone.make_aware(end_second)
+
+    end_third = dt.datetime.combine(now.date(), plant_settings.third_shift) + dt.timedelta(hours=8)
+    end_third = timezone.make_aware(end_third)
+
+    within_5 = dt.timedelta(minutes=5)
+
+    return end_first - now < within_5 or end_second - now < within_5 or end_third - now < within_5
+
+
+def delete_old_entries(plant_settings, now):
+    del_after_date = now - dt.timedelta(days=plant_settings.del_after)
+    HPVATM.objects.filter(timestamp__lte=del_after_date).delete()
 
 
 def get_hpv_snap(now):
@@ -122,7 +159,6 @@ def get_shift_info(plant_settings, now):
 
     Returns: shift number and start of shift datetime object
     """
-    #TODO Start of the day is the last time a shift ended yesterday or midnight, > earlier
     print("/"*50)
     print("GET SHIFT INFO")
     print("/"*50)
@@ -132,49 +168,26 @@ def get_shift_info(plant_settings, now):
     print("Second shift: ", plant_settings.second_shift)
 
     #SHIFT 1 SET UP
-    now = timezone.localtime(now)
     shift = 1
     start = dt.datetime.combine(now.date(), plant_settings.first_shift)
     start = timezone.make_aware(start)
     print("MADE LOCAL timezone AWARE START")
 
     # OT SET UP
-    first_shift_date = dt.datetime.combine(now.date(), plant_settings.first_shift)
-    first_ot = first_shift_date - dt.timedelta(hours=3, minutes=30)
-    first_ot = first_ot.time()
+    first_ot = get_first_shift_ot(now, plant_settings)
 
-    # Catch time before first shift if there are 3 shifts. Shift will have started the day before.
+    # Catch time before first shift if there are 3 shifts. Shift will have
+    # started the day before.
     if now.time() < plant_settings.first_shift and plant_settings.num_of_shifts == 3:
         print("SHIFTS=3")
-        shift = 3
-        yesterday = (now.date() - dt.timedelta(days=1))
-        start = dt.datetime.combine(yesterday, plant_settings.third_shift)
-        start = timezone.make_aware(start)
-        print("START TIME FOR 3 SHIFTS = ", start)
+        shift, start = get_third_shift_start(now, plant_settings)
     #Catch OT for 2nd shift from the previous day
     elif plant_settings.num_of_shifts == 2 and now.time() < first_ot:
-        shift = 2
-        yesterday = (now.date() - dt.timedelta(days=1))
-        start = dt.datetime.combine(yesterday, plant_settings.second_shift)
-        start = timezone.make_aware(start)
+        shift, start = get_second_shift_start(now, plant_settings)
     # Catch anything after first shift.
     elif now.time() >= plant_settings.first_shift:
-        # If more than 1 shift, check if time is in those shift(s).
-        if plant_settings.num_of_shifts >= 2:
-            print("2 or MORE SHIFTS ACTIVATED")
-            if now.time() >= plant_settings.second_shift:
-                print("2nd 3 SHIFT CHECK")
-                shift = 2
-                start = dt.datetime.combine(now.date(), plant_settings.second_shift)
-                start = timezone.make_aware(start)
-                # If 3 shifts, check if time is in that shift.
-                print("2nd 3 SHIFT CHECK")
-                if plant_settings.num_of_shifts == 3:
-                    if now.time() >= plant_settings.third_shift:
-                        shift = 3
-                        start = dt.datetime.combine(now.date(), plant_settings.third_shift)
-                        start = timezone.make_aware(start)
-    # Catch OT for before 1st shift begins
+        # If more than 1 shift, check which of those shifts we are in.
+        shift, start = find_shift_after_first(now, plant_settings, shift, start)
     else:
         shift = 1
         start = dt.datetime.combine(now.date(), dt.time(0, 0))
@@ -185,6 +198,56 @@ def get_shift_info(plant_settings, now):
     print('SHIFT: ', shift)
 
     return start, shift
+
+
+def get_first_shift_ot(now, plant_settings):
+    first_shift_date = dt.datetime.combine(now.date(), plant_settings.first_shift)
+    first_ot = first_shift_date - dt.timedelta(hours=3, minutes=30)
+    first_ot = first_ot.time()
+    return first_ot
+
+
+def find_shift_after_first(now, plant_settings, shift, start):
+    if plant_settings.num_of_shifts >= 2:
+        print("2 or MORE SHIFTS ACTIVATED")
+        if now.time() >= plant_settings.second_shift:
+            print("2nd 3 SHIFT CHECK")
+            shift = 2
+            start = dt.datetime.combine(now.date(), plant_settings.second_shift)
+            start = timezone.make_aware(start)
+            # If 3 shifts, check if time is in that shift.
+            print("2nd 3 SHIFT CHECK")
+            if plant_settings.num_of_shifts == 3:
+                shift, start = check_if_in_third_shift(now, plant_settings, shift, start)
+
+    return shift, start
+
+
+def check_if_in_third_shift(now, plant_settings, shift, start):
+    if now.time() >= plant_settings.third_shift:
+        shift = 3
+        start = dt.datetime.combine(now.date(), plant_settings.third_shift)
+        start = timezone.make_aware(start)
+    return shift, start
+
+
+def get_third_shift_start(now, plant_settings):
+    shift = 3
+    yesterday = (now.date() - dt.timedelta(days=1))
+    start = dt.datetime.combine(yesterday, plant_settings.third_shift)
+    start = timezone.make_aware(start)
+    print("START TIME FOR 3 SHIFTS = ", start)
+
+    return shift, start
+
+
+def get_second_shift_start(now, plant_settings):
+    shift = 2
+    yesterday = (now.date() - dt.timedelta(days=1))
+    start = dt.datetime.combine(yesterday, plant_settings.second_shift)
+    start = timezone.make_aware(start)
+
+    return shift, start
 
 
 def get_day_hpv_dict(hpv_dict, now):
@@ -198,27 +261,17 @@ def get_day_hpv_dict(hpv_dict, now):
     print("/"*50)
 
     dept_list = ['CIW', 'FCB', 'PNT', 'PCH', 'FCH', 'DAC', 'MAINT', 'QA', 'MAT', 'OTHER']
-
-    plant_s_hpv = 0
-    plant_s_ne = 0
-    plant_s_mh = 0
-
+    dept_values = []
     full_dict = {}
 
-    dept_values = []
+    plant_s_mh, plant_s_ne = get_dept_plant_stats(hpv_dict, dept_list)
 
     for dept in dept_list:
-        plant_s_mh += hpv_dict[dept]['mh']
-        plant_s_ne += hpv_dict[dept]['ne']
-
         dept_values.append(get_dept_day_stats(hpv_dict, now, dept))
 
     print("DEPT_VALUES ",dept_values)
 
-    if hpv_dict['claims_for_range'] == 0 or hpv_dict is None:
-        plant_s_hpv = 0
-    else:
-        plant_s_hpv = plant_s_mh / hpv_dict['claims_for_range']
+    plant_s_hpv = calc_plant_hpv_for_shift(hpv_dict, plant_s_mh)
 
     shift_dict = {
         'plant_s_hpv': plant_s_hpv,
@@ -230,75 +283,93 @@ def get_day_hpv_dict(hpv_dict, now):
     full_dict.update(shift_dict)
     print('FULL DICT:', full_dict)
 
-    plant_d_hpv, plant_d_mh, claims_d = get_day_stats(hpv_dict, now)
+    plant_d_hpv, plant_d_mh, claims_d = get_plant_day_hpv(hpv_dict, now)
     print("plant_d_hpv, plant_d_mh, claims_d= ", plant_d_hpv, plant_d_mh, claims_d)
-    with timezone.override("US/Eastern"):
-        full_hpv_dict = {
-            'CIW_s_hpv': hpv_dict['CIW']['hpv'],
-            'CIW_s_mh': hpv_dict['CIW']['mh'],
-            'CIW_s_ne': hpv_dict['CIW']['ne'],
-            'CIW_d_hpv': dept_values[0][0],
-            'CIW_d_mh': dept_values[0][1],
-            'FCB_s_hpv': hpv_dict['FCB']['hpv'],
-            'FCB_s_mh': hpv_dict['FCB']['mh'],
-            'FCB_s_ne': hpv_dict['FCB']['ne'],
-            'FCB_d_hpv': dept_values[1][0],
-            'FCB_d_mh': dept_values[1][1],
-            'PNT_s_hpv': hpv_dict['PNT']['hpv'],
-            'PNT_s_mh': hpv_dict['PNT']['mh'],
-            'PNT_s_ne': hpv_dict['PNT']['ne'],
-            'PNT_d_hpv': dept_values[2][0],
-            'PNT_d_mh': dept_values[2][1],
-            'PCH_s_hpv': hpv_dict['PCH']['hpv'],
-            'PCH_s_mh': hpv_dict['PCH']['mh'],
-            'PCH_s_ne': hpv_dict['PCH']['ne'],
-            'PCH_d_hpv': dept_values[3][0],
-            'PCH_d_mh': dept_values[3][1],
-            'FCH_s_hpv': hpv_dict['FCH']['hpv'],
-            'FCH_s_mh': hpv_dict['FCH']['mh'],
-            'FCH_s_ne': hpv_dict['FCH']['ne'],
-            'FCH_d_hpv': dept_values[4][0],
-            'FCH_d_mh': dept_values[4][1],
-            'DAC_s_hpv': hpv_dict['DAC']['hpv'],
-            'DAC_s_mh': hpv_dict['DAC']['mh'],
-            'DAC_s_ne': hpv_dict['DAC']['ne'],
-            'DAC_d_hpv': dept_values[5][0],
-            'DAC_d_mh': dept_values[5][1],
-            'MAINT_s_hpv': hpv_dict['MAINT']['hpv'],
-            'MAINT_s_mh': hpv_dict['MAINT']['mh'],
-            'MAINT_s_ne': hpv_dict['MAINT']['ne'],
-            'MAINT_d_hpv': dept_values[6][0],
-            'MAINT_d_mh': dept_values[6][1],
-            'QA_s_hpv': hpv_dict['QA']['hpv'],
-            'QA_s_mh': hpv_dict['QA']['mh'],
-            'QA_s_ne': hpv_dict['QA']['ne'],
-            'QA_d_hpv': dept_values[7][0],
-            'QA_d_mh': dept_values[7][1],
-            'MAT_s_hpv': hpv_dict['MAT']['hpv'],
-            'MAT_s_mh': hpv_dict['MAT']['mh'],
-            'MAT_s_ne': hpv_dict['MAT']['ne'],
-            'MAT_d_hpv': dept_values[8][0],
-            'MAT_d_mh': dept_values[8][1],
-            'OTHER_s_hpv': hpv_dict['OTHER']['hpv'],
-            'OTHER_s_mh': hpv_dict['OTHER']['mh'],
-            'OTHER_s_ne': hpv_dict['OTHER']['ne'],
-            'OTHER_d_hpv': dept_values[9][0],
-            'OTHER_d_mh': dept_values[9][1],
 
-            'PLANT_d_hpv': plant_d_hpv,
-            'PLANT_d_mh': plant_d_mh,
-            'PLANT_s_hpv': plant_s_hpv,
-            'PLANT_s_ne': plant_s_ne,
-            'PLANT_s_mh': plant_s_mh,
+    full_hpv_dict = {
+        'CIW_s_hpv': hpv_dict['CIW']['hpv'],
+        'CIW_s_mh': hpv_dict['CIW']['mh'],
+        'CIW_s_ne': hpv_dict['CIW']['ne'],
+        'CIW_d_hpv': dept_values[0][0],
+        'CIW_d_mh': dept_values[0][1],
+        'FCB_s_hpv': hpv_dict['FCB']['hpv'],
+        'FCB_s_mh': hpv_dict['FCB']['mh'],
+        'FCB_s_ne': hpv_dict['FCB']['ne'],
+        'FCB_d_hpv': dept_values[1][0],
+        'FCB_d_mh': dept_values[1][1],
+        'PNT_s_hpv': hpv_dict['PNT']['hpv'],
+        'PNT_s_mh': hpv_dict['PNT']['mh'],
+        'PNT_s_ne': hpv_dict['PNT']['ne'],
+        'PNT_d_hpv': dept_values[2][0],
+        'PNT_d_mh': dept_values[2][1],
+        'PCH_s_hpv': hpv_dict['PCH']['hpv'],
+        'PCH_s_mh': hpv_dict['PCH']['mh'],
+        'PCH_s_ne': hpv_dict['PCH']['ne'],
+        'PCH_d_hpv': dept_values[3][0],
+        'PCH_d_mh': dept_values[3][1],
+        'FCH_s_hpv': hpv_dict['FCH']['hpv'],
+        'FCH_s_mh': hpv_dict['FCH']['mh'],
+        'FCH_s_ne': hpv_dict['FCH']['ne'],
+        'FCH_d_hpv': dept_values[4][0],
+        'FCH_d_mh': dept_values[4][1],
+        'DAC_s_hpv': hpv_dict['DAC']['hpv'],
+        'DAC_s_mh': hpv_dict['DAC']['mh'],
+        'DAC_s_ne': hpv_dict['DAC']['ne'],
+        'DAC_d_hpv': dept_values[5][0],
+        'DAC_d_mh': dept_values[5][1],
+        'MAINT_s_hpv': hpv_dict['MAINT']['hpv'],
+        'MAINT_s_mh': hpv_dict['MAINT']['mh'],
+        'MAINT_s_ne': hpv_dict['MAINT']['ne'],
+        'MAINT_d_hpv': dept_values[6][0],
+        'MAINT_d_mh': dept_values[6][1],
+        'QA_s_hpv': hpv_dict['QA']['hpv'],
+        'QA_s_mh': hpv_dict['QA']['mh'],
+        'QA_s_ne': hpv_dict['QA']['ne'],
+        'QA_d_hpv': dept_values[7][0],
+        'QA_d_mh': dept_values[7][1],
+        'MAT_s_hpv': hpv_dict['MAT']['hpv'],
+        'MAT_s_mh': hpv_dict['MAT']['mh'],
+        'MAT_s_ne': hpv_dict['MAT']['ne'],
+        'MAT_d_hpv': dept_values[8][0],
+        'MAT_d_mh': dept_values[8][1],
+        'OTHER_s_hpv': hpv_dict['OTHER']['hpv'],
+        'OTHER_s_mh': hpv_dict['OTHER']['mh'],
+        'OTHER_s_ne': hpv_dict['OTHER']['ne'],
+        'OTHER_d_hpv': dept_values[9][0],
+        'OTHER_d_mh': dept_values[9][1],
 
-            'claims_s': hpv_dict['claims_for_range'],
-            'claims_d': claims_d,
+        'PLANT_d_hpv': plant_d_hpv,
+        'PLANT_d_mh': plant_d_mh,
+        'PLANT_s_hpv': plant_s_hpv,
+        'PLANT_s_ne': plant_s_ne,
+        'PLANT_s_mh': plant_s_mh,
 
-            'shift': hpv_dict['shift'],
-            'timestamp': timezone.localtime(now),
-        }
+        'claims_s': hpv_dict['claims_for_range'],
+        'claims_d': claims_d,
+
+        'shift': hpv_dict['shift'],
+        'timestamp': timezone.localtime(now),
+    }
+
     print("FULL DICT ", full_hpv_dict)
     return full_hpv_dict
+
+
+def get_dept_plant_stats(hpv_dict, dept_list):
+    plant_s_ne = 0
+    plant_s_mh = 0
+    for dept in dept_list:
+        plant_s_mh += hpv_dict[dept]['mh']
+        plant_s_ne += hpv_dict[dept]['ne']
+    return plant_s_mh, plant_s_ne
+
+
+def calc_plant_hpv_for_shift(hpv_dict, plant_s_mh):
+    if hpv_dict['claims_for_range'] == 0 or hpv_dict is None:
+        plant_s_hpv = 0
+    else:
+        plant_s_hpv = plant_s_mh / hpv_dict['claims_for_range']
+    return plant_s_hpv
 
 
 def get_dept_day_stats(hpv_dict, now, dept):
@@ -310,72 +381,82 @@ def get_dept_day_stats(hpv_dict, now, dept):
     cur_hpv = hpv_dict[dept]['hpv']
     cur_mh = hpv_dict[dept]['mh']
     cur_claims = hpv_dict['claims_for_range']
-    # print("cur_mh: ", cur_mh)
 
     if plant_settings.num_of_shifts == 3:
-        if hpv_dict['shift'] == 3:
-            return cur_hpv, cur_mh
-        elif hpv_dict['shift'] == 1:
-            last_shift = all_since_start.filter(shift=3).last()
-            if last_shift is None:
-                mh = cur_mh
-                claims = cur_claims
-            else:
-                mh = getattr(last_shift, '{}_s_mh'.format(dept)) + cur_mh
-                claims = last_shift.claims_s + cur_claims
-            if claims == 0:
-                hpv = 0
-            else:
-                hpv = mh/claims
-            return hpv, mh
-        elif hpv_dict['shift'] == 2:
-            s3 = all_since_start.filter(shift=3).last()
-            s1 = all_since_start.filter(shift=1).last()
-            if s3 is None:
-                if s1 is None:
-                    hpv = cur_hpv
-                    mh = cur_mh
-                    claims = cur_claims
-                else:
-                    mh = getattr(s3, '{}_s_mh'.format(dept)) + cur_mh
-                    claims = s3.claims_s + cur_claims
-            elif s1 is None:
-                if s3 is None:
-                    mh = cur_mh
-                    claims = cur_claims
-                else:
-                    mh = getattr(s1, '{}_s_mh'.format(dept)) + cur_mh
-                    claims = s1.claims_s + cur_claims
-            else:
-                mh = getattr(s3, '{}_s_mh'.format(dept)) + getattr(s1, '{}_s_mh'.format(dept)) + cur_mh
-                claims = s3.claims_s + s1.claims_s + cur_claims
-            if claims == 0:
-                hpv = 0
-            else:
-                hpv = mh/claims
-            return hpv, mh
+        hpv, mh = get_three_shifts_dept_day_hpv(hpv_dict, dept, all_since_start, cur_hpv, cur_mh, cur_claims)
     elif plant_settings.num_of_shifts == 2:
-        if hpv_dict['shift'] == 1:
-            return cur_hpv, cur_mh
-        elif hpv_dict['shift'] == 2:
-            last_shift = all_since_start.filter(shift=1).last()
-            if last_shift is None:
-                hpv = cur_hpv
-                mh = cur_mh
-                claims = cur_claims
-            else:
-                mh = float(getattr(last_shift, '{}_s_mh'.format(dept))) + cur_mh
-                claims = last_shift.claims_s + cur_claims
-                try:
-                    hpv = mh/claims
-                except:
-                    hpv = 0
-            return hpv, mh
+        hpv, mh = get_two_shifts_dept_day_hpv(hpv_dict, dept, all_since_start, cur_hpv, cur_mh, cur_claims)
     else:
-        return cur_hpv, cur_mh
+        hpv, mh = cur_hpv, cur_mh
+    return hpv, mh
 
 
-def get_day_stats(hpv_dict, now):
+def get_three_shifts_dept_day_hpv(hpv_dict, dept, all_since_start, cur_hpv, cur_mh, cur_claims):
+    if hpv_dict['shift'] == 3:
+        hpv, mh =  cur_hpv, cur_mh
+    elif hpv_dict['shift'] == 1:
+        last_shift = all_since_start.filter(shift=3).last()
+        hpv, mh = get_last_shift_dept_day_hpv(dept, cur_mh, cur_claims, last_shift)
+    elif hpv_dict['shift'] == 2:
+        hpv, mh = get_last_two_shifts_dept_day_hpv(dept, all_since_start, cur_mh, cur_claims)
+
+    return hpv, mh
+
+
+def get_last_shift_dept_day_hpv(dept, cur_mh, cur_claims, last_shift):
+    if last_shift is None:
+        mh = cur_mh
+        claims = cur_claims
+    else:
+        mh = getattr(last_shift, '{}_s_mh'.format(dept)) + cur_mh
+        claims = last_shift.claims_s + cur_claims
+    hpv = calc_hpv(mh, claims)
+    return hpv, mh
+
+
+def get_last_two_shifts_dept_day_hpv(dept, all_since_start, cur_mh, cur_claims):
+    s3 = all_since_start.filter(shift=3).last()
+    s1 = all_since_start.filter(shift=1).last()
+    if s3 is None:
+        mh, claims = get_last_two_shifts_dept_day_hpv_missing_shift_three(dept, s1, cur_mh, cur_claims)
+    elif s1 is None:
+        mh, claims = get_last_two_shifts_dept_day_hpv_missing_shift_one(dept, s3, cur_mh, cur_claims)
+    else:
+        mh = getattr(s3, '{}_s_mh'.format(dept)) + getattr(s1, '{}_s_mh'.format(dept)) + cur_mh
+        claims = s3.claims_s + s1.claims_s + cur_claims
+    hpv = calc_hpv(mh, claims)
+    return hpv, mh
+
+
+def get_last_two_shifts_dept_day_hpv_missing_shift_three(dept, s1, cur_mh, cur_claims):
+    if s1 is None:
+        mh = cur_mh
+        claims = cur_claims
+    else:
+        mh = getattr(s1, '{}_s_mh'.format(dept)) + cur_mh
+        claims = s1.claims_s + cur_claims
+    return mh, claims
+
+
+def get_last_two_shifts_dept_day_hpv_missing_shift_one(dept, s3, cur_mh, cur_claims):
+    mh = getattr(s3, '{}_s_mh'.format(dept)) + cur_mh
+    claims = s3.claims_s + cur_claims
+    if s3 is None:
+        mh = cur_mh
+        claims = cur_claims
+    return mh, claims
+
+
+def get_two_shifts_dept_day_hpv(hpv_dict, dept, all_since_start, cur_hpv, cur_mh, cur_claims):
+    if hpv_dict['shift'] == 1:
+        hpv, mh = cur_hpv, cur_mh
+    elif hpv_dict['shift'] == 2:
+        last_shift = all_since_start.filter(shift=1).last()
+        hpv, mh = get_last_shift_dept_day_hpv(dept, cur_mh, cur_claims, last_shift)
+    return hpv, mh
+
+
+def get_plant_day_hpv(hpv_dict, now):
     print("/"*50)
     print("GET DAY STATS FUNCTION")
     print("/"*50)
@@ -391,66 +472,78 @@ def get_day_stats(hpv_dict, now):
     cur_claims = hpv_dict['claims_for_range']
 
     if plant_settings.num_of_shifts == 3:
-        if hpv_dict['shift'] == 3:
-            return cur_hpv, cur_mh, cur_claims
-        elif hpv_dict['shift'] == 1:
-            last_shift = all_since_start.filter(shift=3).last()
-            if last_shift is None:
-                hpv = cur_hpv
-                mh = cur_mh
-                claims = cur_claims
-            else:
-                mh = last_shift.PLANT_s_mh + cur_mh
-                claims = last_shift.claims_s + cur_claims
-                if claims == 0:
-                    hpv = 0
-                else:
-                    hpv = mh/claims
-            return hpv, mh, claims
-        elif hpv_dict['shift'] == 2:
-            s3 = all_since_start.filter(shift=3).last()
-            s1 = all_since_start.filter(shift=1).last()
-            if s3 is None:
-                if s1 is None:
-                    mh = cur_mh
-                    claims = cur_claims
-                else:
-                    mh = s1.PLANT_s_mh + cur_mh
-                    claims = s1.claims_s + cur_claims
-            elif s1 is None:
-                if s3 is None:
-                    mh = cur_mh
-                    claims = cur_claims
-                else:
-                    mh = s3.PLANT_s_mh + cur_mh
-                    claims = s3.claims_s + cur_claims
-            else:
-                mh = s3.PLANT_s_mh + s1.PLANT_s_mh + cur_mh
-                claims = s3.claims_s + s1.claims_s + cur_claims
-            if claims == 0:
-                hpv = 0
-            else:
-                hpv = mh/claims
-            return hpv, mh, claims
+        hpv, mh, claims = get_three_shifts_plant_day_hpv(hpv_dict, all_since_start, cur_hpv, cur_mh, cur_claims)
     elif plant_settings.num_of_shifts == 2:
-        if hpv_dict['shift'] == 1:
-            return cur_hpv, cur_mh, cur_claims
-        elif hpv_dict['shift'] == 2:
-            last_shift = all_since_start.filter(shift=1).last()
-            if last_shift is None or last_shift.PLANT_s_mh is None:
-                hpv = cur_hpv
-                mh = cur_mh
-                claims = cur_claims
-            else:
-                mh = float(last_shift.PLANT_s_mh) + cur_mh
-                claims = last_shift.claims_s + cur_claims
-                if claims == 0:
-                    hpv = 0
-                else:
-                    hpv = mh/claims
-            return hpv, mh, claims
+        hpv, mh, claims = get_two_shifts_plant_day_hpv(hpv_dict, all_since_start, cur_hpv, cur_mh, cur_claims)
     else:
+        hpv, mh, claims = cur_hpv, cur_mh, cur_claims
+    return hpv, mh, claims
+
+
+def get_three_shifts_plant_day_hpv(hpv_dict, all_since_start, cur_hpv, cur_mh, cur_claims):
+    if hpv_dict['shift'] == 3:
         return cur_hpv, cur_mh, cur_claims
+    elif hpv_dict['shift'] == 1:
+        last_shift = all_since_start.filter(shift=3).last()
+        hpv, mh, claims = get_last_shift_plant_day_hpv(cur_hpv, cur_mh, cur_claims, last_shift)
+    elif hpv_dict['shift'] == 2:
+        s3 = all_since_start.filter(shift=3).last()
+        s1 = all_since_start.filter(shift=1).last()
+        hpv, mh, claims = get_three_shifts_plant_day_hpv_2nd_shift(s3, s1, cur_mh, cur_claims)
+
+    return hpv, mh, claims
+
+
+def get_three_shifts_plant_day_hpv_2nd_shift(s3, s1, cur_mh, cur_claims):
+    if s3 is None:
+        if s1 is None:
+            mh = cur_mh
+            claims = cur_claims
+        else:
+            mh = s1.PLANT_s_mh + cur_mh
+            claims = s1.claims_s + cur_claims
+    elif s1 is None:
+        if s3 is None:
+            mh = cur_mh
+            claims = cur_claims
+        else:
+            mh = s3.PLANT_s_mh + cur_mh
+            claims = s3.claims_s + cur_claims
+    else:
+        mh = s3.PLANT_s_mh + s1.PLANT_s_mh + cur_mh
+        claims = s3.claims_s + s1.claims_s + cur_claims
+    hpv = calc_hpv(mh, claims)
+
+    return hpv, mh, claims
+
+
+def get_two_shifts_plant_day_hpv(hpv_dict, all_since_start, cur_hpv, cur_mh, cur_claims):
+    if hpv_dict['shift'] == 1:
+        hpv, mh, claims = cur_hpv, cur_mh, cur_claims
+    elif hpv_dict['shift'] == 2:
+        last_shift = all_since_start.filter(shift=1).last()
+        hpv, mh, claims = get_last_shift_plant_day_hpv(cur_hpv, cur_mh, cur_claims, last_shift)
+    return hpv, mh, claims
+
+
+def get_last_shift_plant_day_hpv(cur_hpv, cur_mh, cur_claims, last_shift):
+    if last_shift is None or last_shift.PLANT_s_mh is None:
+        hpv = cur_hpv
+        mh = cur_mh
+        claims = cur_claims
+    else:
+        mh = float(last_shift.PLANT_s_mh) + cur_mh
+        claims = last_shift.claims_s + cur_claims
+        hpv = calc_hpv(mh, claims)
+    return hpv, mh, claims
+
+
+def calc_hpv(mh, claims):
+    if claims == 0:
+        hpv = 0
+    else:
+        hpv = mh/claims
+    return hpv
 
 
 def get_day_start(plant_settings, now):
