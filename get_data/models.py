@@ -2,7 +2,7 @@ from django.db import models
 from .functions.process_raw_csv_data import *
 from .functions.csv_file_paths import *
 import datetime
-
+from django.utils import timezone
 from datetime import datetime
 from datetime import timedelta
 import re
@@ -28,18 +28,19 @@ class RawClockData(models.Model):
     def load_raw_data():
         # process generator file. CSV has headers.
         # each row is a dict.
-        for row in read_csv_generator(clock_in_out_csv, headers=True):
-            created_row = RawClockData.objects.create(
-                PRSN_NBR_TXT=row['PRSN_NBR_TXT'],
-                full_nam=row['full_nam'],
-                HM_LBRACCT_FULL_NAM=row['HM_LBRACCT_FULL_NAM'],
-                start_rsn_txt=row['start_rsn_txt'],
-                PNCHEVNT_IN=process_date(row['PNCHEVNT_DTM_IN']),
-                end_rsn_txt=row['end_rsn_txt'],
-                PNCHEVNT_OUT=process_date(row['PNCHEVNT_DTM_OUT']),
-            )
-            created_row.save()
-        print("LOADED Raw Clock Data Row")
+        with timezone.override('US/Eastern'):
+            for row in read_csv_generator(clock_in_out_csv, headers=True):
+                created_row = RawClockData.objects.create(
+                    PRSN_NBR_TXT=row['PRSN_NBR_TXT'],
+                    full_nam=row['full_nam'],
+                    HM_LBRACCT_FULL_NAM=row['HM_LBRACCT_FULL_NAM'],
+                    start_rsn_txt=row['start_rsn_txt'],
+                    PNCHEVNT_IN=process_date(row['PNCHEVNT_DTM_IN']),
+                    end_rsn_txt=row['end_rsn_txt'],
+                    PNCHEVNT_OUT=process_date(row['PNCHEVNT_DTM_OUT']),
+                )
+                created_row.save()
+            print("LOADED Raw Clock Data Row")
 
 # Claims Data
 class RawPlantActivity(models.Model):
@@ -51,15 +52,16 @@ class RawPlantActivity(models.Model):
     def load_raw_data():
         # process generator file. CSV has headers.
         # each row is a dict.
-        for row in read_csv_generator(plant_activty_csv, headers=True):
-            created_row = RawPlantActivity.objects.create(
-                VEH_SER_NO=row['VEH_SER_NO'],
-                POOL_CD=row['POOL_CD'],
-                TS_LOAD=process_date(row['TS_LOAD']),
-            )
+        with timezone.override('US/Pacific'):
+            for row in read_csv_generator(plant_activty_csv, headers=True):
+                created_row = RawPlantActivity.objects.create(
+                    VEH_SER_NO=row['VEH_SER_NO'],
+                    POOL_CD=row['POOL_CD'],
+                    TS_LOAD=process_date(row['TS_LOAD']),
+                )
 
-            created_row.save()
-        print("LOADED plant Row")
+                created_row.save()
+            print("LOADED plant Row")
 
 # Based on the Mount Holly Org Updates 2015 Excel File
 class OrgUnits(models.Model):
@@ -98,6 +100,7 @@ class OrgUnits(models.Model):
 #     def load_raw_data():
 #         # process generator file. CSV has headers.
 #         # each row is a dict.
+#         raise Exception("Timezone needed")
 #         for row in read_csv_generator(direct_run_csv, headers=True):
 #             created_row = RawDirectRunData.objects.create(
 #                 VEH_SER_NO=row['\ufeffVEH_SER_NO'],

@@ -1,64 +1,66 @@
 jQuery(function($) {
-  var graphData = [];
 
-  // $.ajax({
-  //   url: '/api/hpv/?format=json',
-  //   success: function(data) {
-  //     for (i = 0; i < data.length; i++) {
-  //       unix = Math.round((new Date(data[i]["timestamp"]).getTime()) / 1000);
-  //       graphData.push([unix, data[i]["hpv_plant"]]);
-  //     }
-  //     console.log("2", graphData);
-  //   }
-  // });
+  /*
+    Line Graph
+  */
+  var lineGraph = (function() {
+    var graphData = [];
+    d3.json('/api/hpv/?days=1&format=json', function(data) {
+      var graphData = [{
+        key: 'Today',
+        values: [],
+        color: '#4252ce'
+      }];
+      data.sort(function(a,b){
+        if (a.timestamp > b.timestamp) {
+          return 1;
+        }
+        if (a.timestamp < b.timestamp) {
+          return -1;
+        }
+        return 0;
+      });
 
-  d3.json('/api/hpv?format=json', function(data) {
-    var graphData = [{
-      key: 'Today',
-      values: [],
-      color: '#4252ce'
-    }];
-    for (i = 0; i < data.length; i++) {
-      // unix = Math.round((new Date(data[i]["timestamp"]).getTime()) / 1000);
-      unix = new Date(data[i]["timestamp"]).getTime()
-      graphData[0].values.push([unix, data[i]["hpv_plant"]]);
-    }
-    console.log(graphData);
-    nv.addGraph(function() {
-    var chart = nv.models.lineChart()
-      .useInteractiveGuideline(false)
-      .x(function(d) { return d[0] })
-      .y(function(d) { return d[1] })
-      ;
-    // nv.addGraph(function() {
-    //   var chart = nv.models.cumulativeLineChart()
-    //                 .x(function(d) { return d[0] })
-    //                 .y(function(d) { return d[1]/100 }) //adjusting, 100% is 1.00, not 100 as it is in the data
-    //                 .color(d3.scale.category10().range())
-    //                 .useInteractiveGuideline(true)
-    //                 ;
-      chart.xAxis
-        .axisLabel('Time')
-        .tickFormat(function(d) {
-            return d3.time.format('%H')(new Date(d))
-          });
+      for (i = 0; i < data.length; i++) {
+          // unix = Math.round((new Date(data[i]["timestamp"]).getTime()) / 1000);
+          time = new Date(data[i]["timestamp"]).getTime()
+          // console.log(i + "/" + data[i]["timestamp"] + " || " + time)
+          graphData[0].values.push([time, data[i]["PLANT_d_hpv"]]);
+      };
 
-      chart.yDomain([70, 110])
-      chart.yAxis
-        .axisLabel('HPV')
-        .tickFormat(d3.format(',f'));
+      nv.addGraph(function() {
+      var chart = nv.models.lineChart()
+        .useInteractiveGuideline(false)
+        .x(function(d) { return d[0] })
+        .y(function(d) { return d[1] })
+        ;
 
-      d3.select('#chart svg')
-        .datum(graphData)
-        .call(chart);
+        chart.xAxis
+          .axisLabel('Time')
+          .tickFormat(function(d) {
+              return d3.time.format('%H:%M')(new Date(d))
+            });
 
-      //TODO: Figure out a good way to do this automatically
-      nv.utils.windowResize(chart.update);
+        chart.yDomain([0, 140])
+        chart.yAxis
+          .axisLabel('HPV')
+          .tickFormat(d3.format(',f'));
 
-      return chart;
+        d3.select('#linegraph svg')
+          .datum(graphData)
+          .call(chart);
+
+        //TODO: Figure out a good way to do this automatically
+        nv.utils.windowResize(chart.update);
+
+        return chart;
+      });
     });
-  });
+    return {
+        lineGraph: lineGraph
+    }
+  })();
 
   // reload page every 60 seconds
-  // setTimeout(function() {location.reload(true);},60000);
+  // setTimeout(function() {location.reload(true);},6000);
 });
