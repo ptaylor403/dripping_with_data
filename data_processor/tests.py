@@ -13,7 +13,7 @@ import random
 from .functions.man_hours_calculations import get_clocked_in, get_emp_man_hours, get_emp_dept
 from .functions.claims_calculations import get_claimed_objects_in_range, get_range_of_claims
 from .functions.process_data_main import get_hpv
-from .processor import get_new_hpv_data, get_shift_info, get_day_start, get_day_stats, get_dept_day_stats, get_day_hpv_dict, delete_old_entries, need_to_write
+from .processor import get_new_hpv_data, get_shift_info, get_day_start, get_plant_day_hpv, get_dept_day_stats, get_day_hpv_dict, delete_old_entries, need_to_write
 
 
 # Create your tests here.
@@ -601,7 +601,7 @@ class GetDayStatsThreeShiftsPlant(TestCase):
     def setUp(self):
         PlantSetting.objects.create(**ps_tc.three_shift_8_am_plant_settings)
 
-    def test_get_day_stats_third_shift(self):
+    def test_get_plant_day_hpv_third_shift(self):
         now = timezone.make_aware(dt.datetime(2016, 6, 1, 23, 30))
         settings = PlantSetting.objects.latest('timestamp')
         hpv_dict = tc.shift_3_hpv_dict_with_plant
@@ -610,10 +610,10 @@ class GetDayStatsThreeShiftsPlant(TestCase):
         expected_mh = 90
         expected_claims = 1
 
-        self.assertEqual(get_day_stats(hpv_dict, now),
+        self.assertEqual(get_plant_day_hpv(hpv_dict, now),
                         (expected_hpv, expected_mh, expected_claims))
 
-    def test_get_day_stats_third_shift_0_hpv(self):
+    def test_get_plant_day_hpv_third_shift_0_hpv(self):
         now = timezone.make_aware(dt.datetime(2016, 6, 1, 23, 30))
         settings = PlantSetting.objects.latest('timestamp')
         hpv_dict = tc.shift_3_hpv_dict_with_plant_0_hpv
@@ -622,10 +622,10 @@ class GetDayStatsThreeShiftsPlant(TestCase):
         expected_mh = 0
         expected_claims = 0
 
-        self.assertEqual(get_day_stats(hpv_dict, now),
+        self.assertEqual(get_plant_day_hpv(hpv_dict, now),
                         (expected_hpv, expected_mh, expected_claims))
 
-    def test_get_day_stats_first_shift(self):
+    def test_get_plant_day_hpv_first_shift(self):
         now = timezone.make_aware(dt.datetime(2016, 6, 2, 7, 30))
         settings = PlantSetting.objects.latest('timestamp')
         hpv_dict = tc.shift_1_hpv_dict_with_plant
@@ -635,10 +635,10 @@ class GetDayStatsThreeShiftsPlant(TestCase):
         expected_mh = 810
         expected_claims = 9
 
-        self.assertEqual(get_day_stats(hpv_dict, now),
+        self.assertEqual(get_plant_day_hpv(hpv_dict, now),
                         (expected_hpv, expected_mh, expected_claims))
 
-    def test_get_day_stats_first_shift_0_hpv(self):
+    def test_get_plant_day_hpv_first_shift_0_hpv(self):
         now = timezone.make_aware(dt.datetime(2016, 6, 2, 7, 30))
         settings = PlantSetting.objects.latest('timestamp')
         hpv_dict = tc.shift_1_hpv_dict_with_plant_0_hpv
@@ -648,10 +648,10 @@ class GetDayStatsThreeShiftsPlant(TestCase):
         expected_mh = 720
         expected_claims = 8
 
-        self.assertEqual(get_day_stats(hpv_dict, now),
+        self.assertEqual(get_plant_day_hpv(hpv_dict, now),
                         (expected_hpv, expected_mh, expected_claims))
 
-    def test_get_day_stats_first_shift_0_claims(self):
+    def test_get_plant_day_hpv_first_shift_0_claims(self):
         now = timezone.make_aware(dt.datetime(2016, 6, 2, 7, 30))
         settings = PlantSetting.objects.latest('timestamp')
         hpv_dict = tc.shift_1_hpv_dict_with_plant_0_hpv
@@ -661,10 +661,10 @@ class GetDayStatsThreeShiftsPlant(TestCase):
         expected_mh = 720
         expected_claims = 0
 
-        self.assertEqual(get_day_stats(hpv_dict, now),
+        self.assertEqual(get_plant_day_hpv(hpv_dict, now),
                         (expected_hpv, expected_mh, expected_claims))
 
-    def test_get_day_stats_first_shift_no_api_entries(self):
+    def test_get_plant_day_hpv_first_shift_no_api_entries(self):
         now = timezone.make_aware(dt.datetime(2016, 6, 2, 7, 30))
         settings = PlantSetting.objects.latest('timestamp')
         hpv_dict = tc.shift_1_hpv_dict_with_plant
@@ -673,10 +673,10 @@ class GetDayStatsThreeShiftsPlant(TestCase):
         expected_mh = 90
         expected_claims = 1
 
-        self.assertEqual(get_day_stats(hpv_dict, now),
+        self.assertEqual(get_plant_day_hpv(hpv_dict, now),
                         (expected_hpv, expected_mh, expected_claims))
 
-    def test_get_day_stats_second_shift(self):
+    def test_get_plant_day_hpv_second_shift(self):
         now = timezone.make_aware(dt.datetime(2016, 6, 2, 15, 30))
         settings = PlantSetting.objects.latest('timestamp')
         hpv_dict = tc.shift_2_hpv_dict_with_plant
@@ -687,10 +687,10 @@ class GetDayStatsThreeShiftsPlant(TestCase):
         expected_mh = 1530
         expected_claims = 17
 
-        self.assertEqual(get_day_stats(hpv_dict, now),
+        self.assertEqual(get_plant_day_hpv(hpv_dict, now),
                         (expected_hpv, expected_mh, expected_claims))
 
-    def test_get_day_stats_second_shift_0_hpv(self):
+    def test_get_plant_day_hpv_second_shift_0_hpv(self):
         now = timezone.make_aware(dt.datetime(2016, 6, 2, 15, 30))
         settings = PlantSetting.objects.latest('timestamp')
         hpv_dict = tc.shift_2_hpv_dict_with_plant_0_hpv
@@ -701,10 +701,10 @@ class GetDayStatsThreeShiftsPlant(TestCase):
         expected_mh = 1440
         expected_claims = 16
 
-        self.assertEqual(get_day_stats(hpv_dict, now),
+        self.assertEqual(get_plant_day_hpv(hpv_dict, now),
                         (expected_hpv, expected_mh, expected_claims))
 
-    def test_get_day_stats_second_shift_0_claims(self):
+    def test_get_plant_day_hpv_second_shift_0_claims(self):
         now = timezone.make_aware(dt.datetime(2016, 6, 2, 15, 30))
         settings = PlantSetting.objects.latest('timestamp')
         hpv_dict = tc.shift_2_hpv_dict_with_plant_0_hpv
@@ -715,10 +715,10 @@ class GetDayStatsThreeShiftsPlant(TestCase):
         expected_mh = 1440
         expected_claims = 0
 
-        self.assertEqual(get_day_stats(hpv_dict, now),
+        self.assertEqual(get_plant_day_hpv(hpv_dict, now),
                         (expected_hpv, expected_mh, expected_claims))
 
-    def test_get_day_stats_second_shift_no_third_shift_api_entry(self):
+    def test_get_plant_day_hpv_second_shift_no_third_shift_api_entry(self):
         now = timezone.make_aware(dt.datetime(2016, 6, 2, 15, 30))
         settings = PlantSetting.objects.latest('timestamp')
         hpv_dict = tc.shift_2_hpv_dict_with_plant
@@ -728,10 +728,10 @@ class GetDayStatsThreeShiftsPlant(TestCase):
         expected_mh = 810
         expected_claims = 9
 
-        self.assertEqual(get_day_stats(hpv_dict, now),
+        self.assertEqual(get_plant_day_hpv(hpv_dict, now),
                         (expected_hpv, expected_mh, expected_claims))
 
-    def test_get_day_stats_second_shift_no_first_shift_api_entry(self):
+    def test_get_plant_day_hpv_second_shift_no_first_shift_api_entry(self):
         now = timezone.make_aware(dt.datetime(2016, 6, 2, 15, 30))
         settings = PlantSetting.objects.latest('timestamp')
         hpv_dict = tc.shift_2_hpv_dict_with_plant
@@ -741,7 +741,7 @@ class GetDayStatsThreeShiftsPlant(TestCase):
         expected_mh = 810
         expected_claims = 9
 
-        self.assertEqual(get_day_stats(hpv_dict, now),
+        self.assertEqual(get_plant_day_hpv(hpv_dict, now),
                         (expected_hpv, expected_mh, expected_claims))
 
 
@@ -749,7 +749,7 @@ class GetDayStatsTwoShiftsPlant(TestCase):
     def setUp(self):
         PlantSetting.objects.create(**ps_tc.two_shift_8_am_plant_settings)
 
-    def test_get_day_stats_first_shift(self):
+    def test_get_plant_day_hpv_first_shift(self):
         now = timezone.make_aware(dt.datetime(2016, 6, 2, 7, 30))
         settings = PlantSetting.objects.latest('timestamp')
         hpv_dict = tc.shift_1_hpv_dict_with_plant
@@ -758,10 +758,10 @@ class GetDayStatsTwoShiftsPlant(TestCase):
         expected_mh = 90
         expected_claims = 1
 
-        self.assertEqual(get_day_stats(hpv_dict, now),
+        self.assertEqual(get_plant_day_hpv(hpv_dict, now),
                         (expected_hpv, expected_mh, expected_claims))
 
-    def test_get_day_stats_first_shift_0_hpv(self):
+    def test_get_plant_day_hpv_first_shift_0_hpv(self):
         now = timezone.make_aware(dt.datetime(2016, 6, 2, 7, 30))
         settings = PlantSetting.objects.latest('timestamp')
         hpv_dict = tc.shift_1_hpv_dict_with_plant_0_hpv
@@ -770,10 +770,10 @@ class GetDayStatsTwoShiftsPlant(TestCase):
         expected_mh = 0
         expected_claims = 0
 
-        self.assertEqual(get_day_stats(hpv_dict, now),
+        self.assertEqual(get_plant_day_hpv(hpv_dict, now),
                         (expected_hpv, expected_mh, expected_claims))
 
-    def test_get_day_stats_second_shift(self):
+    def test_get_plant_day_hpv_second_shift(self):
         now = timezone.make_aware(dt.datetime(2016, 6, 2, 15, 30))
         settings = PlantSetting.objects.latest('timestamp')
         hpv_dict = tc.shift_2_hpv_dict_with_plant
@@ -783,10 +783,10 @@ class GetDayStatsTwoShiftsPlant(TestCase):
         expected_mh = 810
         expected_claims = 9
 
-        self.assertEqual(get_day_stats(hpv_dict, now),
+        self.assertEqual(get_plant_day_hpv(hpv_dict, now),
                         (expected_hpv, expected_mh, expected_claims))
 
-    def test_get_day_stats_second_shift_0_hpv(self):
+    def test_get_plant_day_hpv_second_shift_0_hpv(self):
         now = timezone.make_aware(dt.datetime(2016, 6, 2, 15, 30))
         settings = PlantSetting.objects.latest('timestamp')
         hpv_dict = tc.shift_2_hpv_dict_with_plant_0_hpv
@@ -796,10 +796,10 @@ class GetDayStatsTwoShiftsPlant(TestCase):
         expected_mh = 720
         expected_claims = 8
 
-        self.assertEqual(get_day_stats(hpv_dict, now),
+        self.assertEqual(get_plant_day_hpv(hpv_dict, now),
                         (expected_hpv, expected_mh, expected_claims))
 
-    def test_get_day_stats_second_shift_0_claims(self):
+    def test_get_plant_day_hpv_second_shift_0_claims(self):
         now = timezone.make_aware(dt.datetime(2016, 6, 2, 15, 30))
         settings = PlantSetting.objects.latest('timestamp')
         hpv_dict = tc.shift_2_hpv_dict_with_plant_0_hpv
@@ -809,10 +809,10 @@ class GetDayStatsTwoShiftsPlant(TestCase):
         expected_mh = 720
         expected_claims = 0
 
-        self.assertEqual(get_day_stats(hpv_dict, now),
+        self.assertEqual(get_plant_day_hpv(hpv_dict, now),
                         (expected_hpv, expected_mh, expected_claims))
 
-    def test_get_day_stats_second_shift_no_first_shift_api_entry(self):
+    def test_get_plant_day_hpv_second_shift_no_first_shift_api_entry(self):
         now = timezone.make_aware(dt.datetime(2016, 6, 2, 15, 30))
         settings = PlantSetting.objects.latest('timestamp')
         hpv_dict = tc.shift_2_hpv_dict_with_plant
@@ -821,7 +821,7 @@ class GetDayStatsTwoShiftsPlant(TestCase):
         expected_mh = 90
         expected_claims = 1
 
-        self.assertEqual(get_day_stats(hpv_dict, now),
+        self.assertEqual(get_plant_day_hpv(hpv_dict, now),
                         (expected_hpv, expected_mh, expected_claims))
 
 
@@ -829,7 +829,7 @@ class GetDayStatsOneShiftPlant(TestCase):
     def setUp(self):
         PlantSetting.objects.create(**ps_tc.one_shift_8_am_plant_settings)
 
-    def test_get_day_stats_first_shift(self):
+    def test_get_plant_day_hpv_first_shift(self):
         now = timezone.make_aware(dt.datetime(2016, 6, 2, 7, 30))
         settings = PlantSetting.objects.latest('timestamp')
         hpv_dict = tc.shift_1_hpv_dict_with_plant
@@ -838,10 +838,10 @@ class GetDayStatsOneShiftPlant(TestCase):
         expected_mh = 90
         expected_claims = 1
 
-        self.assertEqual(get_day_stats(hpv_dict, now),
+        self.assertEqual(get_plant_day_hpv(hpv_dict, now),
                         (expected_hpv, expected_mh, expected_claims))
 
-    def test_get_day_stats_first_shift_0_hpv(self):
+    def test_get_plant_day_hpv_first_shift_0_hpv(self):
         now = timezone.make_aware(dt.datetime(2016, 6, 2, 7, 30))
         settings = PlantSetting.objects.latest('timestamp')
         hpv_dict = tc.shift_1_hpv_dict_with_plant_0_hpv
@@ -850,7 +850,7 @@ class GetDayStatsOneShiftPlant(TestCase):
         expected_mh = 0
         expected_claims = 0
 
-        self.assertEqual(get_day_stats(hpv_dict, now),
+        self.assertEqual(get_plant_day_hpv(hpv_dict, now),
                         (expected_hpv, expected_mh, expected_claims))
 
 
