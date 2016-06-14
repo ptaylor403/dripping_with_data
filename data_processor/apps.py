@@ -22,5 +22,5 @@ class DataProcessorConfig(AppConfig):
         except:
             return
         scheduler = BackgroundScheduler()
-        scheduler.add_job(get_new_hpv_data, 'interval', seconds=15)
+        scheduler.add_job(get_new_hpv_data, 'interval', seconds=2)
         scheduler.start()
