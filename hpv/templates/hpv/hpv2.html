@@ -1,5 +1,6 @@
 {% extends 'hpv/base.html' %}
 {% load staticfiles %}
+{% load tz %}
 
 <head>
     <meta charset="utf-8">
@@ -44,7 +45,7 @@
         </tr>
         {% for name, dept in depts.items %}
         <tr>
-          <td class="dept"><a href="/heatmap/{{ name }}" >{{ name }}</a></td>
+          <td class="dept"><a href="/detail/{{ name }}" >{{ name }}</a></td>
           {% if shift_3 %}
           <td>{{ dept.s3_hpv }}</td>
           {% endif %}
@@ -229,7 +230,7 @@
   <div class="row">
     <div class="col-xs-12">
       <center>
-      <h3> Total Count: {{ claims_d }} |  Total HPV: {{ depts.PLANT.d_hpv|floatformat }}</h3>
+      <h3> Total Count: {{ claims_d }} |  Total HPV: {{ depts.PLANT.d_hpv|floatformat }} <br> Most recent update: {{ current_time|timezone:'US/Eastern' }} </h3>
       </center>
     </div>
   </div>

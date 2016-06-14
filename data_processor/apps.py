@@ -23,4 +23,4 @@ class DataProcessorConfig(AppConfig):
             return
         scheduler = BackgroundScheduler()
         scheduler.add_job(get_new_hpv_data, 'interval', seconds=2)
-        # scheduler.start()
+        scheduler.start()

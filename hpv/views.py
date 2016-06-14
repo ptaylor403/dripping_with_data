@@ -138,6 +138,9 @@ class HPV(LoginRequiredMixin, TemplateView):
             'PLANT': {}
         }
 
+        current_time = current.timestamp
+        context.update({'current_time': current_time})
+
         self.set_day_data(current, context, depts)
         self.set_shift1_data(current, shift1, context, depts)
         self.set_shift2_data(current, shift2, context, depts)
