@@ -1,3 +1,4 @@
+
 /*Nav bar*/
 .bg-faded {
     background-color: #f7f7f9;
@@ -24,12 +25,30 @@
 }
 
 /*Container/Body*/
+.bodycontainer{
+  margin: 55px 20px 0 20px;
+}
+body{
+  background: #F7F7F7;
+}
 .container {
-  margin-top: 10px;
+  margin-top: 3px;
 }
 .row {
   margin-top: 0px;
+}
+#line, #heatmap, #summary {
+  /*border: solid darkgrey 1px;*/
+  background: white;
+  margin-top: 10px;
+  margin-bottom: 10px;
+}
+#row top{
+  background:white;
+}
 
+#heatmap{
+  margin-bottom: 20px;
 }
 
 /*Text*/
@@ -40,13 +59,14 @@ a {
 p {
   margin: 0 50px;
 }
+
 /*Graph*/
 .nvd3 g.nv-groups path.nv-line {
   stroke-width: 5px;
 }
 
 .nvd3 text {
-    font: 400 13px Arial;
+    font: 400 13px;
 }
 /*Table*/
 
@@ -83,34 +103,6 @@ td {
   border-color: white;
 }
 
-#claim_title {
-  position: absolute;
-  top: 25px;
-  right: 267px;
-}
-
-#shift1_attendance{
-  position: absolute;
-  top: 450px;
-}
-
-#shift1_title{
-  position: absolute;
-  top: 400px;
-}
-
-#shift2_attendance{
-  position: absolute;
-  right: 90px;
-  top: 450px;
-}
-
-#shift2_title{
-  position: absolute;
-  right: 545px;
-  top: 400px;
-}
-
 /*Heat Map*/
 rect.bordered {
   stroke: #fff;
@@ -121,7 +113,7 @@ text.mono {
   font-size: 9pt;
   fill: #aaa;
   letter-spacing: 1px;
-  font-weight: 700;
+  font-weight: 400;
 }
 
 text.mono.scale {
@@ -139,10 +131,11 @@ text.axis-worktime {
 .btn-default {
   margin: 5px;
 }
-.btn.clicked {
-  background: #33a6cc;
-}
 
+.btn.selected {
+  background: lightblue;
+  border: solid 1px #2A4E77;
+}
 
 /*Detail line graph*/
 #line path {
@@ -159,28 +152,23 @@ text.axis-worktime {
     shape-rendering: crispEdges;
 }
 
-div.tooltip {
-    position: absolute;
-    text-align: center;
-    width: 60px;
-    height: 28px;
-    padding: 2px;
-    font: 12px sans-serif;
-    background: lightsteelblue;
-    border: 0px;
-    border-radius: 8px;
-    pointer-events: none;
+.legend rect {
+  fill:white;
+  opacity:0.8;
+  background:white;
 }
+
 .grid .tick {
     stroke: lightgrey;
     opacity: 0.7;
 }
+
 .grid path {
       stroke-width: 0;
 }
 
 .legend {
-    font-size: 16px;
+    font-size: 12px;
     font-weight: bold;
     text-anchor: middle;
 }
