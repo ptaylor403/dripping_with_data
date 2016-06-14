@@ -327,5 +327,9 @@ def logout_view(request):
     logout(request)
     return render(request, 'registration/logout.html')
 
-def heatmap(request):
-    return render(request, 'hpv/heatmap.html')
+class Detail(LoginRequiredMixin, TemplateView):
+    template_name = "hpv/detail.html"
+    login_url = '/login/'
+
+    def detail(request):
+        return render(request, self.template_name)

@@ -25,33 +25,45 @@
 }
 
 /*Container/Body*/
-.bodycontainer{
+.bodycontainer {
   margin: 100px 20px 0 20px;
 }
-body{
+
+body {
   background: #F7F7F7;
 }
+
 .container {
   margin-top: 3px;
 }
+
 .row {
   margin-top: 0px;
 }
+
 #line, #heatmap, #summary, #week_on_week {
   /*border: solid darkgrey 1px;*/
   background: white;
   margin-top: 10px;
   margin-bottom: 10px;
 }
-#row top{
+
+#row top {
   background:white;
 }
 
 #heatmap{
   margin-bottom: 20px;
 }
+h4 {
+  /*border: 1px solid #ccc;*/
+  background-color: lightblue;
+  color: black;
+  padding: 5px 0 5px;
+}
 
 /*Text*/
+
 a {
   color: black;
 }
@@ -66,7 +78,7 @@ p {
 }
 
 .nvd3 text {
-    font: 400 13px;
+    font: 400 17px;
 }
 /*Table*/
 
@@ -112,8 +124,7 @@ rect.bordered {
 text.mono {
   font-size: 9pt;
   fill: #aaa;
-  letter-spacing: 1px;
-  font-weight: 400;
+  font-weight: 500;
 }
 
 text.mono.scale {
@@ -151,6 +162,13 @@ text.axis-worktime {
     stroke-width: 1;
     shape-rendering: crispEdges;
 }
+
+.dashed {
+    stroke-width: 1;
+    stroke-dasharray: 5,5;
+}
+
+
 
 .legend rect {
   fill:white;
