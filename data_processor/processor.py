@@ -32,8 +32,8 @@ def get_new_hpv_data():
     # TODO "server busy" is a placeholder and will need to change when we know the real error message
     # except "ServerBusy":
     #     return print("Server busy. Checking again in 5 minutes.")
-    except ObjectDoesNotExist:
-        print("No claims in the database.")
+    except Exception as e:
+        print("No claims in the database.  ", e)
         return
 
     # Check for the last entry to the processed data table. Escape if no new claim since last entry. Errors include: No objects for the query - continues to writing logic.
@@ -275,7 +275,7 @@ def get_dept_day_stats(hpv_dict, now, dept):
             s3 = all_since_start.filter(shift=3).last()
             s1 = all_since_start.filter(shift=1).last()
             mh = getattr(s3, '{}_s_mh'.format(dept)) + getattr(s1, '{}_s_mh'.format(dept)) + cur_mh
-            claims = s3.claims_s + s2.claims_s + cur_claims
+            claims = s3.claims_s + s1.claims_s + cur_claims
             hpv = mh/claims
             return hpv, mh
     elif settings.num_of_shifts == 2:
@@ -327,7 +327,7 @@ def get_day_stats(hpv_dict, now):
             s3 = all_since_start.filter(shift=3).last()
             s1 = all_since_start.filter(shift=1).last()
             mh = s3.plant_s_mh + s1.plant_s_mh + cur_mh
-            claims = s3.claims_s + s2.claims_s + cur_claims
+            claims = s3.claims_s + s1.claims_s + cur_claims
             hpv = mh/claims
             return hpv, mh, claims
     elif settings.num_of_shifts == 2:
