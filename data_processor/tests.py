@@ -424,7 +424,7 @@ class GetHPVData(TestCase):
         # Now/Plant 6/2 @ 8:00
         PlantSetting.objects.create(**ps_tc.three_shift_8_am_plant_settings)
 
-        self.assertEqual(get_new_hpv_data(), "Wrote to API")
+        self.assertEqual(get_new_hpv_data(), True)
 
     def test_get_new_hpv_data_no_new_claims_end_shift_recent_entry(self):
         # API 6/2 @ 14:25
@@ -432,12 +432,12 @@ class GetHPVData(TestCase):
         # Now/Plant 6/2 @ 14:27
         PlantSetting.objects.create(**ps_tc.default_plant_settings_14_27)
 
-        self.assertEqual(get_new_hpv_data(), "Wrote to API")
+        self.assertEqual(get_new_hpv_data(), True)
 
     def test_get_new_hpv_data_no_api_entries(self):
         PlantSetting.objects.create(**ps_tc.three_shift_8_am_plant_settings)
 
-        self.assertEqual(get_new_hpv_data(), "Wrote to API")
+        self.assertEqual(get_new_hpv_data(), True)
 
     def test_get_new_hpv_data_no_claims(self):
         RawPlantActivity.objects.all().delete()

@@ -16,6 +16,7 @@ def get_new_hpv_data():
     plant_settings = PlantSetting.objects.latest('timestamp')
     time_between = plant_settings.TAKT_Time
 
+    # TODO break get_now a function
     with timezone.override("US/Eastern"):
         now = timezone.localtime(plant_settings.dripper_start)
     print("/"*50)
@@ -24,30 +25,11 @@ def get_new_hpv_data():
     print("NOW TIME = ", now)
     print("TZ: ", now.tzinfo)
 
-    # Is there a claim in the database? Errors could be: Server locked, no matching result for the query. Errors cause function escape.
-    try:
-        last_claim = RawPlantActivity.objects.filter(POOL_CD='03',
-                                                     TS_LOAD__lte=now)
-        last_claim = last_claim.latest('TS_LOAD')
-        print("LAST_CLAIM=", last_claim.VEH_SER_NO, last_claim.TS_LOAD)
-    # TODO "server busy" is a placeholder and will need to change when we know the real error message
-    # except "ServerBusy":
-    #     return print("Server busy. Checking again in 5 minutes.")
-    except ObjectDoesNotExist:
-        print("No claims in the database.")
+    last_claim = get_last_claim(now)
+    if last_claim is None:
         return
 
-    # Check for the last entry to the processed data table. Escape if no new claim since last entry. Errors include: No objects for the query - continues to writing logic.
-    try:
-        print("GOING TO API TABLE TO GET LATEST API OBJECT")
-        last_api_write = HPVATM.objects.filter(timestamp__lte=now)
-        last_api_write = last_api_write.latest('timestamp')
-        print("THIS IS WHAT WAS FOUND IN API TABLE TIMESTAMP ", last_api_write.timestamp)
-        found_entry = True
-    except Exception as e:
-        print("No objects in processed table. Writing.  ", e)
-        # Set both to true to catch either or in hpv_dict check
-        found_entry = False
+    last_api_write, found_entry = get_last_api_write(now)
 
     if found_entry:
         does_need_to_write = need_to_write(now, plant_settings, last_api_write, last_claim)
@@ -69,11 +51,44 @@ def get_new_hpv_data():
     delete_old_entries(plant_settings, now)
     write_data(hpv_dict_with_day)
 
-    return "Wrote to API"
+    return True
+
+
+def get_last_claim(now):
+    try:
+        last_claim = RawPlantActivity.objects.filter(POOL_CD='03',
+                                                     TS_LOAD__lte=now)
+        last_claim = last_claim.latest('TS_LOAD')
+        print("LAST_CLAIM=", last_claim.VEH_SER_NO, last_claim.TS_LOAD)
+        return last_claim
+    # TODO "server busy" is a placeholder and will need to change when we know the real error message
+    # except "ServerBusy":
+    #     print("Server busy. Checking again in 5 minutes.")
+    #     return None
+    except ObjectDoesNotExist:
+        print("No claims in the database.")
+        last_claim = None
+        return last_claim
+
+
+def get_last_api_write(now):
+    try:
+        print("GOING TO API TABLE TO GET LATEST API OBJECT")
+        last_api_write = HPVATM.objects.filter(timestamp__lte=now)
+        last_api_write = last_api_write.latest('timestamp')
+        print("THIS IS WHAT WAS FOUND IN API TABLE TIMESTAMP ", last_api_write.timestamp)
+        found_entry = True
+    except Exception as e:
+        print("No objects in processed table. Writing.  ", e)
+        # Set both to true to catch either or in hpv_dict check
+        last_api_write = None
+        found_entry = False
+    return last_api_write, found_entry
+
 
 def no_dict_or_no_claims(hpv_dict):
-    if hpv_dict is None or hpv_dict['claims_for_range'] == 0:
-        return True
+    return hpv_dict is None or hpv_dict['claims_for_range'] == 0
+
 
 def need_to_write(now, plant_settings, last_api_write, last_claim):
     time_between = plant_settings.TAKT_Time
@@ -89,6 +104,7 @@ def need_to_write(now, plant_settings, last_api_write, last_claim):
         else:
             print("No new data in API TABLE. Checking again in 5 minutes.")
             return False
+
 
 def is_near_shift_end(now, plant_settings):
     end_first = dt.datetime.combine(now.date(), plant_settings.first_shift) + dt.timedelta(hours=8)
@@ -202,10 +218,16 @@ def find_shift_after_first(now, plant_settings, shift, start):
             # If 3 shifts, check if time is in that shift.
             print("2nd 3 SHIFT CHECK")
             if plant_settings.num_of_shifts == 3:
-                if now.time() >= plant_settings.third_shift:
-                    shift = 3
-                    start = dt.datetime.combine(now.date(), plant_settings.third_shift)
-                    start = timezone.make_aware(start)
+                shift, start = check_if_in_third_shift(now, plant_settings, shift, start)
+
+    return shift, start
+
+
+def check_if_in_third_shift(now, plant_settings, shift, start):
+    if now.time() >= plant_settings.third_shift:
+        shift = 3
+        start = dt.datetime.combine(now.date(), plant_settings.third_shift)
+        start = timezone.make_aware(start)
     return shift, start
 
 
@@ -217,6 +239,7 @@ def get_third_shift_start(now, plant_settings):
     print("START TIME FOR 3 SHIFTS = ", start)
 
     return shift, start
+
 
 def get_second_shift_start(now, plant_settings):
     shift = 2
@@ -395,23 +418,34 @@ def get_last_two_shifts_dept_day_hpv(dept, all_since_start, cur_mh, cur_claims):
     s3 = all_since_start.filter(shift=3).last()
     s1 = all_since_start.filter(shift=1).last()
     if s3 is None:
-        if s1 is None:
-            mh = cur_mh
-            claims = cur_claims
-        else:
-            mh = getattr(s1, '{}_s_mh'.format(dept)) + cur_mh
-            claims = s1.claims_s + cur_claims
+        mh, claims = get_last_two_shifts_dept_day_hpv_missing_shift_three(dept, s1, cur_mh, cur_claims)
     elif s1 is None:
-        mh = getattr(s3, '{}_s_mh'.format(dept)) + cur_mh
-        claims = s3.claims_s + cur_claims
-        if s3 is None:
-            mh = cur_mh
-            claims = cur_claims
+        mh, claims = get_last_two_shifts_dept_day_hpv_missing_shift_one(dept, s3, cur_mh, cur_claims)
     else:
         mh = getattr(s3, '{}_s_mh'.format(dept)) + getattr(s1, '{}_s_mh'.format(dept)) + cur_mh
         claims = s3.claims_s + s1.claims_s + cur_claims
     hpv = calc_hpv(mh, claims)
     return hpv, mh
+
+
+def get_last_two_shifts_dept_day_hpv_missing_shift_three(dept, s1, cur_mh, cur_claims):
+    if s1 is None:
+        mh = cur_mh
+        claims = cur_claims
+    else:
+        mh = getattr(s1, '{}_s_mh'.format(dept)) + cur_mh
+        claims = s1.claims_s + cur_claims
+    return mh, claims
+
+
+def get_last_two_shifts_dept_day_hpv_missing_shift_one(dept, s3, cur_mh, cur_claims):
+    mh = getattr(s3, '{}_s_mh'.format(dept)) + cur_mh
+    claims = s3.claims_s + cur_claims
+    if s3 is None:
+        mh = cur_mh
+        claims = cur_claims
+    return mh, claims
+
 
 def get_two_shifts_dept_day_hpv(hpv_dict, dept, all_since_start, cur_hpv, cur_mh, cur_claims):
     if hpv_dict['shift'] == 1:
@@ -420,6 +454,7 @@ def get_two_shifts_dept_day_hpv(hpv_dict, dept, all_since_start, cur_hpv, cur_mh
         last_shift = all_since_start.filter(shift=1).last()
         hpv, mh = get_last_shift_dept_day_hpv(dept, cur_mh, cur_claims, last_shift)
     return hpv, mh
+
 
 def get_plant_day_hpv(hpv_dict, now):
     print("/"*50)
@@ -450,35 +485,35 @@ def get_three_shifts_plant_day_hpv(hpv_dict, all_since_start, cur_hpv, cur_mh, c
         return cur_hpv, cur_mh, cur_claims
     elif hpv_dict['shift'] == 1:
         last_shift = all_since_start.filter(shift=3).last()
-        if last_shift is None:
-            hpv = cur_hpv
-            mh = cur_mh
-            claims = cur_claims
-        else:
-            mh = last_shift.PLANT_s_mh + cur_mh
-            claims = last_shift.claims_s + cur_claims
-            hpv = calc_hpv(mh, claims)
+        hpv, mh, claims = get_last_shift_plant_day_hpv(cur_hpv, cur_mh, cur_claims, last_shift)
     elif hpv_dict['shift'] == 2:
         s3 = all_since_start.filter(shift=3).last()
         s1 = all_since_start.filter(shift=1).last()
-        if s3 is None:
-            if s1 is None:
-                mh = cur_mh
-                claims = cur_claims
-            else:
-                mh = s1.PLANT_s_mh + cur_mh
-                claims = s1.claims_s + cur_claims
-        elif s1 is None:
-            if s3 is None:
-                mh = cur_mh
-                claims = cur_claims
-            else:
-                mh = s3.PLANT_s_mh + cur_mh
-                claims = s3.claims_s + cur_claims
+        hpv, mh, claims = get_three_shifts_plant_day_hpv_2nd_shift(s3, s1, cur_mh, cur_claims)
+
+    return hpv, mh, claims
+
+
+def get_three_shifts_plant_day_hpv_2nd_shift(s3, s1, cur_mh, cur_claims):
+    if s3 is None:
+        if s1 is None:
+            mh = cur_mh
+            claims = cur_claims
         else:
-            mh = s3.PLANT_s_mh + s1.PLANT_s_mh + cur_mh
-            claims = s3.claims_s + s1.claims_s + cur_claims
-        hpv = calc_hpv(mh, claims)
+            mh = s1.PLANT_s_mh + cur_mh
+            claims = s1.claims_s + cur_claims
+    elif s1 is None:
+        if s3 is None:
+            mh = cur_mh
+            claims = cur_claims
+        else:
+            mh = s3.PLANT_s_mh + cur_mh
+            claims = s3.claims_s + cur_claims
+    else:
+        mh = s3.PLANT_s_mh + s1.PLANT_s_mh + cur_mh
+        claims = s3.claims_s + s1.claims_s + cur_claims
+    hpv = calc_hpv(mh, claims)
+
     return hpv, mh, claims
 
 
