@@ -81,3 +81,5 @@ staticfiles
 .envrc
 
 .idea/
+data/claims.xlsx
+data/old/exp_punch.csv

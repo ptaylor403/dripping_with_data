@@ -82,3 +82,98 @@ td {
   background: lightblue;
   border-color: white;
 }
+
+#claim_title {
+  position: absolute;
+  top: 25px;
+  right: 267px;
+}
+
+#shift1_attendance{
+  position: absolute;
+  top: 450px;
+}
+
+#shift1_title{
+  position: absolute;
+  top: 400px;
+}
+
+#shift2_attendance{
+  position: absolute;
+  right: 90px;
+  top: 450px;
+}
+
+#shift2_title{
+  position: absolute;
+  right: 545px;
+  top: 400px;
+}
+
+/*Heat Map*/
+rect.bordered {
+  stroke: #fff;
+  stroke-width:2px;
+}
+
+text.mono {
+  font-size: 9pt;
+  fill: #aaa;
+  letter-spacing: 1px;
+  font-weight: 700;
+}
+
+text.mono.scale {
+  fill: #000;
+}
+
+text.axis-workweek {
+  fill: #000;
+}
+
+text.axis-worktime {
+  fill: #000;
+}
+
+.btn-default {
+  margin: 5px;
+}
+
+/*Detail line graph*/
+#line {
+
+}
+#line path {
+    stroke: steelblue;
+    stroke-width: 2;
+    fill: none;
+}
+
+#line .axis path,
+#line .axis line {
+    fill: none;
+    stroke: grey;
+    stroke-width: 1;
+    shape-rendering: crispEdges;
+}
+
+div.tooltip {
+    position: absolute;
+    text-align: center;
+    width: 60px;
+    height: 28px;
+    padding: 2px;
+    font: 12px sans-serif;
+    background: lightsteelblue;
+    border: 0px;
+    border-radius: 8px;
+    pointer-events: none;
+}
+.grid .tick {
+    stroke: lightgrey;
+    opacity: 0.7;
+}
+.grid path {
+      stroke-width: 0;
+}

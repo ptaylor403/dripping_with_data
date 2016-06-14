@@ -1,0 +1,65 @@
+{% extends 'hpv/base.html' %}
+{% load staticfiles %}
+
+{% block content %}
+<div class="container">
+  <div class="row">
+    <div class="col-xs-12">
+      <div id="dataset-picker"></div>
+      <div id="detaillevel-picker"></div>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="col-xs-7">
+      <div id="line"></div>
+    </div>
+    <div class="col-xs-5">
+      <table id="hpv">
+        <h2>Summary</h2>
+        <tr class="head">
+          <th class="head"></th>
+          <th class="head">Current</th>
+          <th class="head">Yesterday</th>
+          <th class="head">Week</th>
+          <th class="head">Month</th>
+        </tr>
+        <tr>
+          <td class="dept">Plant</td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+        </tr>
+        <tr>
+          <td class="dept">Shift 1</td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+        </tr>
+        <tr>
+          <td class="dept">Shift 2</td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+        </tr>
+      </table>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-xs-12">
+      <div id="heatmap"></div>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-xs-12">
+      <div id="week_on_week">
+        <svg style='height:300px'> </svg>
+      </div>
+    </div>
+  </div>
+</div>
+<script src="{% static "hpv/detail.js" %}" type="text/javascript"> </script>
+{% endblock %}

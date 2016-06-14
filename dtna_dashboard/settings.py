@@ -60,6 +60,7 @@ TEST_RUNNER = 'django_nose.NoseTestSuiteRunner'
 NOSE_ARGS = [
     '--with-coverage',
     '--cover-package=generic_dripper,hpv,api,crys,plantsettings,data_processor',
+    '--cover-html',
 ]
 
 MIDDLEWARE_CLASSES = (
@@ -137,9 +138,9 @@ USE_L10N = True
 USE_TZ = True
 
 # Update database configuration with $DATABASE_URL.
-# my_db = 'postgres:///dtna_dashboard'
-# db_from_env = dj_database_url.config(default=my_db, conn_max_age=500)
-# DATABASES['default'].update(db_from_env)
+my_db = 'postgres:///dtna_dashboard'
+db_from_env = dj_database_url.config(default=my_db, conn_max_age=500)
+DATABASES['default'].update(db_from_env)
 
 # Honor the 'X-Forwarded-Proto' header for request.is_secure()
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')

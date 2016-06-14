@@ -14,17 +14,19 @@
 
   <body>
     {% if user.is_authenticated %}
-    <div class="collapse" id="exCollapsingNavbar">
-      <div class="bg-inverse p-a-1"><p>
-        {{time}} || <b>Signed in as {{user.username}} </b> || <a href="{% url 'logout' %}">Logout</a></p>
-      </div>
-    </div>
-    <nav class="navbar navbar-light bg-faded">
+    <nav class="navbar navbar-default">
       <div class="navbar-header">
-        <b><a class="navbar-brand" href="#">Daimler</a></b>
-        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#exCollapsingNavbar">
-        &#9776;
-        </button>
+        <b><a class="navbar-brand" href="/hpv/">Daimler</a></b>
+        <ul class="nav navbar-nav navbar-right">
+          <button class="navbar-toggler" type="button" data-toggle="dropdown" data-target="#exCollapsingNavbar">
+          &#9776;
+          </button>
+          <ul class="dropdown-menu">
+            <li><center><b>Signed in as {{user.username}} </b></center></li>
+            <li role="separator" class="divider"></li>
+            <li><a href="{% url 'logout' %}">Logout</a></li>
+          </ul>
+        </ul>
       </div>
     </nav>
     {% endif %}
@@ -34,6 +36,7 @@
     {% endblock %}
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js" integrity="sha384-0mSbJDEHialfmuBBQP6A4Qrprq5OVfW37PRR3j5ELqxss1yVqOtnepnHVP9aJ7xS" crossorigin="anonymous"></script>
     <script src="../static/hpv/build/nv.d3.js"></script>
+    <!-- <meta http-equiv="refresh" content="5"> -->
   </body>
 
 </html>
