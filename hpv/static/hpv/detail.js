@@ -24,14 +24,14 @@ jQuery(function($) {
 
   var detailLevel = [{query: "/api/hpv/?days=1&format=json", label: "Day"},
                      {query: "/api/hpv/?days=7&format=json", label: 'Week'},
-                     {query: "/api/hpv/?days=21&format=json", label: 'Month'}];
+                     {query: "/api/hpv/?days=31&format=json", label: 'Month'}];
 
   var url_parts = ($(location).attr("href")).split('/')
   var dept = ''
   while (dept == ''){
     dept = url_parts.pop()
   }
-  
+
   if(dept == 'heatmap'){dept='PLANT'}
 
   var currentDataName = dept+"_d_hpv";
@@ -94,8 +94,6 @@ jQuery(function($) {
       var lineGraph = function(day) {
         d3.json('/api/hpv/?days=7&format=json',
         function(error, data) {
-          console.log("LINE")
-          console.log(error)
           // Get dataset
           var dataset = datasets.filter(function(dataset) {
               if (dataset.day == day) {
@@ -331,10 +329,8 @@ jQuery(function($) {
 
     // Create heatmap
     var heatmapChart = function(day) {
-      d3.json('/api/hpv?format=json',
+      d3.json('/api/hpv?format=json&days=7',
       function(error, data) {
-        console.log("heatmap")
-        console.log(error);
         var heatmapData = {};
         for (var i = 0; i < data.length; i++) {
           var timestamp = data[i]["timestamp"];
@@ -432,10 +428,85 @@ jQuery(function($) {
     }
   })();
 
+  /********************************
+    Week on Week
+  *********************************/
+
+  var weekOnWeek = (function() {
+
+    var parseDate = d3.time.format("%Y-%m-%dT%H:%M:%SZ").parse;
+    var weekInSeconds = (7*24*3600)
+    var todayData = [];
+    var previousData =[];
+    var graphData = [{
+      key: 'Today',
+      values: [],
+      color: '#4252ce'
+    },
+    {
+      key: 'LastWeek',
+      values: [],
+      color: '#ff0000'
+    }];
+    d3.json('/api/hpv?days=1&format=json',function(error, data){
+      todayData=data
+      for (i = 0; i < data.length; i++) {
+          // unix = Math.round((new Date(data[i]["timestamp"]).getTime()) / 1000);
+          time = parseDate(data[i]["timestamp"]).getTime()/1000
+          // console.log(i + "/" + data[i]["timestamp"] + " || " + time)
+          graphData[0].values.push([time, data[i]["PLANT_d_hpv"]]);
+      };
+      lastDataTime = todayData[todayData.length-1]['timestamp']
+      lastDataTimestamp = parseDate(lastDataTime).getTime()/1000
+      previousDataTimestamp = lastDataTimestamp - weekInSeconds
+      d3.json('/api/hpv?days=1&end=&format=json&end='+previousDataTimestamp,function(data){
+        for (i = 0; i < data.length; i++) {
+            // unix = Math.round((new Date(data[i]["timestamp"]).getTime()) / 1000);
+            time = parseDate(data[i]["timestamp"]).getTime()/1000 + weekInSeconds
+            // console.log(i + "/" + data[i]["timestamp"] + " || " + time)
+            graphData[1].values.push([time, data[i]["PLANT_d_hpv"]]);
+        };
+        // previousData=data
+        console.log(previousData.length)
+        nv.addGraph(function() {
+        var chart = nv.models.lineChart()
+          .useInteractiveGuideline(false)
+          .x(function(d) { return d[0] })
+          .y(function(d) { return d[1] })
+          ;
+
+          chart.xAxis
+            .axisLabel('Time')
+            .tickFormat(function(d) {
+                return d3.time.format('%H:%M')(new Date(d))
+              });
+
+          chart.yDomain([0, 140])
+          chart.yAxis
+            .axisLabel('HPV')
+            .tickFormat(d3.format(',f'));
+
+          d3.select('#week_on_week svg')
+            .datum(graphData)
+            .call(chart);
+
+          //TODO: Figure out a good way to do this automatically
+          nv.utils.windowResize(chart.update);
+
+          return chart;
+        });
+
+
+
+
+        })
+    })
+});
+
   // intialize charts
   heatMap.heatmap(currentDataName);
   lineChart.lineGraph(currentDataName);
-
+  weekOnWeek();
   // dataset selection
   var datasetpicker = d3.select("#dataset-picker").selectAll(".btn btn-default")
   .data(datasets);
@@ -468,4 +539,5 @@ jQuery(function($) {
 
   // reload page every 60 seconds
   // setTimeout(function() {location.reload(true);},6000);
+
 });
