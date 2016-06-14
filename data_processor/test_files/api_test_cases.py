@@ -330,7 +330,7 @@ three_shifts_second_shift_api_entry = {
     'timestamp': timezone.make_aware(dt.datetime(2016, 6, 2, 22, 25)),
 }
 
-two_shifts_first_shift_api_entry_early = {
+two_shifts_first_shift_api_entry_7_am = {
     'CIW_s_hpv': 10,
     'CIW_s_mh': 5,
     'CIW_s_ne': 10,
