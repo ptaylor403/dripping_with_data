@@ -1,5 +1,6 @@
 {% extends 'hpv/base.html' %}
 {% load staticfiles %}
+{% load tz %}
 
 <head>
     <meta charset="utf-8">
@@ -7,8 +8,35 @@
 </head>
 
 {% block content %}
+{% if user.is_authenticated %}
+<nav class="navbar navbar-default">
+  <div class="col-xs-2">
+    <div class="navbar-header">
+      <a class="navbar-brand" href="/hpv"><h4 class="brand"><b>MTH HPV</b></h4></a>
+    </div>
+  </div>
+  <div class="col-xs-9"></div>
+  <div class="col-xs-1">
+    <button class="navbar-toggler" type="button" data-toggle="dropdown" data-target="#exCollapsingNavbar">
+    &#9776;
+    </button>
+    <ul class="dropdown-menu dropdown-menu-right">
+      <li><center><b> {{user.username}} </b></center></li>
+      <li role="separator" class="divider"></li>
+      <li><a href="/hpv">Home</a></li>
+      <li><a href="/admin/">Admin</a></li>
+      <li role="separator" class="divider"></li>
+      {% for name, dept in depts.items %}
+        <li><a href="/detail/{{ name }}">{{ name }}</a></li>
+      {% endfor %}
+      <li role="separator" class="divider"></li>
+      <li><a href="{% url 'logout' %}">Logout</a></li>
+    </ul>
+  </div>
+</nav>
+{% endif %}
 
-<div class=container>
+<div class="container">
   <p>
     {{dripper_time}}
   </p>
@@ -27,7 +55,7 @@
         </tr>
         {% for name, dept in depts.items %}
         <tr>
-          <td class="dept">{{ name }}</td>
+          <td class="dept"><a href="/detail/{{ name }}" >{{ name }}</a></td>
           {% if shift_3 %}
           <td>{{ dept.s3_hpv }}</td>
           {% endif %}
@@ -36,14 +64,25 @@
           <td>{{ dept.d_hpv }}</td>
         </tr>
         {% endfor %}
+        <tr>
+          <td class="dept">CLAIMS</td>
+          {% if shift_3 %}
+          <td>{{ s3_claims }}</td>
+          {% endif %}
+          <td>{{ s1_claims }}</td>
+          <td>{{ s2_claims }}</td>
+          <td>{{ claims_d }}</td>
+        </tr>
       </table>
     </div>
+    <!-- <div class="row"> -->
+        <div class="col-sm-12 col-md-7">
+          <h3>Today's HPV</h3>
+          <div id='linegraph'>
+            <svg style='height:300px'> </svg>
+          </div>
+          <script src='{% static "hpv/graph.js" %}' type='text/javascript'> </script>
 
-    <div class="col-sm-12 col-md-7">
-      <div id='linegraph'>
-        <svg style='height:300px'> </svg>
-      </div>
-      <script src='{% static "hpv/graph.js" %}' type='text/javascript'> </script>
 
       <!-- <script type='text/javascript'>
         d3.text("{% static "hpv/graph.js" %}","text/plain",function(err,text) {
@@ -203,7 +242,7 @@
   <div class="row">
     <div class="col-xs-12">
       <center>
-      <h3> Total Count: {{ depts.CLAIMS.d_hpv }} |  Total HPV: {{ depts.PLANT.d_hpv|floatformat }}</h3>
+      <h3> Total Count: {{ claims_d }} |  Total HPV: {{ depts.PLANT.d_hpv|floatformat }} <br> Most recent update: {{ current_time|timezone:'US/Eastern' }} </h3>
       </center>
     </div>
   </div>

@@ -12,6 +12,8 @@ secrets.py
 **/migrations/**
 /plantsettings/migrations/0001_initial.py
 **/plantsettings/migrations/0001_initial.py
+**/cover
+/cover
 
 # C extensions
 *.so
