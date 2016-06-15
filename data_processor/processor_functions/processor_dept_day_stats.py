@@ -6,12 +6,12 @@ from .processor_hpv_calc import calc_hpv
 
 def get_dept_day_stats(hpv_dict, now, dept):
     """
-    Calculates the HPV for the current shift by dividing shift manhours by the claims. If no claims, HPV is set to 0 to avoid a DivisionByZero error.
+    Calculates the HPV for the current day by dividing shift manhours by the claims. If no claims, HPV is set to 0 to avoid a DivisionByZero error.
 
     :param hpv_dict: A dictionary object containing hpv, manhours, number clocked in by department as well as number of claims that shift.
     :param now: The simulated time - datetime object.
     :param dept: The department to calculate for - string.
-    :return: Float value - plant shift HPV.
+    :return: Float value - department day HPV AND Integer - manhours.
     """
     # Find start of the current day
     plant_settings = PlantSetting.objects.latest('timestamp')
@@ -38,7 +38,7 @@ def get_dept_day_stats(hpv_dict, now, dept):
 
 def get_three_shifts_dept_day_hpv(hpv_dict, dept, all_since_start, cur_hpv, cur_mh, cur_claims):
     """
-    Calculates the HPV for the department based on 3 shifts active in settings. Gets the final snapshots from previous shifts to add to the current shift values. HPV is calculated based on manhour and and claim totals for the day so far.
+    Calculates the HPV for the department based on 3 shifts active in settings. Gets the final snapshots from previous shifts to add to the current shift values. HPV is calculated based on manhour and claim totals for the day so far.
 
     :param hpv_dict: A dictionary object containing hpv, manhours, number clocked in by department as well as number of claims that shift.
     :param dept: The department to calculate for - string.
@@ -46,7 +46,7 @@ def get_three_shifts_dept_day_hpv(hpv_dict, dept, all_since_start, cur_hpv, cur_
     :param cur_hpv: shift hpv value for the department - float.
     :param cur_mh: shift manhours value for the department - integer.
     :param cur_claims: shift claims value - integer.
-    :return: Float value - plant shift HPV.
+    :return: Float value - department day HPV AND Integer - manhours.
     """
     if hpv_dict['shift'] == 3:
         hpv, mh =  cur_hpv, cur_mh
@@ -62,13 +62,13 @@ def get_three_shifts_dept_day_hpv(hpv_dict, dept, all_since_start, cur_hpv, cur_
 
 def get_last_shift_dept_day_hpv(dept, cur_mh, cur_claims, last_shift):
     """
-    Calculates the HPV for the department based on only 1 previous shift. Gets the final snapshots from the previous shift to add to the current shift values. HPV is calculated based on manhour and and claim totals for the day so far.
+    Calculates the HPV for the department based on only 1 previous shift. Gets the final snapshots from the previous shift to add to the current shift values. HPV is calculated based on manhour and claim totals for the day so far.
 
     :param dept: The department to calculate for - string.
     :param cur_mh: shift manhours value for the department - integer.
     :param cur_claims: shift claims value - integer.
     :param last_shift: HPVATM model object - API entry for the previous shift.
-    :return: Float value - plant shift HPV.
+    :return: Float value - department day HPV AND Integer - manhours.
     """
     # If no previous entries, day totals are equal to shift totals
     if last_shift is None:
@@ -89,7 +89,7 @@ def get_last_two_shifts_dept_day_hpv(dept, all_since_start, cur_mh, cur_claims):
     :param all_since_start: HPVATM queryset object - API entries for the current day.
     :param cur_mh: shift manhours value for the department - integer.
     :param cur_claims: shift claims value - integer.
-    :return: Float value - plant shift HPV AND Integer for manhours.
+    :return: Float value - department day HPV AND Integer for manhours.
     """
     # Get the last entries for each previous shift.
     s3 = all_since_start.filter(shift=3).last()
@@ -108,9 +108,20 @@ def get_last_two_shifts_dept_day_hpv(dept, all_since_start, cur_mh, cur_claims):
 
 
 def get_last_two_shifts_dept_day_hpv_missing_shift_three(dept, s1, cur_mh, cur_claims):
+    """
+    Returns the total hpv for the day when there are 2 shifts before the current time to check and there is no shift 3 data.
+
+    :param dept: The department to calculate for - string.
+    :param s1: HPVATM model instance - final entry for today's first shift.
+    :param cur_mh: shift manhours value for the department - integer.
+    :param cur_claims: shift claims value - integer.
+    :return: Integer value - manhours AND Integer for claims.
+    """
+    # If also missing s1, current shift data is equal to day totals.
     if s1 is None:
         mh = cur_mh
         claims = cur_claims
+    # Need to float the DecimalField value from the model.
     else:
         mh = float(getattr(s1, '{}_s_mh'.format(dept))) + cur_mh
         claims = s1.claims_s + cur_claims
@@ -118,15 +129,36 @@ def get_last_two_shifts_dept_day_hpv_missing_shift_three(dept, s1, cur_mh, cur_c
 
 
 def get_last_two_shifts_dept_day_hpv_missing_shift_one(dept, s3, cur_mh, cur_claims):
-    mh = float(getattr(s3, '{}_s_mh'.format(dept))) + cur_mh
-    claims = s3.claims_s + cur_claims
+    """
+    Returns the total hpv for the day when there are 2 shifts before the current time to check and there is no shift 1 data.
+
+    :param dept: The department to calculate for - string.
+    :param s3: HPVATM model instance - final entry for today's third shift.
+    :param cur_mh: shift manhours value for the department - integer.
+    :param cur_claims: shift claims value - integer.
+    :return: Integer value - manhours AND Integer for claims.
+    """
     if s3 is None:
         mh = cur_mh
         claims = cur_claims
+    else:
+        mh = float(getattr(s3, '{}_s_mh'.format(dept))) + cur_mh
+        claims = s3.claims_s + cur_claims
     return mh, claims
 
 
 def get_two_shifts_dept_day_hpv(hpv_dict, dept, all_since_start, cur_hpv, cur_mh, cur_claims):
+    """
+    Calculates the HPV for the department based on 2 shifts active in settings. Gets the final snapshots from previous shift to add to the current shift values. HPV is calculated based on manhour and and claim totals for the day so far.
+
+    :param hpv_dict: A dictionary object containing hpv, manhours, number clocked in by department as well as number of claims that shift.
+    :param dept: The department to calculate for - string.
+    :param all_since_start: Queryset object - API entries since the start of the day
+    :param cur_hpv: shift hpv value for the department - float.
+    :param cur_mh: shift manhours value for the department - integer.
+    :param cur_claims: shift claims value - integer.
+    :return: Float value - department day HPV and Integer - manhours.
+    """
     if hpv_dict['shift'] == 1:
         hpv, mh = cur_hpv, cur_mh
     elif hpv_dict['shift'] == 2:
