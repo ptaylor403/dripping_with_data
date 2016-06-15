@@ -1,5 +1,4 @@
 from get_data.models import RawPlantActivity
-from datetime import datetime
 
 
 def get_claimed_objects_in_range(start, stop):
@@ -10,12 +9,11 @@ def get_claimed_objects_in_range(start, stop):
     :return: RawPlantActivity, 'claim', objects
 
     """
-    claimed_objects = RawPlantActivity.objects.filter(
+    return RawPlantActivity.objects.filter(
         TS_LOAD__gte=start,
         TS_LOAD__lte=stop,
         POOL_CD__exact='03',
     )
-    return claimed_objects
 
 
 def get_range_of_claims(start, stop):
@@ -29,7 +27,5 @@ def get_range_of_claims(start, stop):
     print('('*50)
     print('NUM TRUCKS FROM CLAIMS', num_trucks.count())
     print('(' * 50)
-    # for truck in num_trucks:
-    #     print(truck.VEH_SER_NO)
 
     return num_trucks.count()
