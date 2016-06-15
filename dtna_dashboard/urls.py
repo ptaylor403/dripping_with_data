@@ -1,14 +1,9 @@
 from django.conf.urls import include, url
 from django.contrib import admin
-<<<<<<< HEAD
 from django.apps import AppConfig
-from pytz import utc
-from apscheduler.schedulers.background import BackgroundScheduler
 import filelock
-=======
 from apscheduler.schedulers.background import BackgroundScheduler
 from data_processor.processor import get_new_hpv_data
->>>>>>> f2e3def6356353800ce321a8309a479f65458049
 
 
 scheduler = BackgroundScheduler()

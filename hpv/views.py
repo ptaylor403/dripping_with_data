@@ -111,66 +111,6 @@ class HPV(LoginRequiredMixin, TemplateView):
     template_name = "hpv/hpv2.html"
     login_url = '/login/'
 
-    def _get_plant_history(shift_start_time, today):
-        shift = []
-        # for department in departments:
-        #     dpt_data = [department]
-        for i in range(1,17):
-            print('Hour: ', i)
-            this_dt = datetime.combine(today, dt.time(shift_start_time + i))
-            if this_dt <= NOW:  # datetime.now():
-                num_in = RawClockData.get_clocked_in(start=this_dt).filter(PNCHEVNT_IN__gte=this_dt, PNCHEVNT_IN__lt=this_dt + dt.timedelta(i + 1)).count()
-                shift.append(num_in)
-                print("num_in: ", num_in)
-            else:
-                shift.append("")
-
-        return shift
-
-    def _get_shift_manhour_history(departments, shift_start_time, today):
-        shift = []
-        for department in departments:
-            dpt_data = [department]
-            for i in range(1,9):
-                this_dt = datetime.combine(today, dt.time(shift_start_time + i))
-                start_dt = datetime.combine(today, dt.time(shift_start_time))
-                this_dt = pytz.utc.localize(this_dt)
-                start_dt = pytz.utc.localize(start_dt)
-                if this_dt <= pytz.utc.localize(NOW):  # datetime.now():
-                    dpt_data.append(Attendance.get_manhours_during(start=start_dt, stop=this_dt, department=department))
-                else:
-                    dpt_data.append("")
-
-            shift.append(dpt_data)
-        return shift
-
-    def _get_department_hpv(departments, START_TIME1, START_TIME2, NOW):
-        # Get the department
-        # Get the plant total manhours for each department from the start of the day to NOW
-        # Get the manhours for that department from the start of each shift to NOW or end of shift
-        hpv_data = []
-        start_times = [START_TIME1, START_TIME1, START_TIME2]
-        end_times = [NOW, min(NOW, START_TIME2), min(NOW, (START_TIME2 + dt.timedelta(hours=8)))]
-        truck_totals = []
-        for start_time, end_time in zip(start_times, end_times):
-            truck_totals.append(Complete.claims_by_time(end_time) - Complete.claims_by_time(start_time))
-        for department in departments:
-            department_hpv = [department]
-            for start_time, end_time, truck_total in zip(start_times, end_times, truck_totals):
-                this_dt = end_time
-                start_dt = start_time
-                this_dt = pytz.utc.localize(this_dt)
-                start_dt = pytz.utc.localize(start_dt)
-                if this_dt <= pytz.utc.localize(end_time):  # datetime.now():
-                    dept_manhours = Attendance.get_manhours_during(start=start_dt, stop=this_dt, department=department)
-                    try:
-                        department_hpv.append(dept_manhours / truck_total)
-                    except:
-                        department_hpv.append(0)
-                else:
-                    department_hpv.append('')
-            hpv_data.append(department_hpv)
-        return hpv_data
 
     def get_context_data(self, **kwargs):
         # When during the hour should we do the headcount?
@@ -195,19 +135,22 @@ class HPV(LoginRequiredMixin, TemplateView):
             'MAINT': {},
             'QA': {},
             'MAT': {},
-            'PLANT': {},
-            'CLAIMS': {}
+            'PLANT': {}
         }
+
+        current_time = current.timestamp
+        context.update({'current_time': current_time})
 
         self.set_day_data(current, context, depts)
         self.set_shift1_data(current, shift1, context, depts)
         self.set_shift2_data(current, shift2, context, depts)
         self.set_shift3_data(current, shift3, context, depts)
 
-        keyorder = ['CIW', 'FCB', 'PNT', 'PCH', 'FCH', 'DAC', 'MAINT', 'QA', 'MAT', 'PLANT', 'CLAIMS']
+        keyorder = ['CIW', 'FCB', 'PNT', 'PCH', 'FCH', 'DAC', 'MAINT', 'QA', 'MAT', 'PLANT']
         context['depts'] = OrderedDict(sorted(depts.items(), key=lambda i:keyorder.index(i[0])))
 
         return context
+
 
     def set_day_data(self, current, context, depts):
         depts['CIW']['d_hpv'] = current.CIW_d_hpv
@@ -220,7 +163,9 @@ class HPV(LoginRequiredMixin, TemplateView):
         depts['QA']['d_hpv'] = current.QA_d_hpv
         depts['MAT']['d_hpv'] = current.MAT_d_hpv
         depts['PLANT']['d_hpv'] = current.PLANT_d_hpv
-        depts['CLAIMS']['d_hpv'] = current.claims_d
+        claims_d = current.claims_d
+
+        context.update({'claims_d': claims_d})
 
 
     def set_shift1_data(self, current, shift1, context, depts):
@@ -241,7 +186,9 @@ class HPV(LoginRequiredMixin, TemplateView):
         depts['QA']['s1_hpv'] = shift1.QA_s_hpv
         depts['MAT']['s1_hpv'] = shift1.MAT_s_hpv
         depts['PLANT']['s1_hpv'] = shift1.PLANT_s_hpv
-        depts['CLAIMS']['s1_hpv'] = shift1.claims_s
+        s1_claims = shift1.claims_s
+
+        context.update({'s1_claims': s1_claims})
 
 
     def set_shift2_data(self, current, shift2, context, depts):
@@ -262,7 +209,9 @@ class HPV(LoginRequiredMixin, TemplateView):
         depts['QA']['s2_hpv'] = shift2.QA_s_hpv
         depts['MAT']['s2_hpv'] = shift2.MAT_s_hpv
         depts['PLANT']['s2_hpv'] = shift2.PLANT_s_hpv
-        depts['CLAIMS']['s2_hpv'] = shift2.claims_s
+        s2_claims = shift2.claims_s
+
+        context.update({'s2_claims': s2_claims})
 
 
     def set_shift3_data(self, current, shift3, context, depts):
@@ -285,11 +234,11 @@ class HPV(LoginRequiredMixin, TemplateView):
         depts['QA']['s3_hpv'] = shift3.QA_s_hpv
         depts['MAT']['s3_hpv'] = shift3.MAT_s_hpv
         depts['PLANT']['s3_hpv'] = shift3.PLANT_s_hpv
-        depts['CLAIMS']['s3_hpv'] = shift3.claims_s
+        s3_claims = shift3.claims_s
 
         shift_3 = True
 
-        context.update({ 'shift3_total': shift3_total })
+        context.update({ 's1_claims': s1_claims, 'shift3_total': shift3_total })
 
 
 class Drip(LoginRequiredMixin, TemplateView):
@@ -326,6 +275,7 @@ class Drip(LoginRequiredMixin, TemplateView):
 def logout_view(request):
     logout(request)
     return render(request, 'registration/logout.html')
+
 
 class Detail(LoginRequiredMixin, TemplateView):
     template_name = "hpv/detail.html"
