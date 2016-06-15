@@ -3,7 +3,7 @@ from django.contrib import admin
 from django.apps import AppConfig
 import filelock
 from apscheduler.schedulers.background import BackgroundScheduler
-from data_processor.processor import get_new_hpv_data
+from data_processor.processor_functions.processor_get_new_hpv import get_new_hpv_data
 
 
 scheduler = BackgroundScheduler()
