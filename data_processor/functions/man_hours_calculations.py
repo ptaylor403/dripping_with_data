@@ -52,9 +52,7 @@ def get_emp_who_left_during_shift(start, stop):
     :param stop: datetime object the end of time that you want to look at
     :return: filtered objects within the start and stop range
     """
-    print('/*' * 50)
-    print("GET EMP WHO LEFT DURING SHIFT")
-    print('/*' * 50)
+
     with timezone.override("US/Eastern"):
         present_today = RawClockData.objects.filter(
             PNCHEVNT_IN__year=start.year,
@@ -71,6 +69,7 @@ def get_emp_who_left_during_shift(start, stop):
 
         return left_for_day
 
+
 def get_emp_who_left_on_break(start, stop):
     """
     Filters employees who clocked out before the stop
@@ -78,9 +77,7 @@ def get_emp_who_left_on_break(start, stop):
     :param stop: datetime object the end of time that you want to look at
     :return: filtered objects within the start and stop range
     """
-    print('/*' * 50)
-    print("GET EMP WHO LEFT DURING SHIFT")
-    print('/*' * 50)
+
     with timezone.override("US/Eastern"):
         present_today = RawClockData.objects.filter(
             PNCHEVNT_IN__year=start.year,
@@ -92,7 +89,6 @@ def get_emp_who_left_on_break(start, stop):
             PNCHEVNT_OUT__lte=stop,
             end_rsn_txt__exact='&break',
         ).exclude(PNCHEVNT_OUT__lte=start)
-        print("WENT ON BREAK= ", len(went_on_break))
 
         return went_on_break
 

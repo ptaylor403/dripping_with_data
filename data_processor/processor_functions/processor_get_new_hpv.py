@@ -1,7 +1,7 @@
 from api.models import HPVATM
 from plantsettings.models import PlantSetting
 from .processor_time import get_time_with_timezone
-from .processor_entries import get_last_api_write, get_last_claim
+from .processor_table_entries import get_last_api_write, get_last_claim
 from .processor_write_conditions import need_to_write, no_dict_or_no_claims
 from .processor_snap import get_hpv_snap
 from .processor_day_hpv import get_day_hpv_dict

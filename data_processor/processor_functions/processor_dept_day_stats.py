@@ -1,7 +1,6 @@
 from plantsettings.models import PlantSetting
 from api.models import HPVATM
 from .processor_shift import get_day_start
-from .processor_get_new_hpv import calc_hpv
 
 
 def get_dept_day_stats(hpv_dict, now, dept):
@@ -94,7 +93,7 @@ def get_last_two_shifts_dept_day_hpv(dept, all_since_start, cur_mh, cur_claims):
     # Get the last entries for each previous shift.
     s3 = all_since_start.filter(shift=3).last()
     s1 = all_since_start.filter(shift=1).last()
-    
+
     # If missing a shift, send to other functions to calculate.
     if s3 is None:
         mh, claims = get_last_two_shifts_dept_day_hpv_missing_shift_three(dept, s1, cur_mh, cur_claims)

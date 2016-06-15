@@ -1,5 +1,5 @@
 from data_processor.functions.process_data_main import main
-from processor.shift import get_shift_info
+from .processor_shift import get_shift_info
 from plantsettings.models import PlantSetting
 
 def get_hpv_snap(now):
