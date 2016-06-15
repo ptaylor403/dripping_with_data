@@ -63,10 +63,17 @@ h4 {
   padding: 5px 0 5px;
 }
 
+h4.brand {
+  background-color: #457B9D;
+  color: white;
+  padding: 5px 5px 5px 5px;
+  font-size: 14px;
+}
+
 /*Text*/
 
 a {
-  color: black;
+  color: white;
 }
 
 p {
@@ -101,7 +108,7 @@ td {
   height: 50px;
   text-align: center;
   vertical-align: center;
-  color: black;
+  color: white;
   background: #457B9D;
   border-color: white;
 }
@@ -115,7 +122,7 @@ td {
   font-weight: bold;
   background: #457B9D;
   border-color: white;
-  color: black;
+  color: white;
 }
 
 /*Heat Map*/

@@ -219,8 +219,8 @@ jQuery(function($) {
             .style("text-anchor", "middle")
             .text("HPV");
 
-          // // Add title
-          $('#dept').text('PLANT');
+          //  Add title
+          $('#depttitle').text(dataset.label);
           $('#time').text('Week');
           // svg.append("text")
           //     .classed('title', true)
@@ -564,7 +564,7 @@ jQuery(function($) {
       // update charts with new data
       currentDataName = d.day
       updateButtons(d.label, $(this).parent());
-      $('.dept').text(d.label);
+      $('.depttitle').text(d.label);
       heatMap.heatmap(d.day);
       lineChart.updateLineData(currentQuery, d.day);
     });

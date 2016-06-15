@@ -10,13 +10,25 @@
 {% block content %}
 {% if user.is_authenticated %}
 <nav class="navbar navbar-default">
-  <div class="navbar-header">
-    <b><a class="navbar-brand" href="/hpv/">Daimler</a></b>
+  <div class="col-xs-2">
+    <div class="navbar-header">
+      <a class="navbar-brand" href="/hpv"><h4 class="brand"><b>MTH HPV</b></h4></a>
+    </div>
+  </div>
+  <div class="col-xs-9"></div>
+  <div class="col-xs-1">
     <button class="navbar-toggler" type="button" data-toggle="dropdown" data-target="#exCollapsingNavbar">
     &#9776;
     </button>
     <ul class="dropdown-menu dropdown-menu-right">
-      <li><center><b>{{user.username}} </b></center></li>
+      <li><center><b> {{user.username}} </b></center></li>
+      <li role="separator" class="divider"></li>
+      <li><a href="/hpv">Home</a></li>
+      <li><a href="/admin/">Admin</a></li>
+      <li role="separator" class="divider"></li>
+      {% for name, dept in depts.items %}
+        <li><a href="/detail/{{ name }}">{{ name }}</a></li>
+      {% endfor %}
       <li role="separator" class="divider"></li>
       <li><a href="{% url 'logout' %}">Logout</a></li>
     </ul>
