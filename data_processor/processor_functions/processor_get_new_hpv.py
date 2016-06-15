@@ -69,4 +69,10 @@ def get_new_hpv_data():
 
 
 def write_data(full_hpv_dict):
+    """
+    Uses the full dictionary of department and plant hpv infor for the day to write a new entry to the HPVATM API table.
+
+    :param full_hpv_dict: Dictionary object with shift and day values for departments and plant.
+    :return: None
+    """
     HPVATM.objects.create(**full_hpv_dict)
