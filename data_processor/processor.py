@@ -9,31 +9,39 @@ from django.core.exceptions import ObjectDoesNotExist
 
 def get_new_hpv_data():
     """
-    Checks the server for new claim data. Checks that claims exist and that there is no.
+    Checks the server for new claim data. Checks that claims exist and that there is a new claim since the last api entry. It will still write to the api after X minutes (defined in admin plant settings) even if there is no new data. Additionally, it will write the current HPV statistics if it is within 5 minutes of the end of the hour in order to capture a final snapshot of the shift.
 
-    Returns: Confirmation to console of write or reason why it did not write.
+    Both day and shift HPV up to that time are written to the API HPVATM table if those conditions are met.
+
+    :return: True if it writes or None and print the reason why it did not write.
     """
+    # Finds the latest plant settings and pulls the time between writing if no
+    # entries are found and the simulated time from the data dripper
     plant_settings = PlantSetting.objects.latest('timestamp')
     time_between = plant_settings.TAKT_Time
+    now = get_time_with_timezone(plant_settings)
 
-    # TODO break get_now a function
-    with timezone.override("US/Eastern"):
-        now = timezone.localtime(plant_settings.dripper_start)
     print("/"*50)
     print("GET NEW HPV DATA")
     print("/"*50)
     print("NOW TIME = ", now)
     print("TZ: ", now.tzinfo)
 
+    # Checks that there was a claim in the database and does not write if not.
     last_claim = get_last_claim(now)
     if last_claim is None:
         return
 
+    # Checks for the last time an HPV snapshot was written
     last_api_write, found_entry = get_last_api_write(now)
 
+    # If an entry is found, should we write again?
+    # If no entry, it will need to write.
     if found_entry:
+        # Is there a new entry, has enough time passed, or is it close to the
+        # end of a shift?
         does_need_to_write = need_to_write(now, plant_settings, last_api_write, last_claim)
-        if not does_need_to_write:
+        if not need_to_write(now, plant_settings, last_api_write, last_claim):
             return
 
     # Call function to calc hpv by dept for the current shift.
@@ -46,15 +54,35 @@ def get_new_hpv_data():
     print("COMPLETED HPV DICT FROM FORMULAS: ", hpv_dict)
     print("COMPLETED HPV DICT CLAIMS_FOR_RANGE: ", hpv_dict['claims_for_range'])
 
+    # Calls functions to calculate values for the day so far and creates a dict
     hpv_dict_with_day = get_day_hpv_dict(hpv_dict, now)
 
+    # Checks if any entries need to be deleted due to age before writing
     delete_old_entries(plant_settings, now)
     write_data(hpv_dict_with_day)
 
     return True
 
 
+def get_time_with_timezone(plant_settings):
+    """
+    Gets the current time, making it timezone aware and in US/Eastern.
+
+    :param plant_settings: The most recent instance of the plant settings.
+    :return: TZ aware datetime object
+    """
+    with timezone.override("US/Eastern"):
+        return timezone.localtime(plant_settings.dripper_start)
+
+
+
 def get_last_claim(now):
+    """
+    Finds the last claim in the RawPlantActivity table, that exited pool 03
+
+    :param now: The simulated time
+    :return: Claim object or None if no matching queries.
+    """
     try:
         last_claim = RawPlantActivity.objects.filter(POOL_CD='03',
                                                      TS_LOAD__lte=now)
@@ -104,6 +132,8 @@ def need_to_write(now, plant_settings, last_api_write, last_claim):
         else:
             print("No new data in API TABLE. Checking again in 5 minutes.")
             return False
+    return True
+
 
 
 def is_near_shift_end(now, plant_settings):
@@ -408,7 +438,7 @@ def get_last_shift_dept_day_hpv(dept, cur_mh, cur_claims, last_shift):
         mh = cur_mh
         claims = cur_claims
     else:
-        mh = getattr(last_shift, '{}_s_mh'.format(dept)) + cur_mh
+        mh = float(getattr(last_shift, '{}_s_mh'.format(dept))) + cur_mh
         claims = last_shift.claims_s + cur_claims
     hpv = calc_hpv(mh, claims)
     return hpv, mh
@@ -422,7 +452,7 @@ def get_last_two_shifts_dept_day_hpv(dept, all_since_start, cur_mh, cur_claims):
     elif s1 is None:
         mh, claims = get_last_two_shifts_dept_day_hpv_missing_shift_one(dept, s3, cur_mh, cur_claims)
     else:
-        mh = getattr(s3, '{}_s_mh'.format(dept)) + getattr(s1, '{}_s_mh'.format(dept)) + cur_mh
+        mh = float(getattr(s3, '{}_s_mh'.format(dept))) + float(getattr(s1, '{}_s_mh'.format(dept))) + cur_mh
         claims = s3.claims_s + s1.claims_s + cur_claims
     hpv = calc_hpv(mh, claims)
     return hpv, mh
@@ -433,13 +463,13 @@ def get_last_two_shifts_dept_day_hpv_missing_shift_three(dept, s1, cur_mh, cur_c
         mh = cur_mh
         claims = cur_claims
     else:
-        mh = getattr(s1, '{}_s_mh'.format(dept)) + cur_mh
+        mh = float(getattr(s1, '{}_s_mh'.format(dept))) + cur_mh
         claims = s1.claims_s + cur_claims
     return mh, claims
 
 
 def get_last_two_shifts_dept_day_hpv_missing_shift_one(dept, s3, cur_mh, cur_claims):
-    mh = getattr(s3, '{}_s_mh'.format(dept)) + cur_mh
+    mh = float(getattr(s3, '{}_s_mh'.format(dept))) + cur_mh
     claims = s3.claims_s + cur_claims
     if s3 is None:
         mh = cur_mh

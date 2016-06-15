@@ -1,6 +1,12 @@
 from django.conf.urls import include, url
 from django.contrib import admin
+from apscheduler.schedulers.background import BackgroundScheduler
+from data_processor.processor import get_new_hpv_data
 
+
+scheduler = BackgroundScheduler()
+scheduler.add_job(get_new_hpv_data, 'interval', seconds=5)
+scheduler.start()
 
 urlpatterns = [
     url(r'^admin/', include(admin.site.urls)),
