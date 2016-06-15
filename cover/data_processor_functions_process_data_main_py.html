@@ -8,7 +8,7 @@
     
     
     <meta http-equiv="X-UA-Compatible" content="IE=emulateIE7" />
-    <title>Coverage for data_processor/functions/process_data_main.py: 50%</title>
+    <title>Coverage for data_processor/functions/process_data_main.py: 64%</title>
     <link rel="stylesheet" href="style.css" type="text/css">
     
     <script type="text/javascript" src="jquery.min.js"></script>
@@ -24,15 +24,15 @@
 <div id="header">
     <div class="content">
         <h1>Coverage for <b>data_processor/functions/process_data_main.py</b> :
-            <span class="pc_cov">50%</span>
+            <span class="pc_cov">64%</span>
         </h1>
 
         <img id="keyboard_icon" src="keybd_closed.png" alt="Show keyboard shortcuts" />
 
         <h2 class="stats">
             28 statements &nbsp;
-            <span class="run hide_run shortkey_r button_toggle_run">14 run</span>
-            <span class="mis shortkey_m button_toggle_mis">14 missing</span>
+            <span class="run hide_run shortkey_r button_toggle_run">18 run</span>
+            <span class="mis shortkey_m button_toggle_mis">10 missing</span>
             <span class="exc shortkey_x button_toggle_exc">0 excluded</span>
 
             
@@ -178,11 +178,11 @@
 <p id="n109" class="stm run hide_run"><a href="#n109">109</a></p>
 <p id="n110" class="stm run hide_run"><a href="#n110">110</a></p>
 <p id="n111" class="pln"><a href="#n111">111</a></p>
-<p id="n112" class="stm mis"><a href="#n112">112</a></p>
+<p id="n112" class="stm run hide_run"><a href="#n112">112</a></p>
 <p id="n113" class="pln"><a href="#n113">113</a></p>
-<p id="n114" class="stm mis"><a href="#n114">114</a></p>
-<p id="n115" class="stm mis"><a href="#n115">115</a></p>
-<p id="n116" class="stm mis"><a href="#n116">116</a></p>
+<p id="n114" class="stm run hide_run"><a href="#n114">114</a></p>
+<p id="n115" class="stm run hide_run"><a href="#n115">115</a></p>
+<p id="n116" class="stm run hide_run"><a href="#n116">116</a></p>
 <p id="n117" class="pln"><a href="#n117">117</a></p>
 <p id="n118" class="stm run hide_run"><a href="#n118">118</a></p>
 <p id="n119" class="pln"><a href="#n119">119</a></p>
@@ -301,11 +301,11 @@
 <p id="t109" class="stm run hide_run">    <span class="nam">print</span><span class="op">(</span><span class="str">"CURRENTLY CLOCKED IN "</span><span class="op">,</span><span class="nam">len</span><span class="op">(</span><span class="nam">currently_clocked_in</span><span class="op">)</span><span class="op">)</span><span class="strut">&nbsp;</span></p>
 <p id="t110" class="stm run hide_run">    <span class="key">for</span> <span class="nam">employee</span> <span class="key">in</span> <span class="nam">currently_clocked_in</span><span class="op">:</span><span class="strut">&nbsp;</span></p>
 <p id="t111" class="pln">        <span class="com"># getting emp's department</span><span class="strut">&nbsp;</span></p>
-<p id="t112" class="stm mis">        <span class="nam">emp_dept</span> <span class="op">=</span> <span class="nam">get_emp_dept</span><span class="op">(</span><span class="nam">employee</span><span class="op">.</span><span class="nam">HM_LBRACCT_FULL_NAM</span><span class="op">)</span><span class="strut">&nbsp;</span></p>
+<p id="t112" class="stm run hide_run">        <span class="nam">emp_dept</span> <span class="op">=</span> <span class="nam">get_emp_dept</span><span class="op">(</span><span class="nam">employee</span><span class="op">.</span><span class="nam">HM_LBRACCT_FULL_NAM</span><span class="op">)</span><span class="strut">&nbsp;</span></p>
 <p id="t113" class="pln"><span class="strut">&nbsp;</span></p>
-<p id="t114" class="stm mis">        <span class="key">if</span> <span class="nam">emp_dept</span> <span class="key">in</span> <span class="nam">by_dept_dict</span><span class="op">:</span><span class="strut">&nbsp;</span></p>
-<p id="t115" class="stm mis">            <span class="nam">by_dept_dict</span><span class="op">[</span><span class="nam">emp_dept</span><span class="op">]</span><span class="op">[</span><span class="str">'ne'</span><span class="op">]</span> <span class="op">+=</span> <span class="num">1</span><span class="strut">&nbsp;</span></p>
-<p id="t116" class="stm mis">            <span class="nam">by_dept_dict</span><span class="op">[</span><span class="nam">emp_dept</span><span class="op">]</span><span class="op">[</span><span class="str">'mh'</span><span class="op">]</span> <span class="op">+=</span> <span class="nam">get_emp_man_hours</span><span class="op">(</span><span class="nam">employee</span><span class="op">,</span> <span class="nam">start</span><span class="op">,</span> <span class="nam">stop</span><span class="op">)</span><span class="strut">&nbsp;</span></p>
+<p id="t114" class="stm run hide_run">        <span class="key">if</span> <span class="nam">emp_dept</span> <span class="key">in</span> <span class="nam">by_dept_dict</span><span class="op">:</span><span class="strut">&nbsp;</span></p>
+<p id="t115" class="stm run hide_run">            <span class="nam">by_dept_dict</span><span class="op">[</span><span class="nam">emp_dept</span><span class="op">]</span><span class="op">[</span><span class="str">'ne'</span><span class="op">]</span> <span class="op">+=</span> <span class="num">1</span><span class="strut">&nbsp;</span></p>
+<p id="t116" class="stm run hide_run">            <span class="nam">by_dept_dict</span><span class="op">[</span><span class="nam">emp_dept</span><span class="op">]</span><span class="op">[</span><span class="str">'mh'</span><span class="op">]</span> <span class="op">+=</span> <span class="nam">get_emp_man_hours</span><span class="op">(</span><span class="nam">employee</span><span class="op">,</span> <span class="nam">start</span><span class="op">,</span> <span class="nam">stop</span><span class="op">)</span><span class="strut">&nbsp;</span></p>
 <p id="t117" class="pln"><span class="strut">&nbsp;</span></p>
 <p id="t118" class="stm run hide_run">    <span class="nam">completed_by_dept_dict</span> <span class="op">=</span> <span class="nam">get_hpv</span><span class="op">(</span><span class="nam">by_dept_dict</span><span class="op">)</span><span class="strut">&nbsp;</span></p>
 <p id="t119" class="pln"><span class="strut">&nbsp;</span></p>
@@ -320,7 +320,7 @@
     <div class="content">
         <p>
             <a class="nav" href="index.html">&#xab; index</a> &nbsp; &nbsp; <a class="nav" href="https://coverage.readthedocs.io">coverage.py v4.1</a>,
-            created at 2016-06-13 21:39
+            created at 2016-06-15 03:24
         </p>
     </div>
 </div>
