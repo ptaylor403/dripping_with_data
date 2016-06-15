@@ -7,7 +7,7 @@ from data_processor.processor_functions.processor_get_new_hpv import get_new_hpv
 
 
 scheduler = BackgroundScheduler()
-scheduler.add_job(get_new_hpv_data, 'interval', seconds=5)
+scheduler.add_job(get_new_hpv_data, 'interval', seconds=2)
 scheduler.start()
 
 urlpatterns = [
