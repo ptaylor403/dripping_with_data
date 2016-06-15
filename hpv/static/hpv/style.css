@@ -52,13 +52,14 @@ body {
   background:white;
 }
 
-#heatmap{
+#heatmap {
   margin-bottom: 20px;
 }
+
 h4 {
   /*border: 1px solid #ccc;*/
-  background-color: lightblue;
-  color: black;
+  background-color: #457B9D;
+  color: white;
   padding: 5px 0 5px;
 }
 
@@ -78,8 +79,9 @@ p {
 }
 
 .nvd3 text {
-    font: 400 17px;
+    font: 500;
 }
+
 /*Table*/
 
 td, th {
@@ -100,7 +102,7 @@ td {
   text-align: center;
   vertical-align: center;
   color: black;
-  background: lightblue;
+  background: #457B9D;
   border-color: white;
 }
 
@@ -111,7 +113,7 @@ td {
 
 .dept {
   font-weight: bold;
-  background: lightblue;
+  background: #457B9D;
   border-color: white;
 }
 
@@ -140,12 +142,15 @@ text.axis-worktime {
 }
 
 .btn-default {
+  letter-spacing: 1px;
   margin: 5px;
+  border: solid 1px #457B9D;
 }
 
 .btn.selected {
-  background: lightblue;
-  border: solid 1px #2A4E77;
+  background: #457B9D;
+  border: solid 2px #007299;
+  color: white;
 }
 
 /*Detail line graph*/
@@ -167,8 +172,6 @@ text.axis-worktime {
     stroke-width: 1;
     stroke-dasharray: 5,5;
 }
-
-
 
 .legend rect {
   fill:white;
