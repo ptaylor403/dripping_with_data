@@ -144,12 +144,32 @@ def get_second_shift_start(now, plant_settings):
 
 
 def get_day_start(plant_settings, now):
+    """
+    Finds the start of the day based on number of shifts set in plant settings and the current time
+
+    :param plant_settings: The most recent instance of the plant settings.
+    :param now: The simulated time - datetime object.
+    :return: Datetime object - day start time and date (could be the previous day)
+    """
+    # Find if now is in the second shift's overtime period
+    in_second_ot = dt.time(0, 0) < now.time() < get_first_shift_ot(now, plant_settings)
+    # Find the date yesterday
+    yesterday = (now - dt.timedelta(days=1)).date()
+    # If 3 shifts and now is before the start of the third shift, start is the
+    # day before. Else same day at shift start.
     if plant_settings.num_of_shifts == 3:
         if now.time() >= plant_settings.third_shift:
             day_start = dt.datetime.combine(now.date(), plant_settings.third_shift)
         else:
-            yesterday = (now - dt.timedelta(days=1)).date()
             day_start = dt.datetime.combine(yesterday, plant_settings.third_shift)
+    # If two shifts and data was found before the start of first shift's OT,
+    # the day starts yesterday at first shift
+    elif plant_settings.num_of_shifts == 2:
+        if in_second_ot:
+            day_start = dt.datetime.combine(yesterday,
+                                            plant_settings.first_shift)
+        else:
+            day_start = dt.datetime.combine(now.date(), plant_settings.first_shift)
     else:
         day_start = dt.datetime.combine(now.date(), plant_settings.first_shift)
     return timezone.localtime(timezone.make_aware(day_start))
