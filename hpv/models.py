@@ -9,17 +9,6 @@ class Attendance(models.Model):
     clock_out_time = models.DateTimeField(null=True, blank=True)
     shift = models.CharField(max_length=16)
 
-    # @staticmethod
-    # def get_clocked_in():
-    #     clocked_in = Employees.objects.order_by('clock_in_time')
-    #     clocked_out = Employees.objects.order_by('clock_out_time').distinct('clock_out_time')
-    #     num_clocked_in = len(clocked_in) - len(clocked_out)+1
-    #
-    #     Tracking.objects.create(num_clocked_in=num_clocked_in)
-    #
-    # def __str__(self):
-    #     return "I'm Employee # {}".format(self.employee_num)
-
     @staticmethod
     def get_manhours_during(start, stop=None, department='all', shift='all'):
         if stop is None:

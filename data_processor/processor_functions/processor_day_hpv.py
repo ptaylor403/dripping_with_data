@@ -7,9 +7,12 @@ from django.utils import timezone
 
 def get_day_hpv_dict(hpv_dict, now):
     """
-    Calculates the day total hpv and manhours based on current values since shift start and adding these to the last recorded value of the any previous shifts if applicable.
+    Calculates the day total hpv and manhours based on current values since
+    shift start and adding these to the last recorded value of the any previous
+    shifts if applicable.
 
-    :param hpv_dict: A dictionary object containing hpv, manhours, number clocked in by department as well as number of claims that shift.
+    :param hpv_dict: A dictionary object containing hpv, manhours, number
+        clocked in by department as well as number of claims that shift.
     :param now: The simulated time - datetime object.
     :return: Dictionary object to be written to the api.
     """
@@ -18,7 +21,9 @@ def get_day_hpv_dict(hpv_dict, now):
     print("/"*50)
 
     # Department list to loop through
-    dept_list = ['CIW', 'FCB', 'PNT', 'PCH', 'FCH', 'DAC', 'MAINT', 'QA', 'MAT', 'OTHER']
+    dept_list = [
+        'CIW', 'FCB', 'PNT', 'PCH', 'FCH', 'DAC', 'MAINT', 'QA', 'MAT', 'OTHER'
+        ]
     dept_values = []
     full_dict = {}
 
@@ -27,12 +32,11 @@ def get_day_hpv_dict(hpv_dict, now):
     # HPV calculated based on manhours/claims
     plant_s_hpv = calc_plant_hpv_for_shift(hpv_dict, plant_s_mh)
 
-
     # Calculates the stats for the day by department.
     for dept in dept_list:
         dept_values.append(get_dept_day_stats(hpv_dict, now, dept))
 
-    print("DEPT_VALUES ",dept_values)
+    print("DEPT_VALUES ", dept_values)
 
     # Dictionary to update 2 others with plant data.
     shift_dict = {
@@ -47,9 +51,10 @@ def get_day_hpv_dict(hpv_dict, now):
     full_dict.update(shift_dict)
     print('FULL DICT:', full_dict)
 
-    #Calculates the day totals for the plant
+    # Calculates the day totals for the plant
     plant_d_hpv, plant_d_mh, claims_d = get_plant_day_hpv(hpv_dict, now)
-    print("plant_d_hpv, plant_d_mh, claims_d= ", plant_d_hpv, plant_d_mh, claims_d)
+    print("plant_d_hpv, plant_d_mh, claims_d= ",
+          plant_d_hpv, plant_d_mh, claims_d)
 
     # Fills the dictionary that will be written to API
     full_hpv_dict = {
