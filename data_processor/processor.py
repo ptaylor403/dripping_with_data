@@ -83,7 +83,7 @@ def get_last_claim(now):
     """
     Attempts to find the most recent claim in the RawPlantActivity table that exited pool 03 before the simulated time. Will raise an ObjectDoesNotExist exception if no claims exist. Prints a message to alert if there is no claim found.
 
-    :param now: The simulated time
+    :param now: The simulated time - datetime object.
     :return: RawPlantActivity model object (claim) or None if no matching queries.
     """
     try:
@@ -102,7 +102,7 @@ def get_last_api_write(now):
     """
     Attempts to find the most recent entry in the HPVATM API table before the simulated time. Will raise an ObjectDoesNotExist exception if no claims exist. Prints a message to alert if there is no claim found and sets the last_api_write and found_entry variables.
 
-    :param now: The simulated time
+    :param now: The simulated time - datetime object.
     :return: last_api_write: HPVATM model object or None if no matching queries AND found_entry: Boolean value
     """
     try:
@@ -123,7 +123,7 @@ def no_dict_or_no_claims(hpv_dict):
     """
     Checks if the dictionary passed was None and that there are claims if there is a dictionary.
 
-    :param hpv_dict: dictionary object from shift calculations.
+    :param hpv_dict: dictionary object from shift calculations or None.
     :return: Boolean value.
     """
     return hpv_dict is None or hpv_dict['claims_for_range'] == 0
@@ -131,45 +131,65 @@ def no_dict_or_no_claims(hpv_dict):
 
 def need_to_write(now, plant_settings, last_api_write, last_claim):
     """
-    Checks for write conditions to return a boolean of whether or not a write is needed.
+    Checks for write conditions to return a boolean of whether or not a write is needed. Returns True if any of the following conditions are True.
 
-    1) time_to_write - has it been X minutes (defined in the plant settings) since the last write?
-    2) near_shift_end - is 'now' within 5 minutes of the end of a shift?
-    3)
+    1) The last claim was not before the last API entry was written. If it was, check 2) and 3).
+    2) time_to_write - has it been X minutes (defined in the plant settings) since the last write?
+    3) near_shift_end - is 'now' within 5 minutes of the end of a shift?
 
-    :param now: The simulated time
-    :return: last_api_write: HPVATM model object or None if no matching queries AND found_entry: Boolean value
+
+    :param now: The simulated time - datetime object.
+    :param plant_settings: The latest settings - PlantSetting object.
+    :param last_api_write: The last entry in the API table - HPVATM object.
+    :param last_claim: The last entry in the claims table - RawPlantActivity object.
+    :return: Boolean value.
     """
+    # Gets the setting for max length between write times and checks if it has
+    # been over that time since the last API entry was made.
     time_between = plant_settings.TAKT_Time
-
     time_to_write = now - last_api_write.timestamp > dt.timedelta(minutes=time_between)
 
+    # Checks if "now" is within 5 minutes of the end of a shift
     near_shift_end = is_near_shift_end(now, plant_settings)
 
+    # Checks if the last API entry was after the last claim
     if last_claim.TS_LOAD <= last_api_write.timestamp:
+        # If the claims up to now have been captured already, check the other
+        # conditions for writing.
         if time_to_write or near_shift_end:
             print("It's been a while since an api entry was made or it is near the end of a shift. Recording hpv.")
             return True
         else:
             print("No new data in API TABLE. Checking again in 5 minutes.")
             return False
-    # return True
-
+    return True
 
 
 def is_near_shift_end(now, plant_settings):
+    """
+    Checks settings for the shift times and compares them to "now". If "now" is within 5 minutes of the end of any shift (8 hours after start), returns true.
+
+    :param hpv_dict: dictionary object from shift calculations or None.
+    :return: Boolean value.
+    """
+    # Makes the time object from settings a datetime for comparing to 'now'
+    # End is 8 hours after start.
     end_first = dt.datetime.combine(now.date(), plant_settings.first_shift) + dt.timedelta(hours=8)
     end_first = timezone.make_aware(end_first)
 
+    # Same logic as first
     end_second = dt.datetime.combine(now.date(), plant_settings.second_shift) + dt.timedelta(hours=8)
     end_second = timezone.make_aware(end_second)
 
-    end_third = dt.datetime.combine(now.date(), plant_settings.third_shift) + dt.timedelta(hours=8)
+    # Third shift starts the day before and ends the morning of the current day.
+    # Subtracting 16 hours gets the end of the shift that started the day before.
+    end_third = dt.datetime.combine(now.date(), plant_settings.third_shift) - dt.timedelta(hours=16)
     end_third = timezone.make_aware(end_third)
+    print('\nend_third: \n', end_third)
 
     within_5 = dt.timedelta(minutes=5)
 
-    return end_first - now < within_5 or end_second - now < within_5 or end_third - now < within_5
+    return abs(end_first - now) < within_5 or abs(end_second - now) < within_5 or abs(end_third - now) < within_5
 
 
 def delete_old_entries(plant_settings, now):
