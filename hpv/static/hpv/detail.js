@@ -41,7 +41,7 @@ jQuery(function($) {
  var depts = datasets.map(function(d) { return d.label; });
  if (depts.indexOf(dept) == -1){
    dept='PLANT';
- }
+ };
 
  var currentDataName = dept + "_d_hpv";
  var currentQuery = "/api/hpv/?days=7&format=json";
@@ -164,14 +164,14 @@ jQuery(function($) {
           .call(make_x_axis()
               .tickSize(-height, 0, 0)
               .tickFormat("")
-          )
+          );
 
         svg.append("g")
           .attr("class", "y grid")
           .call(make_y_axis()
               .tickSize(-width, 0, 0)
               .tickFormat("")
-          )
+          );
 
         // Add the valueline path
         svg.append("path")
@@ -206,11 +206,11 @@ jQuery(function($) {
             .call(yAxis);
 
         // Add Y Axis Label
-        svg.append("text")
+          svg.append("text")
             .classed('yLabel', true)
             .attr("transform", "rotate(-90)")
             .attr("x", 0 - (height / 2))
-            // .attr("y", 0 – margin.left)
+            .attr("y", 0 - (margin.left / 2)- 20)
             .attr("dy", "1em")
             .style("text-anchor", "middle")
             .text("HPV");
@@ -232,8 +232,7 @@ jQuery(function($) {
               .select('.line1')
               .duration(750)
               .attr("d", valueline1(data));
-        })
-      };
+        };
 
       /*********
       Update line graph - remove old line and update new information/line
@@ -286,13 +285,13 @@ jQuery(function($) {
             .call(make_x_axis()
                 .tickSize(-height, 0, 0)
                 .tickFormat("")
-            )
+            );
 
           svg.select(".y.grid")
             .call(make_y_axis()
                 .tickSize(-width, 0, 0)
                 .tickFormat("")
-            )
+            );
 
           d3.select('#line')
               .transition()
@@ -325,7 +324,7 @@ jQuery(function($) {
         legendElementWidth = gridSize * 2,
         buckets = 9,
         colors = ["#ffffd9","#edf8b1","#c7e9b4","#7fcdbb","#41b6c4","#1d91c0","#225ea8","#253494","#081d58"],
-        days = ["Mo", "Tu", "We", "Th", "Fr", "Sa", "Su"],
+        days = ["Mo", "Tu", "We", "Th", "Fr", "Sa"],
         times = ["1a", "2a", "3a", "4a", "5a", "6a", "7a", "8a", "9a", "10a", "11a", "12p", "1p", "2p", "3p", "4p", "5p", "6p", "7p", "8p", "9p", "10p", "11p", "12a"];
 
     var svg = d3.select("#heatmap").append("svg")
@@ -398,7 +397,7 @@ jQuery(function($) {
             value:heatmapData[day][hour],
           })
         }
-      }
+      };
 
       var colorScale = d3.scale.quantile()
           .domain([d3.min(newHeatMapData, function (d) { return d.value; }) - 3, d3.max(newHeatMapData, function (d) { return d.value; })])
@@ -526,6 +525,12 @@ jQuery(function($) {
       });
     })
   });
+
+  // remove old highlighted buttons and highlight new infomation
+  var updateButtons = function(label, parent) {
+    parent.find('.btn-default').removeClass('selected');
+    parent.find('.btn-default.' + label).addClass('selected');
+  };
 
   var weekQueryResult = []
   var currentQueryResult = []
