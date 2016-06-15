@@ -41,12 +41,15 @@ def get_new_hpv_data():
         # Is there a new entry, has enough time passed, or is it close to the
         # end of a shift?
         does_need_to_write = need_to_write(now, plant_settings, last_api_write, last_claim)
-        if not need_to_write(now, plant_settings, last_api_write, last_claim):
+        if not does_need_to_write:
             return
 
     # Call function to calc hpv by dept for the current shift.
     hpv_dict = get_hpv_snap(now)
+    # If there is no dictionary returned, or the claims are 0, check other write
+    # conditions
     if no_dict_or_no_claims(hpv_dict):
+        # if there was a previous API entry and
         if found_entry and not does_need_to_write:
             print('No HPV_DICT or no claims in dict. Exiting without write.')
             return
@@ -78,10 +81,10 @@ def get_time_with_timezone(plant_settings):
 
 def get_last_claim(now):
     """
-    Finds the last claim in the RawPlantActivity table, that exited pool 03
+    Attempts to find the most recent claim in the RawPlantActivity table that exited pool 03 before the simulated time. Will raise an ObjectDoesNotExist exception if no claims exist. Prints a message to alert if there is no claim found.
 
     :param now: The simulated time
-    :return: Claim object or None if no matching queries.
+    :return: RawPlantActivity model object (claim) or None if no matching queries.
     """
     try:
         last_claim = RawPlantActivity.objects.filter(POOL_CD='03',
@@ -89,10 +92,6 @@ def get_last_claim(now):
         last_claim = last_claim.latest('TS_LOAD')
         print("LAST_CLAIM=", last_claim.VEH_SER_NO, last_claim.TS_LOAD)
         return last_claim
-    # TODO "server busy" is a placeholder and will need to change when we know the real error message
-    # except "ServerBusy":
-    #     print("Server busy. Checking again in 5 minutes.")
-    #     return None
     except ObjectDoesNotExist:
         print("No claims in the database.")
         last_claim = None
@@ -100,6 +99,12 @@ def get_last_claim(now):
 
 
 def get_last_api_write(now):
+    """
+    Attempts to find the most recent entry in the HPVATM API table before the simulated time. Will raise an ObjectDoesNotExist exception if no claims exist. Prints a message to alert if there is no claim found and sets the last_api_write and found_entry variables.
+
+    :param now: The simulated time
+    :return: last_api_write: HPVATM model object or None if no matching queries AND found_entry: Boolean value
+    """
     try:
         print("GOING TO API TABLE TO GET LATEST API OBJECT")
         last_api_write = HPVATM.objects.filter(timestamp__lte=now)
@@ -115,24 +120,40 @@ def get_last_api_write(now):
 
 
 def no_dict_or_no_claims(hpv_dict):
+    """
+    Checks if the dictionary passed was None and that there are claims if there is a dictionary.
+
+    :param hpv_dict: dictionary object from shift calculations.
+    :return: Boolean value.
+    """
     return hpv_dict is None or hpv_dict['claims_for_range'] == 0
 
 
 def need_to_write(now, plant_settings, last_api_write, last_claim):
+    """
+    Checks for write conditions to return a boolean of whether or not a write is needed.
+
+    1) time_to_write - has it been X minutes (defined in the plant settings) since the last write?
+    2) near_shift_end - is 'now' within 5 minutes of the end of a shift?
+    3)
+
+    :param now: The simulated time
+    :return: last_api_write: HPVATM model object or None if no matching queries AND found_entry: Boolean value
+    """
     time_between = plant_settings.TAKT_Time
 
-    need_to_write = now - last_api_write.timestamp > dt.timedelta(minutes=time_between)
+    time_to_write = now - last_api_write.timestamp > dt.timedelta(minutes=time_between)
 
     near_shift_end = is_near_shift_end(now, plant_settings)
 
     if last_claim.TS_LOAD <= last_api_write.timestamp:
-        if need_to_write or near_shift_end:
+        if time_to_write or near_shift_end:
             print("It's been a while since an api entry was made or it is near the end of a shift. Recording hpv.")
             return True
         else:
             print("No new data in API TABLE. Checking again in 5 minutes.")
             return False
-    return True
+    # return True
 
 
 
