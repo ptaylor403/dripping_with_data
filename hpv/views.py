@@ -2,7 +2,6 @@ from django.shortcuts import render
 from django.views.generic.base import TemplateView
 import datetime as dt
 from .data_sim import *
-from .models import Attendance, Complete
 from api.models import HPVATM
 import random
 import pytz
@@ -15,97 +14,6 @@ from api.models import HPVATM
 import sys
 from collections import OrderedDict
 
-# if "runserver" in sys.argv:
-#     NOW = the_dripper.simulated_time.replace(tzinfo=None)
-# else:
-NOW = datetime.now() - dt.timedelta(days=7, hours=0)
-today = datetime.now() - dt.timedelta(days=7, hours=0)
-
-
-
-class Load(LoginRequiredMixin, TemplateView):
-    template_name = "hpv/load.html"
-    login_url = '/login/'
-
-    def get(self, request):
-        context = {}
-        if request.GET.get('grabAttendance'):
-            shift_starts = [6, 14]
-            for day in range(1, 11):
-                for hour in shift_starts:
-                    for _ in range(1, 501):
-                        emp = get_employee()
-                        dept = get_dept()
-                        time_in = clock_in(day, hour)
-                        if hour == 6:
-                            shift = "first"
-                        else:
-                            shift = "second"
-
-                        if day == 10 and hour == 14:
-                            time_out = None
-                        else:
-                            time_out = clock_out(day, hour)
-
-                        Attendance.objects.create(employee_number=emp,
-                                                  department=dept,
-                                                  clock_in_time=time_in,
-                                                  clock_out_time=time_out,
-                                                  shift=shift)
-
-            text = "10 days worth of clockin data added to the database."
-            context['text'] = text
-
-        if request.GET.get('grabComplete'):
-            serial_number = get_truck_serial()
-            completed = get_completed(1, 7, 0)
-            Complete.objects.create(serial_number=serial_number, completed=completed)
-            for day in range(1, 11):
-                for hour in range(7, 23):
-                    while True:
-                        last_truck = Complete.objects.latest('completed')
-                        prev_time = last_truck.completed
-                        if prev_time.hour == hour and prev_time.minute >= 48:
-                            break
-                        serial_number = get_truck_serial()
-                        if prev_time.hour != hour:
-                            minute = random.randint(2, 8)
-                        else:
-                            minute = prev_time.minute + random.randint(7, 12)
-                        completed = get_completed(day, hour, minute)
-                        Complete.objects.create(serial_number=serial_number, completed=completed)
-            text2 = "10 days worth of data added to the database."
-            context['text2'] = text2
-
-        if request.GET.get('grabAPI'):
-            for day in range(1, 11):
-                for hour in range(6, 23):
-                    for minute in [5, 15, 25, 35, 45, 55]:
-                        timestamp = dt.datetime(2016, 6, day, hour, minute)
-                        if hour == 6:
-                            hpv_plant = random.randint(100, 103)
-                            num_clocked_in = random.randint(750, 800)
-                        elif hour >= 7 and hour <= 9:
-                            hpv_plant = random.randint(97, 100)
-                            num_clocked_in = random.randint(750, 800)
-                        elif hour >= 10 and hour <= 14:
-                            hpv_plant = random.randint(94, 97)
-                            num_clocked_in = random.randint(750, 800)
-                        elif hour >= 15 and hour <= 17:
-                            hpv_plant = random.randint(91, 94)
-                            num_clocked_in = random.randint(550, 600)
-                        elif hour >= 18:
-                            hpv_plant = random.randint(88, 91)
-                            num_clocked_in = random.randint(550, 600)
-                        hpv_obj = HPVATM.objects.create(hpv_plant=hpv_plant, num_clocked_in=num_clocked_in)
-                        hpv_obj.timestamp = timestamp
-                        hpv_obj.save()
-
-                    text3 = "10 days worth of data added to the database."
-                    context['text3'] = text3
-
-        return render(request, self.template_name, context)
-
 
 class HPV(LoginRequiredMixin, TemplateView):
     template_name = "hpv/hpv2.html"
@@ -113,18 +21,26 @@ class HPV(LoginRequiredMixin, TemplateView):
 
 
     def get_context_data(self, **kwargs):
-        # When during the hour should we do the headcount?
+        """
+
+
+
+        """
+
+        # Recursive call for context
         context = super().get_context_data(**kwargs)
 
+        # If no data in API
         if HPVATM.objects.count() == 0:
             return context
 
-        # All day info
+        # Checking for objects
         current = HPVATM.objects.latest('timestamp')
         shift1 = HPVATM.objects.filter(shift=1)
         shift2 = HPVATM.objects.filter(shift=2)
         shift3 = HPVATM.objects.filter(shift=3)
 
+        # Seperate into depatrments
         depts = {
             'CIW': {},
             'FCB': {},
@@ -138,14 +54,18 @@ class HPV(LoginRequiredMixin, TemplateView):
             'PLANT': {}
         }
 
+        # For printing out the time of the most recent object
         current_time = current.timestamp
         context.update({'current_time': current_time})
 
+        # Function call for the each portion context data
         self.set_day_data(current, context, depts)
         self.set_shift1_data(current, shift1, context, depts)
         self.set_shift2_data(current, shift2, context, depts)
         self.set_shift3_data(current, shift3, context, depts)
 
+        # Set order of the departments dictionary so the table in the HTML is
+        # in order
         keyorder = ['CIW', 'FCB', 'PNT', 'PCH', 'FCH', 'DAC', 'MAINT', 'QA', 'MAT', 'PLANT']
         context['depts'] = OrderedDict(sorted(depts.items(), key=lambda i:keyorder.index(i[0])))
 
@@ -153,6 +73,13 @@ class HPV(LoginRequiredMixin, TemplateView):
 
 
     def set_day_data(self, current, context, depts):
+        """
+
+
+        """
+
+        # Catching the data from the API object and putting it in the depts
+        # dictionary
         depts['CIW']['d_hpv'] = current.CIW_d_hpv
         depts['FCB']['d_hpv'] = current.FCB_d_hpv
         depts['PNT']['d_hpv'] = current.PNT_d_hpv
@@ -163,19 +90,30 @@ class HPV(LoginRequiredMixin, TemplateView):
         depts['QA']['d_hpv'] = current.QA_d_hpv
         depts['MAT']['d_hpv'] = current.MAT_d_hpv
         depts['PLANT']['d_hpv'] = current.PLANT_d_hpv
-        claims_d = current.claims_d
 
+        # Catching the days claims data and adding it to the context
+        claims_d = current.claims_d
         context.update({'claims_d': claims_d})
 
 
     def set_shift1_data(self, current, shift1, context, depts):
+        """
+
+
+        """
+
+        # If the most recent API object is not shift 1 it moves onto the next
+        # if statement
         if not shift1:
             return
 
+        # Finds most recent API object that is shift 1 between now and 17 hours ago (near end of last shift)
+        # If there is no shift 1 within the last 17 hours it returns out of the funtion
         shift1 = shift1.latest('timestamp')
         if not (shift1.timestamp >= current.timestamp - dt.timedelta(hours=17)):
             return
 
+        # Catching the data from the API object and putting it in the depts dictionary
         depts['CIW']['s1_hpv'] = shift1.CIW_s_hpv
         depts['FCB']['s1_hpv'] = shift1.FCB_s_hpv
         depts['PNT']['s1_hpv'] = shift1.PNT_s_hpv
@@ -186,19 +124,29 @@ class HPV(LoginRequiredMixin, TemplateView):
         depts['QA']['s1_hpv'] = shift1.QA_s_hpv
         depts['MAT']['s1_hpv'] = shift1.MAT_s_hpv
         depts['PLANT']['s1_hpv'] = shift1.PLANT_s_hpv
-        s1_claims = shift1.claims_s
 
+        # Catching the shifts claims data and adding it to the context
+        s1_claims = shift1.claims_s
         context.update({'s1_claims': s1_claims})
 
 
     def set_shift2_data(self, current, shift2, context, depts):
+        """
+
+
+        """
+
+        # If the most recent API object is shift 2 function skips to the next step
         if not shift2:
             return
 
+        # Finds most recent API object that is shift 2 between now and 17 hours ago (near end of last shift)
+        # If there is no shift 2 within the last 17 hours it returns out of the funtion
         shift2 = shift2.latest('timestamp')
         if not (shift2.timestamp >= current.timestamp - dt.timedelta(hours=17)):
             return
 
+        # Catching the data from the API object and putting it in the depts dictionary
         depts['CIW']['s2_hpv'] = shift2.CIW_s_hpv
         depts['FCB']['s2_hpv'] = shift2.FCB_s_hpv
         depts['PNT']['s2_hpv'] = shift2.PNT_s_hpv
@@ -209,21 +157,35 @@ class HPV(LoginRequiredMixin, TemplateView):
         depts['QA']['s2_hpv'] = shift2.QA_s_hpv
         depts['MAT']['s2_hpv'] = shift2.MAT_s_hpv
         depts['PLANT']['s2_hpv'] = shift2.PLANT_s_hpv
-        s2_claims = shift2.claims_s
 
+        # Catching the shifts claims data and adding it to the context
+        s2_claims = shift2.claims_s
         context.update({'s2_claims': s2_claims})
 
 
     def set_shift3_data(self, current, shift3, context, depts):
+        """
+
+
+        """
+
+        # If the most recent API object is not shift 3, shift 3 is False and is
+        # added to the context, passes to the next if statment
         if not shift3:
             shift_3 = False
             context.update({'shift_3': shift_3})
             return
 
+        # Finds most recent API object that is shift 3 between now and 17 hours
+        # ago (near end of last shift)
+        # If there is no shift 2 within the last 17 hours it returns out of the
+        # funtion
         shift3 = shift3.latest('timestamp')
         if not (shift3.timestamp >= current.timestamp - dt.timedelta(hours=17)):
             return
 
+        # Catching the data from the API object and putting it in the depts
+        # dictionary
         depts['CIW']['s3_hpv'] = shift3.CIW_s_hpv
         depts['FCB']['s3_hpv'] = shift3.FCB_s_hpv
         depts['PNT']['s3_hpv'] = shift3.PNT_s_hpv
@@ -234,10 +196,11 @@ class HPV(LoginRequiredMixin, TemplateView):
         depts['QA']['s3_hpv'] = shift3.QA_s_hpv
         depts['MAT']['s3_hpv'] = shift3.MAT_s_hpv
         depts['PLANT']['s3_hpv'] = shift3.PLANT_s_hpv
+
+        # Catching the shifts claims data, shift 3 is now True, adding both to
+        # the context
         s3_claims = shift3.claims_s
-
         shift_3 = True
-
         context.update({ 's1_claims': s1_claims, 'shift3_total': shift3_total })
 
 
