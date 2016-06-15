@@ -440,7 +440,7 @@ class ManHourEdgeTestCaseClockedOutEarly(TestCase):
         neg_counter = len(expected_employees)
 
         # test that expected employees is what is found
-        employees = get_emp_who_left_on_break(
+        employees = get_emp_who_left_during_shift(
             start=start,
             stop=stop,
         )
@@ -474,6 +474,7 @@ class ManHourEdgeTestCaseClockedOutEarly(TestCase):
         )
 
         for employee in employees:
+            print("BREAK!!!")
             print(employee.PRSN_NBR_TXT)
             print(expected_employees)
 
