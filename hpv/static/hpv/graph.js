@@ -9,9 +9,9 @@ jQuery(function($) {
       var graphData = [{
         key: 'Today',
         values: [],
-        color: '#4252ce'
+        color: 'steelblue'
       }];
-      
+
       data.sort(function(a,b){
         if (a.timestamp > b.timestamp) {
           return 1;
