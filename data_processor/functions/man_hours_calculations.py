@@ -9,7 +9,6 @@ from django.utils import timezone
 from decimal import Decimal
 from decimal import getcontext
 
-
 LOCAL_TIME_ZONE = ''
 REGEX_FOR_DEPT = {
     'shift': "/([1-9])/"
@@ -34,6 +33,9 @@ def get_clocked_in(start):
     :param start: datetime object the start of time that you want to look at
     :return: filtered objects before the start value
     """
+    print('/*' * 50)
+    print("GET CLOCKED IN")
+    print('/*' * 50)
     with timezone.override("US/Eastern"):
         return RawClockData.objects.filter(
             PNCHEVNT_IN__year=start.year,
@@ -50,25 +52,49 @@ def get_emp_who_left_during_shift(start, stop):
     :param stop: datetime object the end of time that you want to look at
     :return: filtered objects within the start and stop range
     """
+    print('/*' * 50)
+    print("GET EMP WHO LEFT DURING SHIFT")
+    print('/*' * 50)
     with timezone.override("US/Eastern"):
         present_today = RawClockData.objects.filter(
             PNCHEVNT_IN__year=start.year,
             PNCHEVNT_IN__month=start.month,
             PNCHEVNT_IN__day=start.day,
-
-        )
-        went_on_break = present_today.filter(
-            PNCHEVNT_OUT__lte=stop,
-            end_rsn_txt__exact='&break',
         )
 
         left_for_day = present_today.filter(
             PNCHEVNT_OUT__lte=stop,
             end_rsn_txt__exact='&out',
+        ).exclude(PNCHEVNT_OUT__lte=start)
+
+        print("LEFT FOR DAY= ", len(left_for_day))
+
+        return left_for_day
+
+def get_emp_who_left_on_break(start, stop):
+    """
+    Filters employees who clocked out before the stop
+    :param start: datetime object the start of time that you want to look at
+    :param stop: datetime object the end of time that you want to look at
+    :return: filtered objects within the start and stop range
+    """
+    print('/*' * 50)
+    print("GET EMP WHO LEFT DURING SHIFT")
+    print('/*' * 50)
+    with timezone.override("US/Eastern"):
+        present_today = RawClockData.objects.filter(
+            PNCHEVNT_IN__year=start.year,
+            PNCHEVNT_IN__month=start.month,
+            PNCHEVNT_IN__day=start.day,
         )
 
-        return went_on_break | left_for_day
+        went_on_break = present_today.filter(
+            PNCHEVNT_OUT__lte=stop,
+            end_rsn_txt__exact='&break',
+        ).exclude(PNCHEVNT_OUT__lte=start)
+        print("WENT ON BREAK= ", len(went_on_break))
 
+        return went_on_break
 
 
 def get_emp_shift(dept_string):
@@ -127,8 +153,9 @@ def get_emp_man_hours(employee, start, stop):
     :return: float of total employee mh
     """
     begin, end = set_begin_and_end_for_emp(employee, start, stop)
-    emp_man_hours = ((end - begin).total_seconds())/3600
+    emp_man_hours = ((end - begin).total_seconds()) / 3600
     return emp_man_hours
+
 
 def set_begin_and_end_for_emp(employee, start, stop):
     """
@@ -146,4 +173,3 @@ def set_begin_and_end_for_emp(employee, start, stop):
     else:
         end = stop
     return begin, end
-

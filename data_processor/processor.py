@@ -10,7 +10,6 @@ from django.core.exceptions import ObjectDoesNotExist
 def get_new_hpv_data():
     """
     Checks the server for new claim data. Checks that claims exist and that there is no.
-
     Returns: Confirmation to console of write or reason why it did not write.
     """
     plant_settings = PlantSetting.objects.latest('timestamp')
@@ -32,8 +31,10 @@ def get_new_hpv_data():
     last_api_write, found_entry = get_last_api_write(now)
 
     if found_entry:
+        print("FOUND ENTRY")
         does_need_to_write = need_to_write(now, plant_settings, last_api_write, last_claim)
         if not does_need_to_write:
+            print("IF NOT DOES NEED TO WRITE")
             return
 
     # Call function to calc hpv by dept for the current shift.
@@ -92,18 +93,24 @@ def no_dict_or_no_claims(hpv_dict):
 
 def need_to_write(now, plant_settings, last_api_write, last_claim):
     time_between = plant_settings.TAKT_Time
-
-    need_to_write = now - last_api_write.timestamp > dt.timedelta(minutes=time_between)
+    print("TIME BETWEEN= ", time_between)
+    print("NOW= ", now, ' ',plant_settings,  ' ',last_api_write, ' ', last_claim)
+    should_need_to_write = (now - last_api_write.timestamp) > dt.timedelta(minutes=time_between)
+    print("SHOULD NEED TO ", should_need_to_write)
 
     near_shift_end = is_near_shift_end(now, plant_settings)
+    print("LAST CLAIM TSLOAD ", last_claim.TS_LOAD)
+    print("LAST API WRITE ",  last_api_write.timestamp)
 
     if last_claim.TS_LOAD <= last_api_write.timestamp:
-        if need_to_write or near_shift_end:
+        if should_need_to_write or near_shift_end:
             print("It's been a while since an api entry was made or it is near the end of a shift. Recording hpv.")
             return True
         else:
             print("No new data in API TABLE. Checking again in 5 minutes.")
             return False
+    else:
+        return True
 
 
 def is_near_shift_end(now, plant_settings):
@@ -129,7 +136,6 @@ def delete_old_entries(plant_settings, now):
 def get_hpv_snap(now):
     """
     Finds the current shift and its start time to pass on to the functions that calculate hpv by department and shift
-
     Returns: Dictionary of department keys containing a dictionary of manhours, number clocked in, and hpv for the current shift.
     """
     print("/"*50)
@@ -156,7 +162,6 @@ def get_hpv_snap(now):
 def get_shift_info(plant_settings, now):
     """
     Gets the current shift and the time it started. Queries the plant settings to decide.
-
     Returns: shift number and start of shift datetime object
     """
     print("/"*50)
@@ -253,7 +258,6 @@ def get_second_shift_start(now, plant_settings):
 def get_day_hpv_dict(hpv_dict, now):
     """
     Calculates the day total hpv and manhours based on current values since shift start added to the last recorded value of the any previous shifts if applicable.
-
     Returns: Dictionary object to be written to the api.
     """
     print("/"*50)
@@ -381,6 +385,7 @@ def get_dept_day_stats(hpv_dict, now, dept):
     cur_hpv = hpv_dict[dept]['hpv']
     cur_mh = hpv_dict[dept]['mh']
     cur_claims = hpv_dict['claims_for_range']
+
     if plant_settings.num_of_shifts == 3:
         hpv, mh = get_three_shifts_dept_day_hpv(hpv_dict, dept, all_since_start, cur_hpv, cur_mh, cur_claims)
     elif plant_settings.num_of_shifts == 2:
@@ -407,7 +412,7 @@ def get_last_shift_dept_day_hpv(dept, cur_mh, cur_claims, last_shift):
         mh = cur_mh
         claims = cur_claims
     else:
-        mh = getattr(last_shift, '{}_s_mh'.format(dept)) + cur_mh
+        mh = float(getattr(last_shift, '{}_s_mh'.format(dept))) + cur_mh
         claims = last_shift.claims_s + cur_claims
     hpv = calc_hpv(mh, claims)
     return hpv, mh
@@ -421,7 +426,7 @@ def get_last_two_shifts_dept_day_hpv(dept, all_since_start, cur_mh, cur_claims):
     elif s1 is None:
         mh, claims = get_last_two_shifts_dept_day_hpv_missing_shift_one(dept, s3, cur_mh, cur_claims)
     else:
-        mh = getattr(s3, '{}_s_mh'.format(dept)) + getattr(s1, '{}_s_mh'.format(dept)) + cur_mh
+        mh = float(getattr(s3, '{}_s_mh'.format(dept)) + getattr(s1, '{}_s_mh'.format(dept))) + cur_mh
         claims = s3.claims_s + s1.claims_s + cur_claims
     hpv = calc_hpv(mh, claims)
     return hpv, mh
@@ -432,13 +437,13 @@ def get_last_two_shifts_dept_day_hpv_missing_shift_three(dept, s1, cur_mh, cur_c
         mh = cur_mh
         claims = cur_claims
     else:
-        mh = getattr(s1, '{}_s_mh'.format(dept)) + cur_mh
+        mh = float(getattr(s1, '{}_s_mh'.format(dept))) + cur_mh
         claims = s1.claims_s + cur_claims
     return mh, claims
 
 
 def get_last_two_shifts_dept_day_hpv_missing_shift_one(dept, s3, cur_mh, cur_claims):
-    mh = getattr(s3, '{}_s_mh'.format(dept)) + cur_mh
+    mh = float(getattr(s3, '{}_s_mh'.format(dept))) + cur_mh
     claims = s3.claims_s + cur_claims
     if s3 is None:
         mh = cur_mh
@@ -469,6 +474,7 @@ def get_plant_day_hpv(hpv_dict, now):
     cur_hpv = hpv_dict['plant_s_hpv']
     cur_mh = hpv_dict['plant_s_mh']
     cur_claims = hpv_dict['claims_for_range']
+
     if plant_settings.num_of_shifts == 3:
         hpv, mh, claims = get_three_shifts_plant_day_hpv(hpv_dict, all_since_start, cur_hpv, cur_mh, cur_claims)
     elif plant_settings.num_of_shifts == 2:
