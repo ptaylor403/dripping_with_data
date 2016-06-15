@@ -43,9 +43,10 @@ jQuery(function($) {
    dept='PLANT';
  };
 
- var currentDataName = dept + "_d_hpv";
- var currentQuery = "/api/hpv/?days=7&format=json";
 
+  var currentDataName = dept+"_d_hpv";
+  var initial_query = "/api/hpv/?days=7&format=json";
+  var currentQuery = initial_query
   /***********************************
     Line Graph
   ************************************/
@@ -358,7 +359,6 @@ jQuery(function($) {
     // Create heatmap
     var heatmapChart = function(day, data) {
       var heatmapData = {};
-      console.log(data);
       for (var i = 0; i < data.length; i++) {
         var timestamp = data[i]["timestamp"];
         var times = new Date(timestamp); // get date object
@@ -539,7 +539,7 @@ jQuery(function($) {
 
   // intialize charts
 
-  d3.json(currentQuery,function(error, data){
+  d3.json(initial_query,function(error, data){
     data.forEach(function(d){
       d.timestamp = parseDate(d.timestamp);
     });
@@ -592,11 +592,32 @@ jQuery(function($) {
       })
     });
 
+
   // prehighlight buttons
   updateButtons(dept, $('#dataset-picker'));
   updateButtons('Week', $('#detaillevel-picker'));
 
   // reload page every 60 seconds
   // setTimeout(function() {location.reload(true);},6000);
+  // reload page every 5 seconds
+  setInterval(function() {
+    console.log(initial_query);
+    d3.json(initial_query,function(error, data){
+      data.forEach(function(d){
+        d.timestamp = parseDate(d.timestamp);
+      });
+      weekQueryResult = data
+      heatMap.heatmap(currentDataName, data)
+      d3.json(currentQuery,function(error, data){
+        data.forEach(function(d){
+          d.timestamp = parseDate(d.timestamp);
+        });
+        currentQueryResult = data
+        lineChart.updateLineData(currentDataName, data)
+      })
+      weekOnWeek(currentDataName, weekQueryResult)
+    })
+  },5000);
+
 
 });
