@@ -9,8 +9,9 @@ jQuery(function($) {
       var graphData = [{
         key: 'Today',
         values: [],
-        color: '#4252ce'
+        color: 'steelblue'
       }];
+
       data.sort(function(a,b){
         if (a.timestamp > b.timestamp) {
           return 1;
@@ -22,9 +23,7 @@ jQuery(function($) {
       });
 
       for (i = 0; i < data.length; i++) {
-          // unix = Math.round((new Date(data[i]["timestamp"]).getTime()) / 1000);
           time = new Date(data[i]["timestamp"]).getTime()
-          // console.log(i + "/" + data[i]["timestamp"] + " || " + time)
           graphData[0].values.push([time, data[i]["PLANT_d_hpv"]]);
       };
 
