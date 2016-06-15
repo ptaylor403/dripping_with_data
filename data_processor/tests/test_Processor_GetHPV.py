@@ -9,11 +9,19 @@ import data_processor.tests.test_files.plant_settings_test_cases as ps_tc
 
 import datetime as dt
 
-from data_processor.processor import get_new_hpv_data, get_shift_info
-from data_processor.processor import get_day_start, get_plant_day_hpv
-from data_processor.processor import get_dept_day_stats, get_day_hpv_dict
-from data_processor.processor import delete_old_entries, need_to_write
+from data_processor.processor_functions.processor_get_new_hpv import get_new_hpv_data
 
+from data_processor.processor_functions.processor_day_hpv import get_day_hpv_dict
+
+from data_processor.processor_functions.processor_delete_old import delete_old_entries
+
+from data_processor.processor_functions.processor_dept_day_stats import get_dept_day_stats
+
+from data_processor.processor_functions.processor_plant_day_stats import get_plant_day_hpv
+
+from data_processor.processor_functions.processor_shift import get_shift_info, get_day_start
+
+from data_processor.processor_functions.processor_write_conditions import need_to_write
 
 class GetHPVData(TestCase):
     def setUp(self):
