@@ -4,7 +4,8 @@ import datetime as dt
 
 def delete_old_entries(plant_settings, now):
     """
-    Checks settings for desired length of time to keep API entries. Deletes any data older than the found value in days.
+    Checks settings for desired length of time to keep API entries. Deletes any
+    data older than the found value in days.
 
     :param now: The simulated time - datetime object.
     :param plant_settings: The most recent instance of the plant settings.
