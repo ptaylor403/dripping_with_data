@@ -1,6 +1,7 @@
 from plantsettings.models import PlantSetting
 from api.models import HPVATM
 from .processor_shift import get_day_start
+from .processor_hpv_calc import calc_hpv
 
 
 def get_dept_day_stats(hpv_dict, now, dept):
