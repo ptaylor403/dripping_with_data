@@ -1,5 +1,5 @@
 from .models import RawClockDataDripper, RawDirectRunDataDripper
-from .models import RawCrysDataDripper, RawPlantActivityDripper, CombinedDripper
+from .models import RawPlantActivityDripper, CombinedDripper
 
 
 class MasterDripper:
