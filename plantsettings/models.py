@@ -12,8 +12,12 @@ class PlantSetting(models.Model):
     TAKT_Time = models.IntegerField(default=15)
     CHK_SRVR = models.IntegerField(default=5)
     del_after = models.IntegerField(default=45)
-    first_shift = models.TimeField(default=dt.time(6, 30), null=True, blank=True)
-    second_shift = models.TimeField(default=dt.time(14, 30), null=True, blank=True)
-    third_shift = models.TimeField(default=dt.time(22, 30), null=True, blank=True)
+    first_shift = models.TimeField(default=dt.time(6, 30), null=True,
+                                   blank=True)
+    second_shift = models.TimeField(default=dt.time(14, 30), null=True,
+                                    blank=True)
+    third_shift = models.TimeField(default=dt.time(22, 30), null=True,
+                                   blank=True)
     with timezone.override("US/Eastern"):
-        dripper_start = models.DateTimeField(default=timezone.make_aware(dt.datetime(2016, 4, 1, 0, 0)))
+        dripper_start = models.DateTimeField(default=timezone.make_aware(
+                                    dt.datetime(2016, 4, 1, 0, 0)))
