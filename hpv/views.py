@@ -84,8 +84,8 @@ class HPV(LoginRequiredMixin, TemplateView):
 
         :param current: the most recent object added to the api database
         :param context: the current context dataset
-        :param depts: the dictionary of dictionaries for the department datasets
-        the function is appending to.
+        :param depts: the dictionary of dictionaries for the department
+        datasets the function is appending to.
         """
 
         # Catching the data from the API object and putting it in the depts
@@ -122,8 +122,8 @@ class HPV(LoginRequiredMixin, TemplateView):
         :param current: the most recent object added to the api database
         :param shift1: all the objects with a shift value of 1
         :param context: the current context dataset
-        :param depts: the dictionary of dictionaries for the department datasets
-        the function is appending to.
+        :param depts: the dictionary of dictionaries for the department
+        datasets the function is appending to.
         """
 
         # If the most recent API object is not shift 1 it moves onto the next
@@ -174,8 +174,8 @@ class HPV(LoginRequiredMixin, TemplateView):
         :param current: the most recent object added to the api database
         :param shif2: all the objects with a shift value of 2
         :param context: the current context dataset
-        :param depts: the dictionary of dictionaries for the department datasets
-        the function is appending to.
+        :param depts: the dictionary of dictionaries for the department
+        datasets the function is appending to.
         """
 
         # If the most recent API object is shift 2 function skips to the next
@@ -227,8 +227,8 @@ class HPV(LoginRequiredMixin, TemplateView):
         :param current: the most recent object added to the api database
         :param shift3: all the objects with a shift value of 3
         :param context: the current context dataset
-        :param depts: the dictionary of dictionaries for the department datasets
-        the function is appending to.
+        :param depts: the dictionary of dictionaries for the department
+        datasets the function is appending to.
         """
 
         # If the most recent API object is not shift 3, shift 3 is False and is
