@@ -120,20 +120,23 @@ def no_dict_or_no_claims(hpv_dict):
 
 def need_to_write(now, plant_settings, last_api_write, last_claim):
     time_between = plant_settings.TAKT_Time
-
-    need_to_write = now - last_api_write.timestamp > dt.timedelta(minutes=time_between)
+    print("TIME BETWEEN= ", time_between)
+    print("NOW= ", now, ' ',plant_settings,  ' ',last_api_write, ' ', last_claim)
+    should_need_to_write = (now - last_api_write.timestamp) > dt.timedelta(minutes=time_between)
+    print("SHOULD NEED TO ", should_need_to_write)
 
     near_shift_end = is_near_shift_end(now, plant_settings)
+    print("LAST CLAIM TSLOAD ", last_claim.TS_LOAD)
+    print("LAST API WRITE ",  last_api_write.timestamp)
 
     if last_claim.TS_LOAD <= last_api_write.timestamp:
-        if need_to_write or near_shift_end:
+        if should_need_to_write or near_shift_end:
             print("It's been a while since an api entry was made or it is near the end of a shift. Recording hpv.")
             return True
         else:
             print("No new data in API TABLE. Checking again in 5 minutes.")
             return False
     return True
-
 
 
 def is_near_shift_end(now, plant_settings):
@@ -159,7 +162,6 @@ def delete_old_entries(plant_settings, now):
 def get_hpv_snap(now):
     """
     Finds the current shift and its start time to pass on to the functions that calculate hpv by department and shift
-
     Returns: Dictionary of department keys containing a dictionary of manhours, number clocked in, and hpv for the current shift.
     """
     print("/"*50)
@@ -186,7 +188,6 @@ def get_hpv_snap(now):
 def get_shift_info(plant_settings, now):
     """
     Gets the current shift and the time it started. Queries the plant settings to decide.
-
     Returns: shift number and start of shift datetime object
     """
     print("/"*50)
@@ -283,7 +284,6 @@ def get_second_shift_start(now, plant_settings):
 def get_day_hpv_dict(hpv_dict, now):
     """
     Calculates the day total hpv and manhours based on current values since shift start added to the last recorded value of the any previous shifts if applicable.
-
     Returns: Dictionary object to be written to the api.
     """
     print("/"*50)
