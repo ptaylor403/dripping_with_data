@@ -17,14 +17,14 @@ class DataProcessorConfig(AppConfig):
         print("-" * 50)
         print('Entering get_new_hpv_data')
 
-        plant_settings = PlantSetting.objects.latest('timestamp')
-        timer = plant_settings.CHK_SRVR
-        lock = filelock.FileLock('locker.txt')
-        lock.timeout = 1
-        try:
-            lock.acquire()
-        except:
-            return
-        scheduler = BackgroundScheduler()
-        scheduler.add_job(get_new_hpv_data, 'interval', seconds=2)
-        scheduler.start()
+        # plant_settings = PlantSetting.objects.latest('timestamp')
+        # timer = plant_settings.CHK_SRVR
+        # lock = filelock.FileLock('locker.txt')
+        # lock.timeout = 1
+        # try:
+        #     lock.acquire()
+        # except:
+        #     return
+        # scheduler = BackgroundScheduler()
+        # scheduler.add_job(get_new_hpv_data, 'interval', seconds=2)
+        # scheduler.start()

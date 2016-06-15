@@ -6,12 +6,12 @@ Each class is a building up the test case.
 from django.test import TestCase
 from django.utils import timezone
 import datetime as dt
-from .functions_for_tests import find_pop_and_return
 
-from get_data.models import RawClockData, RawPlantActivity
-import random
-from data_processor.functions.man_hours_calculations import get_clocked_in, get_emp_man_hours, get_emp_dept, \
-    get_emp_who_left_during_shift, set_begin_and_end_for_emp
+from data_processor.tests.functions.functions_for_tests import find_pop_and_return
+from get_data.models import RawClockData
+from data_processor.functions.man_hours_calculations import get_clocked_in
+from data_processor.functions.man_hours_calculations import get_emp_man_hours, get_emp_dept, \
+    get_emp_who_left_during_shift, set_begin_and_end_for_emp, get_emp_who_left_on_break
 
 
 class ManHourTestCaseNoEdgeCases(TestCase):
@@ -281,7 +281,8 @@ class ManHourEdgeTestCaseClockedInLate(TestCase):
 
 class ManHourEdgeTestCaseClockedOutEarly(TestCase):
     """
-    Test to see if people are clocked in and man hours are tracked for those and others that clocked out during the shift.
+    Test to see if people are clocked in and man hours are tracked
+    for those and others that clocked out during the shift.
     """
 
     @timezone.override("US/Eastern")
@@ -409,7 +410,7 @@ class ManHourEdgeTestCaseClockedOutEarly(TestCase):
 
     @timezone.override("US/Eastern")
     def test_get_currently_clocked_in(self):
-        """Test for employees who clocked in before start is accurate"""
+        """Test for employees who clocked in is accurate"""
         start = timezone.make_aware(dt.datetime(2016, 6, 3, 6, 30))
         expected_employees = ['001', '004', '006', '005', '010']
         neg_counter = len(expected_employees)
@@ -439,7 +440,7 @@ class ManHourEdgeTestCaseClockedOutEarly(TestCase):
         neg_counter = len(expected_employees)
 
         # test that expected employees is what is found
-        employees = get_emp_who_left_during_shift(
+        employees = get_emp_who_left_on_break(
             start=start,
             stop=stop,
         )
@@ -459,7 +460,35 @@ class ManHourEdgeTestCaseClockedOutEarly(TestCase):
             self.assertEqual(employee.PRSN_NBR_TXT, found_item)
 
     @timezone.override("US/Eastern")
-    def test_get_emp_who_left_during_shift(self):
+    def test_get_emp_who_breaked_during_shift(self):
+        """Test for employees who clocked in before start is accurate"""
+        start = timezone.make_aware(dt.datetime(2016, 6, 3, 6, 30))
+        stop = timezone.make_aware(dt.datetime(2016, 6, 3, 10, 30))
+        expected_employees = ['010']
+        neg_counter = len(expected_employees)
+
+        # test that expected employees is what is found
+        employees = get_emp_who_left_on_break(
+            start=start,
+            stop=stop,
+        )
+
+        for employee in employees:
+            print(employee.PRSN_NBR_TXT)
+            print(expected_employees)
+
+            # testing that the length of expected goes to 0 and that we are not missing things
+            self.assertEqual(len(expected_employees), neg_counter)
+            neg_counter -= 1
+
+            found_item, expected_employees = find_pop_and_return(
+                looking_for=employee.PRSN_NBR_TXT,
+                expected_list=expected_employees,
+            )
+            self.assertEqual(employee.PRSN_NBR_TXT, found_item)
+
+    @timezone.override("US/Eastern")
+    def test_set_begin_and_end_for_emp(self):
         """
         Test to make sure the the set being and end for emp is returning the values requested
         """
@@ -488,10 +517,24 @@ class ManHourEdgeTestCaseClockedOutEarly(TestCase):
         expected_emp_hours = 20.95
 
         # getting employee objects that are clocked in
-        employees = get_clocked_in(start) | get_emp_who_left_during_shift(start, stop)
+        clocked_in_emp = get_clocked_in(start)
+        emp_that_left = get_emp_who_left_during_shift(start, stop)
+        emp_that_breaked = get_emp_who_left_on_break(start, stop)
 
         # testing return of number of hours
-        for employee in employees:
+        for employee in clocked_in_emp:
+            print("EMP= ", employee.PRSN_NBR_TXT)
+            emp_hour = get_emp_man_hours(employee, start, stop)
+            print("EMP HOUR= ", emp_hour)
+            emp_hours += emp_hour
+
+        for employee in emp_that_left:
+            print("EMP= ", employee.PRSN_NBR_TXT)
+            emp_hour = get_emp_man_hours(employee, start, stop)
+            print("EMP HOUR= ", emp_hour)
+            emp_hours += emp_hour
+
+        for employee in emp_that_breaked:
             print("EMP= ", employee.PRSN_NBR_TXT)
             emp_hour = get_emp_man_hours(employee, start, stop)
             print("EMP HOUR= ", emp_hour)

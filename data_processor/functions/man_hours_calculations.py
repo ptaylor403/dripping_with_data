@@ -71,6 +71,7 @@ def get_emp_who_left_during_shift(start, stop):
 
         return left_for_day
 
+
 def get_emp_who_left_on_break(start, stop):
     """
     Filters employees who clocked out before the stop
