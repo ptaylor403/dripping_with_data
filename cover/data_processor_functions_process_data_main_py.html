@@ -8,7 +8,7 @@
     
     
     <meta http-equiv="X-UA-Compatible" content="IE=emulateIE7" />
-    <title>Coverage for data_processor/functions/process_data_main.py: 50%</title>
+    <title>Coverage for data_processor/functions/process_data_main.py: 82%</title>
     <link rel="stylesheet" href="style.css" type="text/css">
     
     <script type="text/javascript" src="jquery.min.js"></script>
@@ -24,15 +24,15 @@
 <div id="header">
     <div class="content">
         <h1>Coverage for <b>data_processor/functions/process_data_main.py</b> :
-            <span class="pc_cov">50%</span>
+            <span class="pc_cov">82%</span>
         </h1>
 
         <img id="keyboard_icon" src="keybd_closed.png" alt="Show keyboard shortcuts" />
 
         <h2 class="stats">
             28 statements &nbsp;
-            <span class="run hide_run shortkey_r button_toggle_run">14 run</span>
-            <span class="mis shortkey_m button_toggle_mis">14 missing</span>
+            <span class="run hide_run shortkey_r button_toggle_run">23 run</span>
+            <span class="mis shortkey_m button_toggle_mis">5 missing</span>
             <span class="exc shortkey_x button_toggle_exc">0 excluded</span>
 
             
@@ -67,20 +67,20 @@
     <table>
         <tr>
             <td class="linenos">
-<p id="n1" class="stm mis"><a href="#n1">1</a></p>
-<p id="n2" class="stm mis"><a href="#n2">2</a></p>
+<p id="n1" class="stm run hide_run"><a href="#n1">1</a></p>
+<p id="n2" class="stm run hide_run"><a href="#n2">2</a></p>
 <p id="n3" class="pln"><a href="#n3">3</a></p>
-<p id="n4" class="stm mis"><a href="#n4">4</a></p>
-<p id="n5" class="stm mis"><a href="#n5">5</a></p>
-<p id="n6" class="stm mis"><a href="#n6">6</a></p>
+<p id="n4" class="stm run hide_run"><a href="#n4">4</a></p>
+<p id="n5" class="stm run hide_run"><a href="#n5">5</a></p>
+<p id="n6" class="stm run hide_run"><a href="#n6">6</a></p>
 <p id="n7" class="pln"><a href="#n7">7</a></p>
-<p id="n8" class="stm mis"><a href="#n8">8</a></p>
+<p id="n8" class="stm run hide_run"><a href="#n8">8</a></p>
 <p id="n9" class="pln"><a href="#n9">9</a></p>
 <p id="n10" class="pln"><a href="#n10">10</a></p>
-<p id="n11" class="stm mis"><a href="#n11">11</a></p>
+<p id="n11" class="stm run hide_run"><a href="#n11">11</a></p>
 <p id="n12" class="stm mis"><a href="#n12">12</a></p>
 <p id="n13" class="pln"><a href="#n13">13</a></p>
-<p id="n14" class="stm mis"><a href="#n14">14</a></p>
+<p id="n14" class="stm run hide_run"><a href="#n14">14</a></p>
 <p id="n15" class="pln"><a href="#n15">15</a></p>
 <p id="n16" class="pln"><a href="#n16">16</a></p>
 <p id="n17" class="pln"><a href="#n17">17</a></p>
@@ -152,7 +152,7 @@
 <p id="n83" class="stm run hide_run"><a href="#n83">83</a></p>
 <p id="n84" class="pln"><a href="#n84">84</a></p>
 <p id="n85" class="pln"><a href="#n85">85</a></p>
-<p id="n86" class="stm mis"><a href="#n86">86</a></p>
+<p id="n86" class="stm run hide_run"><a href="#n86">86</a></p>
 <p id="n87" class="pln"><a href="#n87">87</a></p>
 <p id="n88" class="pln"><a href="#n88">88</a></p>
 <p id="n89" class="pln"><a href="#n89">89</a></p>
@@ -190,20 +190,20 @@
 
             </td>
             <td class="text">
-<p id="t1" class="stm mis"><span class="key">from</span> <span class="nam">datetime</span> <span class="key">import</span> <span class="nam">datetime</span><span class="op">,</span> <span class="nam">timedelta</span><span class="strut">&nbsp;</span></p>
-<p id="t2" class="stm mis"><span class="key">from</span> <span class="nam">django</span><span class="op">.</span><span class="nam">utils</span> <span class="key">import</span> <span class="nam">timezone</span><span class="strut">&nbsp;</span></p>
+<p id="t1" class="stm run hide_run"><span class="key">from</span> <span class="nam">datetime</span> <span class="key">import</span> <span class="nam">datetime</span><span class="op">,</span> <span class="nam">timedelta</span><span class="strut">&nbsp;</span></p>
+<p id="t2" class="stm run hide_run"><span class="key">from</span> <span class="nam">django</span><span class="op">.</span><span class="nam">utils</span> <span class="key">import</span> <span class="nam">timezone</span><span class="strut">&nbsp;</span></p>
 <p id="t3" class="pln"><span class="strut">&nbsp;</span></p>
-<p id="t4" class="stm mis"><span class="key">from</span> <span class="op">.</span><span class="nam">claims_calculations</span> <span class="key">import</span> <span class="nam">get_range_of_claims</span><span class="strut">&nbsp;</span></p>
-<p id="t5" class="stm mis"><span class="key">from</span> <span class="op">.</span><span class="nam">man_hours_calculations</span> <span class="key">import</span> <span class="nam">get_emp_man_hours</span><span class="op">,</span> <span class="nam">get_emp_dept</span><span class="op">,</span> <span class="nam">get_clocked_in</span><span class="strut">&nbsp;</span></p>
-<p id="t6" class="stm mis"><span class="key">from</span> <span class="op">.</span><span class="nam">hpv_calcuations</span> <span class="key">import</span> <span class="nam">get_hpv</span><span class="strut">&nbsp;</span></p>
+<p id="t4" class="stm run hide_run"><span class="key">from</span> <span class="op">.</span><span class="nam">claims_calculations</span> <span class="key">import</span> <span class="nam">get_range_of_claims</span><span class="strut">&nbsp;</span></p>
+<p id="t5" class="stm run hide_run"><span class="key">from</span> <span class="op">.</span><span class="nam">man_hours_calculations</span> <span class="key">import</span> <span class="nam">get_emp_man_hours</span><span class="op">,</span> <span class="nam">get_emp_dept</span><span class="op">,</span> <span class="nam">get_clocked_in</span><span class="strut">&nbsp;</span></p>
+<p id="t6" class="stm run hide_run"><span class="key">from</span> <span class="op">.</span><span class="nam">hpv_calcuations</span> <span class="key">import</span> <span class="nam">get_hpv</span><span class="strut">&nbsp;</span></p>
 <p id="t7" class="pln"><span class="strut">&nbsp;</span></p>
-<p id="t8" class="stm mis"><span class="key">from</span> <span class="nam">generic_dripper</span><span class="op">.</span><span class="nam">views</span> <span class="key">import</span> <span class="nam">the_dripper</span><span class="strut">&nbsp;</span></p>
+<p id="t8" class="stm run hide_run"><span class="key">from</span> <span class="nam">generic_dripper</span><span class="op">.</span><span class="nam">views</span> <span class="key">import</span> <span class="nam">the_dripper</span><span class="strut">&nbsp;</span></p>
 <p id="t9" class="pln"><span class="strut">&nbsp;</span></p>
 <p id="t10" class="pln"><span class="strut">&nbsp;</span></p>
-<p id="t11" class="stm mis"><span class="key">def</span> <span class="nam">get_now</span><span class="op">(</span><span class="op">)</span><span class="op">:</span><span class="strut">&nbsp;</span></p>
+<p id="t11" class="stm run hide_run"><span class="key">def</span> <span class="nam">get_now</span><span class="op">(</span><span class="op">)</span><span class="op">:</span><span class="strut">&nbsp;</span></p>
 <p id="t12" class="stm mis">    <span class="key">return</span> <span class="nam">the_dripper</span><span class="op">.</span><span class="nam">simulated_time</span><span class="strut">&nbsp;</span></p>
 <p id="t13" class="pln"><span class="strut">&nbsp;</span></p>
-<p id="t14" class="stm mis"><span class="key">def</span> <span class="nam">get_master_by_dept_dict</span><span class="op">(</span><span class="op">)</span><span class="op">:</span><span class="strut">&nbsp;</span></p>
+<p id="t14" class="stm run hide_run"><span class="key">def</span> <span class="nam">get_master_by_dept_dict</span><span class="op">(</span><span class="op">)</span><span class="op">:</span><span class="strut">&nbsp;</span></p>
 <p id="t15" class="pln">    <span class="str">"""</span><span class="strut">&nbsp;</span></p>
 <p id="t16" class="pln"><span class="str">    made this for readability purposes and to have</span><span class="strut">&nbsp;</span></p>
 <p id="t17" class="pln"><span class="str">    one version of the truth for this dict.</span><span class="strut">&nbsp;</span></p>
@@ -275,7 +275,7 @@
 <p id="t83" class="stm run hide_run">    <span class="key">return</span> <span class="nam">master_by_dept_dict</span><span class="strut">&nbsp;</span></p>
 <p id="t84" class="pln"><span class="strut">&nbsp;</span></p>
 <p id="t85" class="pln"><span class="strut">&nbsp;</span></p>
-<p id="t86" class="stm mis"><span class="key">def</span> <span class="nam">main</span><span class="op">(</span><span class="nam">start</span><span class="op">,</span> <span class="nam">stop</span><span class="op">)</span><span class="op">:</span><span class="strut">&nbsp;</span></p>
+<p id="t86" class="stm run hide_run"><span class="key">def</span> <span class="nam">main</span><span class="op">(</span><span class="nam">start</span><span class="op">,</span> <span class="nam">stop</span><span class="op">)</span><span class="op">:</span><span class="strut">&nbsp;</span></p>
 <p id="t87" class="pln">    <span class="str">"""</span><span class="strut">&nbsp;</span></p>
 <p id="t88" class="pln"><span class="str">    Main function that queries the DB to return HPV by dept.</span><span class="strut">&nbsp;</span></p>
 <p id="t89" class="pln"><span class="str">    :param start: DATETIME TIMEZONE AWARE object</span><span class="strut">&nbsp;</span></p>
@@ -320,7 +320,7 @@
     <div class="content">
         <p>
             <a class="nav" href="index.html">&#xab; index</a> &nbsp; &nbsp; <a class="nav" href="https://coverage.readthedocs.io">coverage.py v4.1</a>,
-            created at 2016-06-13 21:39
+            created at 2016-06-15 00:20
         </p>
     </div>
 </div>
