@@ -172,6 +172,23 @@ def is_near_shift_end(now, plant_settings):
     :param hpv_dict: dictionary object from shift calculations or None.
     :return: Boolean value.
     """
+
+    # Gets a datetime object for each shift end time to compare.
+    end_first, end_second, end_third = get_shift_ends(now, plant_settings)
+
+    # Sets the time delta for how far from the shift end is checked.
+    within_5 = dt.timedelta(minutes=5)
+    delta_0 = dt.timedelta(minutes=0)
+
+    # Checks that now is 5 min before shift end
+    near_first = end_first - now < within_5 and end_first - now > delta_0
+    near_second = end_second - now < within_5 and end_second - now > delta_0
+    near_third = end_third - now < within_5 and end_third - now > delta_0
+
+    return near_first or near_second or near_third
+
+
+def get_shift_ends(now, plant_settings):
     # Makes the time object from settings a datetime for comparing to 'now'
     # End is 8 hours after start.
     end_first = dt.datetime.combine(now.date(), plant_settings.first_shift) + dt.timedelta(hours=8)
@@ -185,11 +202,8 @@ def is_near_shift_end(now, plant_settings):
     # Subtracting 16 hours gets the end of the shift that started the day before.
     end_third = dt.datetime.combine(now.date(), plant_settings.third_shift) - dt.timedelta(hours=16)
     end_third = timezone.make_aware(end_third)
-    print('\nend_third: \n', end_third)
 
-    within_5 = dt.timedelta(minutes=5)
-
-    return abs(end_first - now) < within_5 or abs(end_second - now) < within_5 or abs(end_third - now) < within_5
+    return end_first, end_second, end_third
 
 
 def delete_old_entries(plant_settings, now):
