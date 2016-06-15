@@ -7,31 +7,35 @@ import pytz
 class AttendanceTestCase(TestCase):
 
     def setUp(self):
-        #first shift clocked out
+        # first shift clocked out
         Attendance.objects.create(employee_number=66661,
                                   department='CIW',
                                   clock_in_time=dt.datetime(2016, 6, 1, 6, 30),
-                                  clock_out_time=dt.datetime(2016, 6, 1, 14, 30),
+                                  clock_out_time=dt.datetime(2016, 6, 1, 14,
+                                                             30),
                                   shift='first')
 
-        #first shift not clocked out
+        # first shift not clocked out
         Attendance.objects.create(employee_number=66662,
                                   department='FCH',
                                   clock_in_time=dt.datetime(2016, 6, 1, 6, 30),
                                   clock_out_time=None,
                                   shift='first')
 
-        #second shift clocked out
+        # second shift clocked out
         Attendance.objects.create(employee_number=66663,
                                   department='FCB',
-                                  clock_in_time=dt.datetime(2016, 6, 1, 14, 30),
-                                  clock_out_time=dt.datetime(2016, 6, 1, 22, 30),
+                                  clock_in_time=dt.datetime(2016, 6, 1, 14,
+                                                            30),
+                                  clock_out_time=dt.datetime(2016, 6, 1, 22,
+                                                             30),
                                   shift='second')
 
-        #second shift not clocked out
+        # second shift not clocked out
         Attendance.objects.create(employee_number=66664,
                                   department='PNT',
-                                  clock_in_time=dt.datetime(2016, 6, 1, 14, 30),
+                                  clock_in_time=dt.datetime(2016, 6, 1, 14,
+                                                            30),
                                   clock_out_time=None,
                                   shift='second')
 

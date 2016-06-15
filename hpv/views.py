@@ -1,24 +1,15 @@
 from django.shortcuts import render
 from django.views.generic.base import TemplateView
 import datetime as dt
-from .data_sim import *
 from api.models import HPVATM
-import random
-import pytz
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth import logout
-from django.http import HttpResponseRedirect
-from get_data.models import RawPlantActivity, RawClockData
-from generic_dripper.views import the_dripper
-from api.models import HPVATM
-import sys
 from collections import OrderedDict
 
 
 class HPV(LoginRequiredMixin, TemplateView):
     template_name = "hpv/hpv2.html"
     login_url = '/login/'
-
 
     def get_context_data(self, **kwargs):
         """
@@ -66,11 +57,13 @@ class HPV(LoginRequiredMixin, TemplateView):
 
         # Set order of the departments dictionary so the table in the HTML is
         # in order
-        keyorder = ['CIW', 'FCB', 'PNT', 'PCH', 'FCH', 'DAC', 'MAINT', 'QA', 'MAT', 'PLANT']
-        context['depts'] = OrderedDict(sorted(depts.items(), key=lambda i:keyorder.index(i[0])))
+        keyorder = ['CIW', 'FCB', 'PNT', 'PCH', 'FCH', 'DAC', 'MAINT', 'QA',
+                    'MAT', 'PLANT']
+
+        context['depts'] = OrderedDict(sorted(depts.items(), key=lambda
+                                              i: keyorder.index(i[0])))
 
         return context
-
 
     def set_day_data(self, current, context, depts):
         """
@@ -95,7 +88,6 @@ class HPV(LoginRequiredMixin, TemplateView):
         claims_d = current.claims_d
         context.update({'claims_d': claims_d})
 
-
     def set_shift1_data(self, current, shift1, context, depts):
         """
 
@@ -107,13 +99,17 @@ class HPV(LoginRequiredMixin, TemplateView):
         if not shift1:
             return
 
-        # Finds most recent API object that is shift 1 between now and 17 hours ago (near end of last shift)
-        # If there is no shift 1 within the last 17 hours it returns out of the funtion
+        # Finds most recent API object that is shift 1 between now and 17 hours
+        # ago (near end of last shift)
+        # If there is no shift 1 within the last 17 hours it returns out of the
+        # funtion
         shift1 = shift1.latest('timestamp')
-        if not (shift1.timestamp >= current.timestamp - dt.timedelta(hours=17)):
+        if not (shift1.timestamp >=
+                current.timestamp - dt.timedelta(hours=17)):
             return
 
-        # Catching the data from the API object and putting it in the depts dictionary
+        # Catching the data from the API object and putting it in the depts
+        # dictionary
         depts['CIW']['s1_hpv'] = shift1.CIW_s_hpv
         depts['FCB']['s1_hpv'] = shift1.FCB_s_hpv
         depts['PNT']['s1_hpv'] = shift1.PNT_s_hpv
@@ -129,24 +125,28 @@ class HPV(LoginRequiredMixin, TemplateView):
         s1_claims = shift1.claims_s
         context.update({'s1_claims': s1_claims})
 
-
     def set_shift2_data(self, current, shift2, context, depts):
         """
 
 
         """
 
-        # If the most recent API object is shift 2 function skips to the next step
+        # If the most recent API object is shift 2 function skips to the next
+        # step
         if not shift2:
             return
 
-        # Finds most recent API object that is shift 2 between now and 17 hours ago (near end of last shift)
-        # If there is no shift 2 within the last 17 hours it returns out of the funtion
+        # Finds most recent API object that is shift 2 between now and 17 hours
+        # ago (near end of last shift)
+        # If there is no shift 2 within the last 17 hours it returns out of the
+        # funtion
         shift2 = shift2.latest('timestamp')
-        if not (shift2.timestamp >= current.timestamp - dt.timedelta(hours=17)):
+        if not (shift2.timestamp >=
+                current.timestamp - dt.timedelta(hours=17)):
             return
 
-        # Catching the data from the API object and putting it in the depts dictionary
+        # Catching the data from the API object and putting it in the depts
+        # dictionary
         depts['CIW']['s2_hpv'] = shift2.CIW_s_hpv
         depts['FCB']['s2_hpv'] = shift2.FCB_s_hpv
         depts['PNT']['s2_hpv'] = shift2.PNT_s_hpv
@@ -161,7 +161,6 @@ class HPV(LoginRequiredMixin, TemplateView):
         # Catching the shifts claims data and adding it to the context
         s2_claims = shift2.claims_s
         context.update({'s2_claims': s2_claims})
-
 
     def set_shift3_data(self, current, shift3, context, depts):
         """
@@ -181,7 +180,8 @@ class HPV(LoginRequiredMixin, TemplateView):
         # If there is no shift 2 within the last 17 hours it returns out of the
         # funtion
         shift3 = shift3.latest('timestamp')
-        if not (shift3.timestamp >= current.timestamp - dt.timedelta(hours=17)):
+        if not (shift3.timestamp >=
+                current.timestamp - dt.timedelta(hours=17)):
             return
 
         # Catching the data from the API object and putting it in the depts
@@ -201,38 +201,7 @@ class HPV(LoginRequiredMixin, TemplateView):
         # the context
         s3_claims = shift3.claims_s
         shift_3 = True
-        context.update({ 's1_claims': s1_claims, 'shift3_total': shift3_total })
-
-
-class Drip(LoginRequiredMixin, TemplateView):
-    template_name = "hpv/drip.html"
-    login_url = '/login/'
-
-    def get(self, request):
-        context = {}
-        if request.GET.get('dripRate'):
-            serial_number = get_truck_serial()
-            last_truck = Complete.objects.latest('completed')
-            prev_time = last_truck.completed
-
-            day = prev_time.day
-            hour = prev_time.hour
-            minute = prev_time.minute + random.randint(7, 12)
-
-            if prev_time.hour >= 22 and prev_time.minute >= 48:
-                day += 1
-                hour = 7
-                minute = random.randint(0, 6)
-            elif prev_time.minute >= 48:
-                hour = prev_time.hour + 1
-                minute = random.randint(0, 6)
-
-            completed = get_completed(day, hour, minute)
-
-            Complete.objects.create(serial_number=serial_number, completed=completed)
-
-            context['lastTruck'] = "The last truck completed and added to the database was {} at {}".format(serial_number, completed)
-        return render(request, self.template_name, context)
+        context.update({'s3_claims': s3_claims, 'shift_3': shift_3})
 
 
 def logout_view(request):
