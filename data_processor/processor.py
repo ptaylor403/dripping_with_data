@@ -169,7 +169,8 @@ def is_near_shift_end(now, plant_settings):
     """
     Checks settings for the shift times and compares them to "now". If "now" is within 5 minutes of the end of any shift (8 hours after start), returns true.
 
-    :param hpv_dict: dictionary object from shift calculations or None.
+    :param now: The simulated time - datetime object.
+    :param plant_settings: The most recent instance of the plant settings.
     :return: Boolean value.
     """
 
@@ -180,15 +181,29 @@ def is_near_shift_end(now, plant_settings):
     within_5 = dt.timedelta(minutes=5)
     delta_0 = dt.timedelta(minutes=0)
 
-    # Checks that now is 5 min before shift end
+    # Checks that now is 5 min before a shift end
+    # If plant settings do not show that shift is activated, it is False.
     near_first = end_first - now < within_5 and end_first - now > delta_0
-    near_second = end_second - now < within_5 and end_second - now > delta_0
-    near_third = end_third - now < within_5 and end_third - now > delta_0
-
+    if plant_settings.num_of_shifts == 2:
+        near_second = end_second - now < within_5 and end_second - now > delta_0
+    else:
+        near_second = False
+    if plant_settings.num_of_shifts == 3:
+        near_third = end_third - now < within_5 and end_third - now > delta_0
+    else:
+        near_third = False
     return near_first or near_second or near_third
 
 
 def get_shift_ends(now, plant_settings):
+    """
+    Checks plant settings for start of each shift then calc the end of the shift by adding 8 hours to the start time. Times must be converted to datetime for comparisons. Because third shift starts the day before and adding 8 hours would mean the shift end time being compared is the next day and would never return True, 16 hours are subracted instead.
+
+    :param now: The simulated time - datetime object.
+    :param plant_settings: The most recent instance of the plant settings.
+    :return: A datetime object for the end of the first, second, and third shifts.
+    """
+
     # Makes the time object from settings a datetime for comparing to 'now'
     # End is 8 hours after start.
     end_first = dt.datetime.combine(now.date(), plant_settings.first_shift) + dt.timedelta(hours=8)
@@ -207,15 +222,23 @@ def get_shift_ends(now, plant_settings):
 
 
 def delete_old_entries(plant_settings, now):
+    """
+    Checks settings for desired length of time to keep API entries. Deletes any data older than the found value in days.
+
+    :param now: The simulated time - datetime object.
+    :param plant_settings: The most recent instance of the plant settings.
+    :return: None.
+    """
     del_after_date = now - dt.timedelta(days=plant_settings.del_after)
     HPVATM.objects.filter(timestamp__lte=del_after_date).delete()
 
 
 def get_hpv_snap(now):
     """
-    Finds the current shift and its start time to pass on to the functions that calculate hpv by department and shift
+    Finds the current shift and its start time to pass on to the functions that calculate hpv by department and shift.
 
-    Returns: Dictionary of department keys containing a dictionary of manhours, number clocked in, and hpv for the current shift.
+    :param now: The simulated time - datetime object.
+    :return: Dictionary of department keys each containing a dictionary of manhours, number clocked in, and hpv for the current shift.
     """
     print("/"*50)
     print("GET HPV SNAP")
@@ -240,9 +263,11 @@ def get_hpv_snap(now):
 @timezone.override("US/Eastern")
 def get_shift_info(plant_settings, now):
     """
-    Gets the current shift and the time it started. Queries the plant settings to decide.
+    Queries the plant settings to get the current shift and the time it started based on "now".
 
-    Returns: shift number and start of shift datetime object
+    :param now: The simulated time - datetime object.
+    :param plant_settings: The most recent instance of the plant settings.
+    :return: Integer value - shift number AND a datetime object - shift start time.
     """
     print("/"*50)
     print("GET SHIFT INFO")
@@ -286,6 +311,14 @@ def get_shift_info(plant_settings, now):
 
 
 def get_first_shift_ot(now, plant_settings):
+    """
+    Finds the start time of overtime for first shift.
+
+    :param now: The simulated time - datetime object.
+    :param plant_settings: The most recent instance of the plant settings.
+    :return: Datetime object - when overtime starts for first shift.
+    """
+    # Have to convert to datetime subtract timedelta, then back to time object
     first_shift_date = dt.datetime.combine(now.date(), plant_settings.first_shift)
     first_ot = first_shift_date - dt.timedelta(hours=3, minutes=30)
     first_ot = first_ot.time()
@@ -293,6 +326,16 @@ def get_first_shift_ot(now, plant_settings):
 
 
 def find_shift_after_first(now, plant_settings, shift, start):
+    """
+    Called when the time is past the first shift and checks if it is late enough to be in any following shifts should they exist.
+
+    :param now: The simulated time - datetime object.
+    :param plant_settings: The most recent instance of the plant settings.
+    :param shift: Integer - current shift.
+    :param start: Datetime object - current shift start time.
+    :return: Integer - shift AND a datetime object - start.
+    """
+    # If 2 shifts and past the start of the second
     if plant_settings.num_of_shifts >= 2:
         print("2 or MORE SHIFTS ACTIVATED")
         if now.time() >= plant_settings.second_shift:
@@ -309,6 +352,15 @@ def find_shift_after_first(now, plant_settings, shift, start):
 
 
 def check_if_in_third_shift(now, plant_settings, shift, start):
+    """
+    Called when the time is past the first shift. Sets the shift and start times for third shift if time is past third shift start times. Date is set to today as opposed to the previous day in this case
+
+    :param now: The simulated time - datetime object.
+    :param plant_settings: The most recent instance of the plant settings.
+    :param shift: Integer - current shift.
+    :param start: Datetime object - current shift start time.
+    :return: Integer - shift AND a datetime object - start.
+    """
     if now.time() >= plant_settings.third_shift:
         shift = 3
         start = dt.datetime.combine(now.date(), plant_settings.third_shift)
@@ -317,6 +369,13 @@ def check_if_in_third_shift(now, plant_settings, shift, start):
 
 
 def get_third_shift_start(now, plant_settings):
+    """
+    Called when 3 shifts are found and the time is before the start of shift one. Sets the start of shift 3 back one day.
+
+    :param now: The simulated time - datetime object.
+    :param plant_settings: The most recent instance of the plant settings.
+    :return: Integer value - shift AND a datetime object - when third shift starts.
+    """
     shift = 3
     yesterday = (now.date() - dt.timedelta(days=1))
     start = dt.datetime.combine(yesterday, plant_settings.third_shift)
@@ -327,6 +386,13 @@ def get_third_shift_start(now, plant_settings):
 
 
 def get_second_shift_start(now, plant_settings):
+    """
+    Called when "now" is in shift 2 and sets the shift and shift start times.
+
+    :param now: The simulated time - datetime object.
+    :param plant_settings: The most recent instance of the plant settings.
+    :return: Integer value - shift AND a datetime object - when second shift starts.
+    """
     shift = 2
     yesterday = (now.date() - dt.timedelta(days=1))
     start = dt.datetime.combine(yesterday, plant_settings.second_shift)
@@ -337,40 +403,51 @@ def get_second_shift_start(now, plant_settings):
 
 def get_day_hpv_dict(hpv_dict, now):
     """
-    Calculates the day total hpv and manhours based on current values since shift start added to the last recorded value of the any previous shifts if applicable.
+    Calculates the day total hpv and manhours based on current values since shift start and adding these to the last recorded value of the any previous shifts if applicable.
 
-    Returns: Dictionary object to be written to the api.
+    :param hpv_dict: A dictionary object containing hpv, manhours, number clocked in by department as well as number of claims that shift.
+    :param now: The simulated time - datetime object.
+    :return: Dictionary object to be written to the api.
     """
     print("/"*50)
     print("GET DAY HPV DICT FUNCTION")
     print("/"*50)
 
+    # Department list to loop through
     dept_list = ['CIW', 'FCB', 'PNT', 'PCH', 'FCH', 'DAC', 'MAINT', 'QA', 'MAT', 'OTHER']
     dept_values = []
     full_dict = {}
 
-    plant_s_mh, plant_s_ne = get_dept_plant_stats(hpv_dict, dept_list)
+    # Adds dept shift values for manhours and number in to get plant shift info
+    plant_s_mh, plant_s_ne = get_plant_stats(hpv_dict, dept_list)
+    # HPV calculated based on manhours/claims
+    plant_s_hpv = calc_plant_hpv_for_shift(hpv_dict, plant_s_mh)
 
+
+    # Calculates the stats for the day by department.
     for dept in dept_list:
         dept_values.append(get_dept_day_stats(hpv_dict, now, dept))
 
     print("DEPT_VALUES ",dept_values)
 
-    plant_s_hpv = calc_plant_hpv_for_shift(hpv_dict, plant_s_mh)
-
+    # Dictionary to update 2 others with plant data.
     shift_dict = {
         'plant_s_hpv': plant_s_hpv,
         'plant_s_mh': plant_s_mh,
         'plant_s_ne': plant_s_ne,
     }
 
+    # HPV dict updated to calc plant day totals further on.
     hpv_dict.update(shift_dict)
+    # Adds to dictionary that will be returned
     full_dict.update(shift_dict)
     print('FULL DICT:', full_dict)
 
+    #Calculates the day totals for the plant
     plant_d_hpv, plant_d_mh, claims_d = get_plant_day_hpv(hpv_dict, now)
     print("plant_d_hpv, plant_d_mh, claims_d= ", plant_d_hpv, plant_d_mh, claims_d)
 
+    # Fills the dictionary that will be written to API
     full_hpv_dict = {
         'CIW_s_hpv': hpv_dict['CIW']['hpv'],
         'CIW_s_mh': hpv_dict['CIW']['mh'],
@@ -440,7 +517,7 @@ def get_day_hpv_dict(hpv_dict, now):
     return full_hpv_dict
 
 
-def get_dept_plant_stats(hpv_dict, dept_list):
+def get_plant_stats(hpv_dict, dept_list):
     plant_s_ne = 0
     plant_s_mh = 0
     for dept in dept_list:
@@ -588,12 +665,8 @@ def get_three_shifts_plant_day_hpv_2nd_shift(s3, s1, cur_mh, cur_claims):
             mh = s1.PLANT_s_mh + cur_mh
             claims = s1.claims_s + cur_claims
     elif s1 is None:
-        if s3 is None:
-            mh = cur_mh
-            claims = cur_claims
-        else:
-            mh = s3.PLANT_s_mh + cur_mh
-            claims = s3.claims_s + cur_claims
+        mh = s3.PLANT_s_mh + cur_mh
+        claims = s3.claims_s + cur_claims
     else:
         mh = s3.PLANT_s_mh + s1.PLANT_s_mh + cur_mh
         claims = s3.claims_s + s1.claims_s + cur_claims
