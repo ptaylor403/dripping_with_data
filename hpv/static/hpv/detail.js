@@ -574,6 +574,7 @@ jQuery(function($) {
       updateButtons(d.label, $(this).parent());
       $('.depttitle').text(d.label);
       heatMap.heatmap(d.day, weekQueryResult);
+
       lineChart.updateLineData(d.day, currentQueryResult);
       weekOnWeek(currentDataName, currentQueryResult);
     });
@@ -611,10 +612,13 @@ jQuery(function($) {
       data.forEach(function(d){
         d.timestamp = parseDate(d.timestamp);
       });
+
       weekQueryResult = data
       console.log(weekQueryResult.length, weekQueryResult[0]);
-      legend.selectAll("*").remove()
+      // legend.selectAll("*").remove()
+
       heatMap.heatmap(currentDataName, data)
+
       d3.json(currentQuery,function(error, data){
         data.forEach(function(d){
           d.timestamp = parseDate(d.timestamp);
