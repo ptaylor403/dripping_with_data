@@ -72,7 +72,7 @@ def get_new_hpv_data():
     # Checks if any entries need to be deleted due to age before writing
     delete_old_entries(plant_settings, now)
     write_data(hpv_dict_with_day)
-
+    print("Wrote data.")
     return True
 
 
