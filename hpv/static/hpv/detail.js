@@ -481,23 +481,22 @@ jQuery(function($) {
         todayData.push(data[i])
       }
     }
-
     for (i = 0; i < todayData.length; i++) {
       // unix = Math.round((new Date(data[i]["timestamp"]).getTime()) / 1000);
       time = todayData[i]["timestamp"] / 1000
       // console.log(i + "/" + data[i]["timestamp"] + " || " + time)
-      graphData[0].values.push([time, data[i][day]]);
+      graphData[0].values.push([time, todayData[i][day]]);
     };
     lastDataTime = todayData[todayData.length-1]['timestamp']
     lastDataTimestamp = lastDataTime / 1000
-    previousDataTimestamp = lastDataTimestamp - weekInSeconds - ( dayInSeconds / 6)
+    previousDataTimestamp = lastDataTimestamp - weekInSeconds //- ( dayInSeconds / 6)
     var query = '/api/hpv?days=1&format=json&end='+previousDataTimestamp
     d3.json(query,function(data){
       for (i = 0; i < data.length; i++) {
           // unix = Math.round((new Date(data[i]["timestamp"]).getTime()) / 1000);
           time = parseDate(data[i]["timestamp"]) / 1000 + weekInSeconds
           // console.log(i + "/" + data[i]["timestamp"] + " || " + time)
-          graphData[1].values.push([time, data[i][day]]);
+          graphData[1].values.push([time, +data[i][day]]);
       };
 
       nv.addGraph(function() {
@@ -510,10 +509,14 @@ jQuery(function($) {
         chart.xAxis
           .axisLabel('Time')
           .tickFormat(function(d) {
-              return d3.time.format('%H:%M')(new Date((d - dayInSeconds/6) * 1000))
+              return d3.time.format('%H:%M')(new Date(d * 1000))
             });
 
-        chart.yDomain([0, 140])
+        chart.yDomain([0, d3.max(graphData, function(d){
+          var y_value_max =  d3.max(d.values, function(e){return e[1]})
+          console.log(y_value_max);
+          return y_value_max
+        })])
         chart.yAxis
           .axisLabel('HPV')
           .tickFormat(d3.format(',f'));
@@ -526,6 +529,7 @@ jQuery(function($) {
 
         return chart;
       });
+      //console.log(graphData);
     })
   });
 
@@ -541,12 +545,9 @@ jQuery(function($) {
   // intialize charts
 
   d3.json(initial_query,function(error, data){
-    console.log("first " + data[0].timestamp)
     data.forEach(function(d){
       d.timestamp = parseDate(d.timestamp);
-      console.log("second " + d.timestamp)
     });
-    console.log("third " + data[0].timestamp)
     weekQueryResult = data
     currentQueryResult = data
     heatMap.heatmap(currentDataName, data)
@@ -605,7 +606,6 @@ jQuery(function($) {
   // setTimeout(function() {location.reload(true);},6000);
   // reload page every 5 seconds
   setInterval(function() {
-    console.log(initial_query);
     d3.json(initial_query,function(error, data){
       data.forEach(function(d){
         d.timestamp = parseDate(d.timestamp);
