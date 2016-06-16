@@ -3,28 +3,9 @@ Man hour calculation functions are in this file
 """
 
 from get_data.models import RawClockData
-from datetime import timedelta
 import re
 from django.utils import timezone
-from decimal import Decimal
-from decimal import getcontext
-
-LOCAL_TIME_ZONE = ''
-REGEX_FOR_DEPT = {
-    'shift': "/([1-9])/"
-}
-
-DEPARTMENT_LOOKUP_DICT = {
-    '1': 'CIW',
-    '2': 'FCB',
-    '3': 'PNT',
-    '4': 'PCH',
-    '5': 'FCH',
-    '6': 'DAC',
-    '7': 'MAINT',
-    '8': 'QA',
-    '9': 'MAT',
-}
+from .config.look_up_values import get_dept_lookup_dict
 
 
 def get_clocked_in(start):
@@ -42,7 +23,10 @@ def get_clocked_in(start):
             PNCHEVNT_IN__month=start.month,
             PNCHEVNT_IN__day=start.day,
             PNCHEVNT_OUT__exact=None,
-        ).exclude(end_rsn_txt__exact='&out')
+        ).exclude(
+            end_rsn_txt__exact='&out',
+            PNCHEVNT_IN__gte=start,
+        )
 
 
 def get_emp_who_left_during_shift(start, stop):
@@ -54,20 +38,13 @@ def get_emp_who_left_during_shift(start, stop):
     """
 
     with timezone.override("US/Eastern"):
-        present_today = RawClockData.objects.filter(
+        return RawClockData.objects.filter(
             PNCHEVNT_IN__year=start.year,
             PNCHEVNT_IN__month=start.month,
             PNCHEVNT_IN__day=start.day,
-        )
-
-        left_for_day = present_today.filter(
             PNCHEVNT_OUT__lte=stop,
             end_rsn_txt__exact='&out',
         ).exclude(PNCHEVNT_OUT__lte=start)
-
-        print("LEFT FOR DAY= ", len(left_for_day))
-
-        return left_for_day
 
 
 def get_emp_who_left_on_break(start, stop):
@@ -79,18 +56,13 @@ def get_emp_who_left_on_break(start, stop):
     """
 
     with timezone.override("US/Eastern"):
-        present_today = RawClockData.objects.filter(
+        return RawClockData.objects.filter(
             PNCHEVNT_IN__year=start.year,
             PNCHEVNT_IN__month=start.month,
             PNCHEVNT_IN__day=start.day,
-        )
-
-        went_on_break = present_today.filter(
             PNCHEVNT_OUT__lte=stop,
             end_rsn_txt__exact='&break',
         ).exclude(PNCHEVNT_OUT__lte=start)
-
-        return went_on_break
 
 
 def get_emp_shift(dept_string):
@@ -100,19 +72,12 @@ def get_emp_shift(dept_string):
     :return: a string of shift containing shift number
     """
     try:
-        regex_compiled = re.compile(REGEX_FOR_DEPT['shift'])
+        print(dept_string)
+        REGEX_FOR_DEPT = "/([1-9])/"
+        regex_compiled = re.compile(REGEX_FOR_DEPT)
         shift = re.findall(regex_compiled, dept_string)[0]
-    except ValueError:
-        print('/*' * 50)
-        print("REGEX ERROR FOR DEPT CODE <GET SHIFT in MAN_HOUR>")
-        print("WAS GIVEN ", dept_string)
-        print('/*' * 50)
-        shift = 0
-
-    # catching null values as a jic scenario
-    if shift == '':
-        shift = 0
-
+    except IndexError:
+        shift = '0'
     return shift
 
 
@@ -122,10 +87,12 @@ def get_emp_dept(dept_string):
     :param dept_string: expects a string from column HM_LBRACCT_FULL_NAM that looks like '017.30000.00.51.05/1/-/017.P000051/-/-/-'
     :return: emp_dept as string of 3 letter code, i.e. 'CIW'/'FCB'
     """
-    emp_dept_code = dept_string[4:5]
 
-    if emp_dept_code in DEPARTMENT_LOOKUP_DICT:
-        emp_dept = DEPARTMENT_LOOKUP_DICT[emp_dept_code]
+    emp_dept_code = dept_string[4:5]
+    dept_lookup_dict = get_dept_lookup_dict()
+
+    if emp_dept_code in dept_lookup_dict:
+        emp_dept = dept_lookup_dict[emp_dept_code]
     else:
         emp_dept = 'OTHER'
 
@@ -169,3 +136,38 @@ def set_begin_and_end_for_emp(employee, start, stop):
     else:
         end = stop
     return begin, end
+
+
+def get_employees(start, stop):
+    """
+    Gets employee queryset objects for currently clocked in,
+    those who left, and those who went on break.
+    :param start:  DATETIME TIMEZONE AWARE object
+    :param stop:  DATETIME TIMEZONE AWARE object
+    :return: one list of all employee objects that meet filter condition
+    """
+
+    currently_clocked_in = get_clocked_in(start)
+    emp_that_left = get_emp_who_left_during_shift(start, stop)
+    emp_that_break = get_emp_who_left_on_break(start, stop)
+
+    return create_single_list_from_list_of_queryset([
+        currently_clocked_in,
+        emp_that_break,
+        emp_that_left
+    ])
+
+
+def create_single_list_from_list_of_queryset(query_set_list):
+    """
+    Takes in query sets in a list and returns a list
+    of all of the individual objects
+    :param query_set_list: a list of multiple queryset objects
+    :return: a single list of objects
+    """
+    master_list = []
+    # takes the multiple query sets and returns one list.
+    for query in query_set_list:
+        for employee in query:
+            master_list.append(employee)
+    return master_list

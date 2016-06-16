@@ -1,14 +1,52 @@
 from django.test import TestCase
 from django.utils import timezone
 import datetime as dt
+
+from data_processor.functions.process_data_main import get_master_by_dept_dict
+from data_processor.functions.process_data_main import get_employees
 from get_data.models import RawClockData
-from data_processor.functions.hpv_calcuations import iterate_over_employees, calc_hpv
-from data_processor.functions.man_hours_calculations import get_employees
+from data_processor.tests.functions.functions_for_tests import compare_expect_against_query
+from data_processor.functions.hpv_calcuations import iterate_over_employees
 
 
-class HPVCalculations(TestCase):
+class Calculations_Main(TestCase):
     @timezone.override("US/Eastern")
     def setUp(self):
+        #################################################
+        # Previous Day Clock In/Out
+        #################################################
+        RawClockData.objects.create(
+            PRSN_NBR_TXT='001',
+            full_nam='Cameron',
+            HM_LBRACCT_FULL_NAM='017.30000.00.51.05/1/-/017.P000051/-/-/-',
+            start_rsn_txt='&newShift',
+            PNCHEVNT_IN=timezone.make_aware(dt.datetime(2016, 6, 2, 5, 35)),
+            end_rsn_txt='&out',
+            PNCHEVNT_OUT=timezone.make_aware(dt.datetime(2016, 6, 2, 14, 32)),
+        )
+
+        RawClockData.objects.create(
+            PRSN_NBR_TXT='002',
+            full_nam='Nic',
+            HM_LBRACCT_FULL_NAM='017.20000.00.80.07/1/-/017.P000080/-/-/-',
+            start_rsn_txt='&newShift',
+            PNCHEVNT_IN=timezone.make_aware(dt.datetime(2016, 6, 2, 22, 29)),
+            end_rsn_txt='&out',
+            PNCHEVNT_OUT=timezone.make_aware(dt.datetime(2016, 6, 3, 6, 32)),
+        )
+        #################################################
+        # Previous Day Forgot Clock Out
+        #################################################
+        RawClockData.objects.create(
+            PRSN_NBR_TXT='001',
+            full_nam='Cameron',
+            HM_LBRACCT_FULL_NAM='017.30000.00.51.05/1/-/017.P000051/-/-/-',
+            start_rsn_txt='&newShift',
+            PNCHEVNT_IN=timezone.make_aware(dt.datetime(2016, 6, 2, 5, 35)),
+            end_rsn_txt='&missedOut',
+            PNCHEVNT_OUT=None
+        )
+
         #################################################
         # Clock In
         #################################################
@@ -25,7 +63,7 @@ class HPVCalculations(TestCase):
         RawClockData.objects.create(
             PRSN_NBR_TXT='006',
             full_nam='Alex',
-            HM_LBRACCT_FULL_NAM='017.10000.00.80.07/1/-/017.P000080/-/-/-',
+            HM_LBRACCT_FULL_NAM='017.80000.00.80.07/1/-/017.P000080/-/-/-',
             start_rsn_txt='&newShift',
             PNCHEVNT_IN=timezone.make_aware(dt.datetime(2016, 6, 3, 6, 19)),
             end_rsn_txt='&missedOut',
@@ -61,7 +99,7 @@ class HPVCalculations(TestCase):
         RawClockData.objects.create(
             PRSN_NBR_TXT='002',
             full_nam='Nic',
-            HM_LBRACCT_FULL_NAM='017.30000.00.80.07/1/-/017.P000080/-/-/-',
+            HM_LBRACCT_FULL_NAM='017.80000.00.80.07/1/-/017.P000080/-/-/-',
             start_rsn_txt='&newShift',
             PNCHEVNT_IN=timezone.make_aware(dt.datetime(2016, 6, 3, 6, 45)),
             end_rsn_txt='&out',
@@ -74,7 +112,7 @@ class HPVCalculations(TestCase):
         RawClockData.objects.create(
             PRSN_NBR_TXT='010',
             full_nam='Janet',
-            HM_LBRACCT_FULL_NAM='017.30000.00.80.07/1/-/017.P000080/-/-/-',
+            HM_LBRACCT_FULL_NAM='017.80000.00.80.07/1/-/017.P000080/-/-/-',
             start_rsn_txt='&newShift',
             PNCHEVNT_IN=timezone.make_aware(dt.datetime(2016, 6, 3, 6, 39)),
             end_rsn_txt='&break',
@@ -84,98 +122,27 @@ class HPVCalculations(TestCase):
         RawClockData.objects.create(
             PRSN_NBR_TXT='010',
             full_nam='Janet',
-            HM_LBRACCT_FULL_NAM='017.30000.00.80.07/1/-/017.P000080/-/-/-',
+            HM_LBRACCT_FULL_NAM='017.80000.00.80.07/1/-/017.P000080/-/-/-',
             start_rsn_txt='&newShift',
             PNCHEVNT_IN=timezone.make_aware(dt.datetime(2016, 6, 3, 9, 30)),
             end_rsn_txt='&missedOut',
             PNCHEVNT_OUT=None,
         )
 
-    @timezone.override("US/Eastern")
-    def test_iterate_over_employees(self):
-        test_dept_dict = {
-            'CIW': {
-                'mh': 0,
-                'ne': 0,
-                'hpv': 0,
-            },
-            'FCB': {
-                'mh': 0,
-                'ne': 0,
-                'hpv': 0,
-            },
-            'PNT': {
-                'mh': 0,
-                'ne': 0,
-                'hpv': 0,
-            },
-            'PLANT': {
-                'mh': 0,
-                'ne': 0,
-                'hpv': 0,
-            },
-            'claims_for_range': 10
-        }
 
-        expected_dict = {
-            'PLANT': {
-                'ne': 7,
-                'hpv': 2.095,
-                'mh': 20.950000000000003
-            },
-            'FCB': {
-                'ne': 2,
-                'hpv': 0.8,
-                'mh': 8.0
-            },
-            'PNT': {
-                'ne': 4,
-                'hpv': 0.8949999999999999,
-                'mh': 8.95
-            },
-            'CIW': {
-                'ne': 1,
-                'hpv': 0.4,
-                'mh': 4.0
-            },
-            'claims_for_range': 10
-        }
 
-        start = timezone.make_aware(dt.datetime(2016, 6, 3, 6, 30))
-        stop = timezone.make_aware(dt.datetime(2016, 6, 3, 10, 30))
-        employees = get_employees(start, stop)
-        result_dict = iterate_over_employees(test_dept_dict, employees, start, stop)
-        print(result_dict)
-        for key in result_dict:
-            if key != 'claims_for_range':
-                self.assertEqual(
-                    result_dict[key]['hpv'],
-                    expected_dict[key]['hpv']
-                )
-                self.assertEqual(
-                    result_dict[key]['ne'],
-                    expected_dict[key]['ne']
-                )
-                self.assertEqual(
-                    result_dict[key]['mh'],
-                    expected_dict[key]['mh']
-                )
 
-    def test_calc_hpv(self):
-        claims = 5
-        test_dept_dict = {
-            'mh': 30,
-            'ne': 10,
-            'hpv': 0,
-        }
-
-        plant_dict = {
-            'ne': 10,
-            'hpv': 0,
-            'mh': 20,
-        }
-
-        dept_result, plant_result = calc_hpv(claims, test_dept_dict, plant_dict)
-        self.assertEqual(dept_result['hpv'], 6)
-        self.assertEqual(plant_result['hpv'], 4)
-
+    # def test_verify_datetime_object(self):
+    #     expected_results = [True, False, False, None]
+    #     # timezone aware
+    #     test1 = timezone.make_aware(dt.datetime(2016, 6, 3, 6, 30))
+    #     # not timezone aware
+    #     test2 = dt.datetime(2016, 6, 3, 6, 30).replace(tzinfo=None)
+    #     # not a DT object
+    #     test3 = '2016, 6, 3, 6, 30'
+    #     # a None test
+    #     test4 = None
+    #
+    #     results = verify_aware_datetime_object([test1, test2, test3, test4])
+    #     for result, expected in zip(results, expected_results):
+    #         self.assertEqual(result, expected)

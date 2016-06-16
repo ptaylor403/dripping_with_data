@@ -17,3 +17,25 @@ def find_pop_and_return(looking_for, expected_list):
             found_item = item
             expected_list.pop(index)
             return found_item, expected_list
+
+
+def compare_expect_against_query(expected_employees, employees):
+    """
+    A comparison test to see if the expected is in the employees query set objects
+    :param expected_employees: expected list
+    :param employees: A QuerySet object to look through the Employee results
+    :return: a list of T/F if the item was found
+    """
+    # decrement counter
+    result_list = []
+    for employee in employees:
+        found_item, expected_employees = find_pop_and_return(
+            looking_for=employee.PRSN_NBR_TXT,
+            expected_list=expected_employees,
+        )
+        if len(expected_employees) == 0:
+            return True
+    else:
+        return False
+
+

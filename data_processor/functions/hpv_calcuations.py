@@ -1,46 +1,52 @@
-from get_data.models import RawPlantActivity, RawClockData
-from .claims_calculations import *
-from .man_hours_calculations import *
+from .man_hours_calculations import get_emp_man_hours, get_emp_dept
 
 
-def get_hpv(by_dept_dict):
+def iterate_over_employees(by_dept_dict, employees, start, stop):
     """
-    :param by_dept_dict: An instance of the master_by_dept_dictionary populated with mh, ne, and claim data
-    :return:
+    Iterates over the employees queryset and adds the information to the dict
+    :param by_dept_dict: instance of the master dept dict
+    :param employees: employees query set
+    :param start: DATETIME TIMEZONE AWARE object
+    :param stop: DATETIME TIMEZONE AWARE object
+    :return: the instance of the department dict
     """
-    print("/"*50)
-    print("GET HPV IN HPV CALC")
-    print("/"*50)
-    # list to be used for key comparison to generate hpv only for these dept.
-    dept_list = ['CIW', 'FCB', 'PNT', 'PCH', 'FCH', 'DAC', 'MAINT', 'QA', 'MAT', 'OTHER']
+    # defining only the plant portion of the dict
+    plant_dict = by_dept_dict['PLANT']
+    claims = by_dept_dict['claims_for_range']
+    for employee in employees:
+        # getting emp's department
+        emp_dept = get_emp_dept(
+            employee.HM_LBRACCT_FULL_NAM
+        )
 
-    plant_mh = 0
-    plant_ne = 0
-    plant_hpv = 0
+        if emp_dept in by_dept_dict:
+            # referencing only that emp dept
+            dept = by_dept_dict[emp_dept]
+            # increasing num of emp by one
+            dept['ne'] += 1
+            # calculate emp man hours
+            emp_man_hours = get_emp_man_hours(employee, start, stop)
+            dept['mh'] += emp_man_hours
 
-    # calculating the HPV
-    for key in by_dept_dict:
-        plant_hpv, plant_mh, plant_ne = update_dept_vars(by_dept_dict, dept_list, key, plant_hpv, plant_mh, plant_ne)
+            # incrementing plant man hours
+            plant_dict['ne'] += 1
+            plant_dict['mh'] += emp_man_hours
 
-    plant = by_dept_dict['PLANT']
-    plant['mh'] = plant_mh
-    plant['ne'] = plant_ne
-    plant['hpv'] = plant_hpv
-
+            dept, plant_dict = calc_hpv(claims, dept, plant_dict)
     return by_dept_dict
 
 
-def update_dept_vars(by_dept_dict, dept_list, key, plant_hpv, plant_mh, plant_ne):
-    if key in dept_list:
-        dept = by_dept_dict[key]
-        plant_mh += dept['mh']
-        plant_ne += dept['ne']
-
-        # If claims is not 0, do some division, else hpv = 0
-        claims = by_dept_dict['claims_for_range']
-        if claims:
-            dept['hpv'] = dept['mh'] / claims
-            plant_hpv += dept['hpv']
-        else:
-            dept['hpv'] = 0
-    return plant_hpv, plant_mh, plant_ne
+def calc_hpv(claims, dept, plant_dict):
+    """
+    Calculates the hpv for each department and the plant.
+    Yes it does this every cycle. Haven't timed it if it is
+    :param claims:
+    :param dept:
+    :param plant_dict:
+    :return:
+    """
+    print(dept)
+    if claims != 0:
+        dept['hpv'] = dept['mh'] / claims
+        plant_dict['hpv'] = plant_dict['mh'] / claims
+    return dept, plant_dict
