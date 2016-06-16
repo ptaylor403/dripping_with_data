@@ -104,6 +104,11 @@ td {
   font-size: 18px;
 }
 
+td:hover {
+  background-color: lightblue;
+  color: black;
+}
+
 .head {
   height: 50px;
   text-align: center;
@@ -148,6 +153,7 @@ text.axis-workweek {
 text.axis-shift1 {
   fill: #000;
 }
+
 text.axis-shift2 {
   fill: #0000cd;
 }
