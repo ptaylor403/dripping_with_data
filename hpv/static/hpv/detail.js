@@ -473,8 +473,10 @@ jQuery(function($) {
       color: '#ff0000',
       classed: 'dashed'
     }];
+
     last_in_data = data[data.length-1]['timestamp'] / 1000
     first_for_day = last_in_data - dayInSeconds
+
     for (i = 0; i < data.length; i++) {
       time = data[i]["timestamp"] / 1000
       if(time >= first_for_day){
@@ -489,8 +491,11 @@ jQuery(function($) {
     };
     lastDataTime = todayData[todayData.length-1]['timestamp']
     lastDataTimestamp = lastDataTime / 1000
+    
     previousDataTimestamp = lastDataTimestamp - weekInSeconds //- ( dayInSeconds / 6)
+
     var query = '/api/hpv?days=1&format=json&end='+previousDataTimestamp
+
     d3.json(query,function(data){
       for (i = 0; i < data.length; i++) {
           // unix = Math.round((new Date(data[i]["timestamp"]).getTime()) / 1000);
@@ -611,11 +616,13 @@ jQuery(function($) {
         d.timestamp = parseDate(d.timestamp);
       });
       weekQueryResult = data
+      console.log(weekQueryResult.length, weekQueryResult[0]);
       heatMap.heatmap(currentDataName, data)
       d3.json(currentQuery,function(error, data){
         data.forEach(function(d){
           d.timestamp = parseDate(d.timestamp);
         });
+        console.log(weekQueryResult.length, weekQueryResult[0]);
         currentQueryResult = data
         lineChart.updateLineData(currentDataName, data)
       })
