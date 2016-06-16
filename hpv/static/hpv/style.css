@@ -132,7 +132,7 @@ rect.bordered {
 }
 
 text.mono {
-  font-size: 9pt;
+  font-size: 10pt;
   fill: #aaa;
   font-weight: 500;
 }
@@ -145,8 +145,11 @@ text.axis-workweek {
   fill: #000;
 }
 
-text.axis-worktime {
+text.axis-shift1 {
   fill: #000;
+}
+text.axis-shift2 {
+  fill: #0000cd;
 }
 
 .btn-default {

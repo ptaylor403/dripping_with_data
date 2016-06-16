@@ -9,7 +9,9 @@ jQuery(function($) {
       }
       return 0;
   };
-  var parseDate = d3.time.format("%Y-%m-%dT%H:%M:%SZ").parse;
+  // var parseDate = d3.time.format("%Y-%m-%dT%H:%M:%SZ").parse;
+  var parseDate = d3.time.format.utc("%Y-%m-%dT%H:%M:%SZ").parse;
+
 
   var datasets = [{day: "PLANT_d_hpv", shift: "PLANT_s_hpv", label: "PLANT"},
                   {day: "CIW_d_hpv", shift: "CIW_s_hpv", label: 'CIW'},
@@ -239,7 +241,6 @@ jQuery(function($) {
       Update line graph - remove old line and update new information/line
       **********/
       var updateLineData = function(day, data) {
-          console.log(day);
           // Get dataset
           var dataset = datasets.filter(function(dataset) {
               if (dataset.day == day) {
@@ -328,7 +329,7 @@ jQuery(function($) {
 
         days = ["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"],
 
-        times = ["1a", "2a", "3a", "4a", "5a", "6a", "7a", "8a", "9a", "10a", "11a", "12p", "1p", "2p", "3p", "4p", "5p", "6p", "7p", "8p", "9p", "10p", "11p", "12a"];
+        times = ["12a", "1a", "2a", "3a", "4a", "5a", "6a", "7a", "8a", "9a", "10a", "11a", "12p", "1p", "2p", "3p", "4p", "5p", "6p", "7p", "8p", "9p", "10p", "11p"];
 
     var svg = d3.select("#heatmap").append("svg")
         .attr("width", width + margin.left + margin.right)
@@ -344,7 +345,7 @@ jQuery(function($) {
           .attr("y", function (d, i) { return i * gridSize; })
           .style("text-anchor", "end")
           .attr("transform", "translate(-6," + gridSize / 1.5 + ")")
-          .attr("class", function (d, i) { return ((i >= 0 && i <= 4) ? "dayLabel mono axis axis-workweek" : "dayLabel mono axis"); });
+          .attr("class", function (d, i) { return ((i >= 1 && i <= 5) ? "dayLabel mono axis axis-workweek" : "dayLabel mono axis"); });
 
     var timeLabels = svg.selectAll(".timeLabel")
         .data(times)
@@ -354,15 +355,16 @@ jQuery(function($) {
           .attr("y", 0)
           .style("text-anchor", "middle")
           .attr("transform", "translate(" + gridSize / 2 + ", -6)")
-          .attr("class", function(d, i) { return ((i >= 5 && i <= 12) ? "timeLabel mono axis axis-worktime" : "timeLabel mono axis"); });
+          .attr("class", function(d, i) { return ((i >= 6 && i <= 14) ? "timeLabel mono axis axis-shift1" : ((i >= 15 && i <= 23) ? "timeLabel mono axis axis-shift2" : "timeLabel mono axis")); })
+          // .attr("class", function(d, i) { return ((i >= 15 && i <= 23) ? "timeLabel mono axis axis-shift2" : "timeLabel mono axis"); });
 
     // Create heatmap
-    var heatmapChart = function(day, data) {
+    var heatMapChart = function(day, data) {
       var heatmapData = {};
       for (var i = 0; i < data.length; i++) {
         var timestamp = data[i]["timestamp"];
         var times = new Date(timestamp); // get date object
-        var dayOfWeek = times.getDay() + 1; // get day of week 0-7
+        var dayOfWeek = times.getDay(); // get day of week 0-7
         var hourOfDay = times.getHours(); // get hour of day
         if (!heatmapData[dayOfWeek]) { // create day of week if its not there
           heatmapData[dayOfWeek] = {};
@@ -372,7 +374,6 @@ jQuery(function($) {
         }
         heatmapData[dayOfWeek][hourOfDay].push(parseFloat(data[i][day])); // append to dictionary
       }
-
       // get average of value per hour
       for (day in heatmapData) {
         if (heatmapData.hasOwnProperty(day)) {
@@ -402,7 +403,7 @@ jQuery(function($) {
       };
 
       var colorScale = d3.scale.quantile()
-          .domain([d3.min(newHeatMapData, function (d) { return d.value; }) - 3, d3.max(newHeatMapData, function (d) { return d.value; })])
+          .domain([d3.min(newHeatMapData, function (d) { return d.value; }), d3.max(newHeatMapData, function (d) { return d.value; })])
           .range(colors);
 
       var cards = svg.selectAll(".hour")
@@ -412,7 +413,7 @@ jQuery(function($) {
 
       cards.enter().append("rect")
           .attr("x", function(d) { return (d.hour) * gridSize; })
-          .attr("y", function(d) { return (d.day - 1) * gridSize; })
+          .attr("y", function(d) { return (d.day) * gridSize; })
           .attr("rx", 4)
           .attr("ry", 4)
           .attr("class", "hour bordered")
@@ -449,7 +450,7 @@ jQuery(function($) {
       legend.exit().remove();
     };
     return {
-        heatmap: heatmapChart
+        heatmap: heatMapChart
     }
   })();
   /********************************
@@ -480,23 +481,22 @@ jQuery(function($) {
         todayData.push(data[i])
       }
     }
-
     for (i = 0; i < todayData.length; i++) {
       // unix = Math.round((new Date(data[i]["timestamp"]).getTime()) / 1000);
       time = todayData[i]["timestamp"] / 1000
       // console.log(i + "/" + data[i]["timestamp"] + " || " + time)
-      graphData[0].values.push([time, data[i][day]]);
+      graphData[0].values.push([time, todayData[i][day]]);
     };
     lastDataTime = todayData[todayData.length-1]['timestamp']
     lastDataTimestamp = lastDataTime / 1000
-    previousDataTimestamp = lastDataTimestamp - weekInSeconds - ( dayInSeconds / 6)
+    previousDataTimestamp = lastDataTimestamp - weekInSeconds //- ( dayInSeconds / 6)
     var query = '/api/hpv?days=1&format=json&end='+previousDataTimestamp
     d3.json(query,function(data){
       for (i = 0; i < data.length; i++) {
           // unix = Math.round((new Date(data[i]["timestamp"]).getTime()) / 1000);
           time = parseDate(data[i]["timestamp"]) / 1000 + weekInSeconds
           // console.log(i + "/" + data[i]["timestamp"] + " || " + time)
-          graphData[1].values.push([time, data[i][day]]);
+          graphData[1].values.push([time, +data[i][day]]);
       };
 
       nv.addGraph(function() {
@@ -509,10 +509,14 @@ jQuery(function($) {
         chart.xAxis
           .axisLabel('Time')
           .tickFormat(function(d) {
-              return d3.time.format('%H:%M')(new Date((d - dayInSeconds/6) * 1000))
+              return d3.time.format('%H:%M')(new Date(d * 1000))
             });
 
-        chart.yDomain([0, 140])
+        chart.yDomain([0, d3.max(graphData, function(d){
+          var y_value_max =  d3.max(d.values, function(e){return e[1]})
+          console.log(y_value_max);
+          return y_value_max
+        })])
         chart.yAxis
           .axisLabel('HPV')
           .tickFormat(d3.format(',f'));
@@ -525,6 +529,7 @@ jQuery(function($) {
 
         return chart;
       });
+      //console.log(graphData);
     })
   });
 
@@ -601,7 +606,6 @@ jQuery(function($) {
   // setTimeout(function() {location.reload(true);},6000);
   // reload page every 5 seconds
   setInterval(function() {
-    console.log(initial_query);
     d3.json(initial_query,function(error, data){
       data.forEach(function(d){
         d.timestamp = parseDate(d.timestamp);
