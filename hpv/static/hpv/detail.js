@@ -158,7 +158,7 @@ jQuery(function($) {
 
         // Scale the range of the data
         x.domain(d3.extent(data, function(d) { return d.timestamp; }));
-        y.domain([0, d3.max(data, function(d) { return Math.max(d[day], d[shift]); })]);
+        y.domain([0, d3.max(data, function(d) { return Math.max(d[day]+2, d[shift]+2); })]);
 
         // create grids for linegraph
         svg.append("g")
@@ -233,7 +233,7 @@ jQuery(function($) {
           var dateline1 = d3.select('#line')
               .transition()
               .select('.line1')
-              .duration(750)
+              .duration(1)
               .attr("d", valueline1(data));
         };
 
@@ -268,7 +268,7 @@ jQuery(function($) {
 
           // Scale the range of the data
           x.domain(d3.extent(data, function(d) { return d.timestamp; }));
-          y.domain([0, d3.max(data, function(d) { return d[shift]; })]);
+          y.domain([0, d3.max(data, function(d) { return d[shift]+2; })]);
 
           // Update the x axis
           svg.select(".x.axis")
@@ -298,13 +298,13 @@ jQuery(function($) {
           d3.select('#line')
               .transition()
               .select('.line')
-              .duration(750)
+              .duration(1)
               .attr("d", valueline(data));
 
           d3.select('#line')
               .transition()
               .select('.line1')
-              .duration(750)
+              .duration(1)
               .attr("d", valueline1(data));
 
       }; // updateLineData close
@@ -453,6 +453,7 @@ jQuery(function($) {
         heatmap: heatMapChart
     }
   })();
+
   /********************************
     Week on Week
   *********************************/
@@ -491,7 +492,7 @@ jQuery(function($) {
     };
     lastDataTime = todayData[todayData.length-1]['timestamp']
     lastDataTimestamp = lastDataTime / 1000
-    
+
     previousDataTimestamp = lastDataTimestamp - weekInSeconds //- ( dayInSeconds / 6)
 
     var query = '/api/hpv?days=1&format=json&end='+previousDataTimestamp
@@ -518,7 +519,7 @@ jQuery(function($) {
             });
 
         chart.yDomain([0, d3.max(graphData, function(d){
-          var y_value_max =  d3.max(d.values, function(e){return e[1]})
+          var y_value_max =  d3.max(d.values, function(e){return e[1]+2})
           console.log(y_value_max);
           return y_value_max
         })])
@@ -529,12 +530,8 @@ jQuery(function($) {
           .datum(graphData)
           .call(chart);
 
-        //TODO: Figure out a good way to do this automatically
-        nv.utils.windowResize(chart.update);
-
         return chart;
       });
-      //console.log(graphData);
     })
   });
 
@@ -548,7 +545,6 @@ jQuery(function($) {
   var currentQueryResult = []
 
   // intialize charts
-
   d3.json(initial_query,function(error, data){
     data.forEach(function(d){
       d.timestamp = parseDate(d.timestamp);
@@ -577,7 +573,7 @@ jQuery(function($) {
       currentDataName = d.day
       updateButtons(d.label, $(this).parent());
       $('.depttitle').text(d.label);
-      heatMap.heatmap(d.day,weekQueryResult);
+      heatMap.heatmap(d.day, weekQueryResult);
       lineChart.updateLineData(d.day, currentQueryResult);
       weekOnWeek(currentDataName, currentQueryResult);
     });
@@ -617,6 +613,7 @@ jQuery(function($) {
       });
       weekQueryResult = data
       console.log(weekQueryResult.length, weekQueryResult[0]);
+      legend.selectAll("*").remove()
       heatMap.heatmap(currentDataName, data)
       d3.json(currentQuery,function(error, data){
         data.forEach(function(d){
